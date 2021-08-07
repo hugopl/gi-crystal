@@ -136,11 +136,14 @@ module Generator
     end
 
     private def generate_flags(io : IO)
+      return if @namespace.flags.empty?
+
+      io << "# Flags\n"
       @namespace.flags.each do |flag|
         flag_name = to_type_name(flag.name)
 
         if empty_flag?(flag)
-          io << flag_name << " = " << 0 << LF
+          io << flag_name << " = " << 0 << "\n\n"
           next
         end
 

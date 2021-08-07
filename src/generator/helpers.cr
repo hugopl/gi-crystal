@@ -68,7 +68,9 @@ module Generator::Helpers
               case iface
               when CallbackInfo
                 "Pointer(Void)"
-              when EnumInfo, UnionInfo
+              when EnumInfo
+                to_lib_type(iface.storage_type)
+              when UnionInfo
                 to_lib_type(iface, include_namespace)
               when ObjectInfo, StructInfo, InterfaceInfo
                 is_pointer = true
@@ -207,11 +209,17 @@ module Generator::Helpers
   end
 
   def convert_to_crystal(var : String, info : BaseInfo, transfer : GICrystal::Transfer) : String
-    return convert_to_crystal(var, info, transfer) if info.as?(TypeInfo)
 
-    # TODO: Write code for other baseinfo types...
-    crystal_type = to_crystal_type(info, true)
-    crystal_type = "#{crystal_type}__Impl" if info.is_a?(InterfaceInfo)
-    "#{crystal_type}.new(#{var}, GICrystal::Transfer::#{transfer})"
+
+    case info
+    when TypeInfo
+      convert_to_crystal(var, info, transfer)
+    when EnumInfo
+      "#{to_crystal_type(info, true)}.from_value(#{var})"
+    else
+      crystal_type = to_crystal_type(info, true)
+      crystal_type = "#{crystal_type}__Impl" if info.is_a?(InterfaceInfo)
+      "#{crystal_type}.new(#{var}, GICrystal::Transfer::#{transfer})"
+    end
   end
 end

@@ -116,6 +116,10 @@ void test_subject_set_setter(TestSubject *self, const gchar* data) {
   g_object_set(G_OBJECT(self), "string", data, NULL);
 }
 
+TestFlagFlags test_subject_return_or_on_flags(TestSubject* self, TestFlagFlags flag1, TestFlagFlags flag2) {
+  return flag1 | flag2;
+}
+
 void test_subject_put_42_on_out_argument(TestSubject *self, int *out) {
   *out = 42;
 }

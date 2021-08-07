@@ -4,6 +4,7 @@
 #include <glib-object.h>
 
 #include "test_iface.h"
+#include "test_flags.h"
 
 G_BEGIN_DECLS
 
@@ -79,6 +80,14 @@ const gchar* test_subject_get_getter_without_args(TestSubject *self);
  * This change the `string` attribute, same as `Subject#string=`
  */
 void test_subject_set_setter(TestSubject *self, const gchar* data);
+
+/**
+ * test_subject_return_or_on_flags:
+ * Do a OR on two received flags
+ * @flag1:
+ * @flag2:
+ */
+TestFlagFlags test_subject_return_or_on_flags(TestSubject* self, TestFlagFlags flag1, TestFlagFlags flag2);
 
 /**
  * test_subject_put_42_on_out_argument:

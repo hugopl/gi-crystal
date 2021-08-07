@@ -51,6 +51,19 @@ describe "GObject Binding" do
     subject.string.should eq("hello man!")
   end
 
+  describe "flags" do
+    it "can be passed as arguments and returned by value" do
+      subject = Test::Subject.new
+      ret = subject.return_or_on_flags(:option1, :option2)
+      ret.option1?.should eq(true)
+      ret.option2?.should eq(true)
+      ret.should eq(Test::FlagFlags::All)
+      ret.none?.should eq(false)
+      ret = subject.return_or_on_flags(:none, :option2)
+      ret.should eq(Test::FlagFlags::Option2)
+    end
+  end
+
   describe "interfaces" do
     it "can be returned by methods" do
       subject = Test::Subject.new
