@@ -35,7 +35,7 @@ module GObjectIntrospection
         value.v_double.to_s
       when .utf8?
         String.new(value.v_string).inspect
-      # Not supported ones
+        # Not supported ones
       when .interface?
         Log.warn { "#{tag} constant not supported." }
         "0 # Interface constants not supported!"

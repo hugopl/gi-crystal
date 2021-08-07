@@ -161,16 +161,34 @@ describe "GObject Binding" do
     end
   end
 
-  describe "optional byte array" do
+  describe "raw C arrays" do
     it "works with nil" do
       subject = Test::Subject.new
-      subject.receive_optional_array_and_len(nil).should eq 0
+      subject.concat_strings(nil).should eq("")
     end
 
-    it "works with a slice" do
+    it "can be received in arguments as Array" do
       subject = Test::Subject.new
-      buf = Bytes[23, 42]
-      subject.receive_optional_array_and_len(buf).should eq 2
+      subject.concat_strings(%w(lets go)).should eq("letsgo")
+    end
+
+    it "can be received in arguments as Tuple" do
+      subject = Test::Subject.new
+      subject.concat_strings({"hey", "ho"}).should eq("heyho")
+    end
+
+    describe "of filenames" do
+      it "can be received in arguments as Array(String)" do
+        subject = Test::Subject.new
+        subject.concat_filenames(%w(lets go)).should eq("letsgo")
+      end
+
+      it "can be received in arguments as Tuple(String)" do
+        subject = Test::Subject.new
+        subject.concat_filenames({"hey", "ho"}).should eq("heyho")
+      end
+      pending "can be received as argument as Array(Path)"
+      pending "can be received as argument as Tuple(Path)"
     end
   end
 

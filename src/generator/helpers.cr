@@ -154,7 +154,7 @@ module Generator::Helpers
     when .array?
       t = to_crystal_type(type.param_type, include_namespace)
       "Enumerable(#{t})"
-    when tag.utf8?, .g_list?
+    when tag.utf8?, .filename?, .g_list?
       to_crystal_type(tag)
     else
       tag_str = to_crystal_type(tag)
@@ -209,8 +209,6 @@ module Generator::Helpers
   end
 
   def convert_to_crystal(var : String, info : BaseInfo, transfer : GICrystal::Transfer) : String
-
-
     case info
     when TypeInfo
       convert_to_crystal(var, info, transfer)

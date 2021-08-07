@@ -35,7 +35,7 @@ module Generator
         if arg_type.tag.array?
           tags << String.build do |s|
             s << "(array"
-            s << " length=" << args[arg_type.array_length].name if arg_type.array_length > 0
+            s << " length=" << args[arg_type.array_length].name if arg_type.array_length >= 0
             s << " fixed-size=" << arg_type.array_fixed_size if arg_type.array_fixed_size > 0
             s << " zero-terminated=1" if arg_type.array_zero_terminated?
             s << " element-type #{arg_type.param_type.tag}"
@@ -74,7 +74,7 @@ module Generator
       args_to_remove = [] of ArgInfo
       args.each do |arg|
         type_info = arg.type_info
-        args_to_remove << args[type_info.array_length] if type_info.array_length > 0
+        args_to_remove << args[type_info.array_length] if type_info.array_length >= 0
       end
 
       io << "("
@@ -108,7 +108,7 @@ module Generator
       args = @method_info.args
       args.each do |arg|
         arg_type = arg.type_info
-        if arg_type.array_length > 0
+        if arg_type.array_length >= 0
           io << to_identifier(args[arg_type.array_length].name) << " = " << to_identifier(arg.name)
           io << (arg.nullable? ? ".try(&.size) || 0" : ".size") << LF
         end
@@ -120,9 +120,15 @@ module Generator
       args.each do |arg|
         if arg.nullable?
           arg_name = to_identifier(arg.name)
-          io << arg_name << " = " << arg_name << ".nil? ? " << to_lib_type(arg.type_info) << ".null : " << arg_name
-          io << ".to_a" if arg.type_info.array?
-          io << ".to_unsafe\n"
+          io << arg_name << " = if " << arg_name << ".nil?\n"
+          io << to_lib_type(arg.type_info) << ".null\n"
+          io << "else\n"
+          if arg.type_info.array?
+            io << arg_name << ".to_a.map(&.to_unsafe).to_unsafe\n"
+          else
+            io << arg_name << ".to_unsafe\n"
+          end
+          io << "end\n"
         end
       end
     end

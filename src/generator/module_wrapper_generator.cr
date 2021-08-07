@@ -157,7 +157,7 @@ module Generator
 
         flag.values.each do |value|
           name = to_type_name(value.name)
-          value =  value.value
+          value = value.value
           next if name == "None" && value.zero? && flag.values.size != 1
           if name == "All"
             if value != all_value

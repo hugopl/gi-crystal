@@ -48,12 +48,20 @@ struct _TestSubjectClass {
 TestSubject *test_subject_new(void);
 
 /**
- * test_subject_receive_optional_array_and_len:
- * @buf: (array length=length) (element-type guint8) (nullable): a buffer
- * @length: buffer length
- * Returns: "buffer length"
+ * test_subject_concat_strings:
+ * @n: number of strings to concat.
+ * @strings: (array length=n) (element-type utf8) (nullable): a buffer
+ * Returns: strings concatenated.
  */
-int test_subject_receive_optional_array_and_len(TestSubject *self, const char *buf, int length);
+gchar* test_subject_concat_strings(TestSubject *self, int n, const gchar **strings);
+
+/**
+ * test_subject_concat_filenames:
+ * Used to test filename arguments as C arrays
+ * @n: number of filenames to concat.
+ * @filenames: (array length=n) (element-type filename) (nullable): a buffer
+ */
+gchar* test_subject_concat_filenames(TestSubject *self, int n, const gchar **filenames);
 
 /**
  * test_subject_receive_nullable_object:

@@ -92,12 +92,27 @@ TestSubject *test_subject_new(void) {
   return g_object_new(TEST_TYPE_SUBJECT, "string", "", NULL);
 }
 
-int test_subject_receive_optional_array_and_len(TestSubject *self, const char *buf, int len) {
-  if (len == 0 || buf == NULL) {
-    return 0;
+gchar* test_subject_concat_strings(TestSubject *self, int n, const gchar **strings) {
+  if (n == 0 || strings == NULL)
+    return g_strdup("");
+
+  int size = 0;
+  for (int i = 0; i < n; ++i)
+    size += strlen(strings[i]);
+
+  gchar* ret = g_malloc(size + 1);
+
+  gchar* ptr = ret;
+  for (int i = 0; i < n; ++i) {
+    strcpy(ptr, strings[i]);
+    ptr += strlen(strings[i]);
   }
 
-  return len;
+  return ret;
+}
+
+gchar* test_subject_concat_filenames(TestSubject *self, int n, const gchar **filenames) {
+  return test_subject_concat_strings(self, n, filenames);
 }
 
 int test_subject_receive_nullable_object(TestSubject *self, TestSubject* nullable) {

@@ -155,7 +155,7 @@ module Generator
 
       io << "lean_slot = ->(" << slot_c_args << ") {\n"
       generate_signal_args_conversion(io, signal)
-      io << "::Box(Proc(" << slot_crystal_proc_params << ")).unbox(box).call("<< crystal_box_args << ")"
+      io << "::Box(Proc(" << slot_crystal_proc_params << ")).unbox(box).call(" << crystal_box_args << ")"
       io << ".to_unsafe" unless crystal_return_type == "Nil"
       io << "\n}\n"
 
