@@ -57,9 +57,10 @@ gchar* test_subject_concat_strings(TestSubject *self, int n, const gchar **strin
 
 /**
  * test_subject_concat_filenames:
- * Used to test filename arguments as C arrays
  * @n: number of filenames to concat.
  * @filenames: (array length=n) (element-type filename) (nullable): a buffer
+ *
+ * Used to test filename arguments as C arrays
  */
 gchar* test_subject_concat_filenames(TestSubject *self, int n, const gchar **filenames);
 
@@ -78,12 +79,14 @@ int test_subject_receive_arguments_named_as_crystal_keywords(TestSubject *self_,
 
 /**
  * test_subject_get_getter_without_args:
+ *
  * Used to test transformation of this in `Subject#getter_without_args`, returns "some string"
  */
 const gchar* test_subject_get_getter_without_args(TestSubject *self);
 
 /**
  * test_subject_set_setter:
+ *
  * Used to test transformation of this in `Subject#setter=`.
  * This change the `string` attribute, same as `Subject#string=`
  */
@@ -91,31 +94,34 @@ void test_subject_set_setter(TestSubject *self, const gchar* data);
 
 /**
  * test_subject_return_or_on_flags:
- * Do a OR on two received flags
  * @flag1:
  * @flag2:
+ *
+ * Do a OR on two received flags
  */
 TestFlagFlags test_subject_return_or_on_flags(TestSubject* self, TestFlagFlags flag1, TestFlagFlags flag2);
 
 /**
  * test_subject_put_42_on_out_argument:
- * Test out arguments.
+ *
+ * Test out arguments
+ * TODO: Pending
  */
 void test_subject_put_42_on_out_argument(TestSubject *self, int *out);
 
 /**
  * test_subject_return_list_of_strings_transfer_full:
- * Used to test GList transfer full conversions.
- *
  * Returns: (transfer full) (element-type utf8): `["one", "two"]`
+ *
+ * Used to test GList transfer full conversions.
  */
 GList* test_subject_return_list_of_strings_transfer_full(TestSubject* self);
 
 /**
  * test_subject_return_list_of_strings_transfer_container:
- * Used to test GList transfer container conversions.
- *
  * Returns: (transfer container) (element-type utf8): `["one", "two"]`
+ *
+ * Used to test GList transfer container conversions.
  */
 GList* test_subject_return_list_of_strings_transfer_container(TestSubject* self);
 
