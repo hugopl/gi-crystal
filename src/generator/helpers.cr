@@ -46,7 +46,7 @@ module Generator::Helpers
     when .utf8?, .filename? then "LibC::Char"
     when .gtype?            then "UInt64"
     when .g_list?           then "LibGLib::List"
-    when .gs_list?          then "Void"
+    when .gs_list?          then "LibGLib::SList"
     when .g_hash?           then "Void"
     when .unichar?          then "UInt32"
     when .error?            then "LibGLib::Error"
@@ -134,7 +134,7 @@ module Generator::Helpers
     when .utf8?, .filename? then "::String"
     when .gtype?            then "UInt64"
     when .g_list?           then "GLib::List"
-    when .gs_list?          then "Void"
+    when .gs_list?          then "GLib::SList"
     when .g_hash?           then "Void"
     when .unichar?          then "UInt32"
     when .error?            then "GLib::Error"
@@ -154,11 +154,11 @@ module Generator::Helpers
     when .array?
       t = to_crystal_type(type.param_type, include_namespace)
       "Enumerable(#{t})"
-    when tag.utf8?, .filename?, .g_list?
+    when tag.utf8?, .filename?, .g_list?, .gs_list?
       to_crystal_type(tag)
     else
       tag_str = to_crystal_type(tag)
-      if type.pointer? && !tag.utf8? && !tag.g_list?
+      if type.pointer? && !tag.utf8? && !tag.g_list? && !tag.gs_list?
         "Pointer(#{tag_str})"
       else
         tag_str
@@ -200,6 +200,9 @@ module Generator::Helpers
     when .void?
       type.pointer? ? "Pointer(Void)" : "Void"
     when .g_list?
+      param_type = to_crystal_type(type.param_type)
+      "#{to_crystal_type(tag)}(#{param_type}).new(#{var}, GICrystal::Transfer::#{transfer})"
+    when .gs_list?
       param_type = to_crystal_type(type.param_type)
       "#{to_crystal_type(tag)}(#{param_type}).new(#{var}, GICrystal::Transfer::#{transfer})"
     when .array?

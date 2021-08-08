@@ -171,3 +171,17 @@ GList* test_subject_return_list_of_strings_transfer_container(TestSubject* self)
   list = g_list_append(list, "two");
   return list;
 }
+
+GSList* test_subject_return_slist_of_strings_transfer_full(TestSubject* self) {
+  GSList* list = NULL;
+  list = g_slist_append(list, g_strdup("one"));
+  list = g_slist_append(list, g_strdup("two"));
+  return list;
+}
+
+GSList* test_subject_return_slist_of_strings_transfer_container(TestSubject* self) {
+  GSList* list = NULL;
+  list = g_slist_append(list, "one");
+  list = g_slist_append(list, "two");
+  return list;
+}

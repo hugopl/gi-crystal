@@ -140,6 +140,22 @@ GList* test_subject_return_list_of_strings_transfer_full(TestSubject* self);
 GList* test_subject_return_list_of_strings_transfer_container(TestSubject* self);
 
 /**
+ * test_subject_return_slist_of_strings_transfer_full:
+ * Returns: (transfer full) (element-type utf8): `["one", "two"]`
+ *
+ * Used to test GSList transfer full conversions.
+ */
+GSList* test_subject_return_slist_of_strings_transfer_full(TestSubject* self);
+
+/**
+ * test_subject_return_slist_of_strings_transfer_container:
+ * Returns: (transfer container) (element-type utf8): `["one", "two"]`
+ *
+ * Used to test GSList transfer container conversions.
+ */
+GSList* test_subject_return_slist_of_strings_transfer_container(TestSubject* self);
+
+/**
  * test_subject_return_myself_as_interface:
  * Returns: (transfer none):
  */

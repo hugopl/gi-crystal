@@ -3,7 +3,7 @@ require "./lib_gobject"
 require "./lib_gobject_introspection"
 
 require "../gi_crystal/util"
-require "../gi_crystal/glib"
+require "../gi_crystal/lib_g_lib_extra"
 
 lib LibGIRepository
   fun g_base_info_unref(info : Pointer(LibGIRepository::BaseInfo))

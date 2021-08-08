@@ -88,13 +88,15 @@ describe "GObject Binding" do
     end
   end
 
-  describe "glist" do
+  describe "GList" do
     it "works on transfer full" do
       subject = Test::Subject.new
       list = subject.return_list_of_strings_transfer_full
       list.size.should eq(2)
       list.first?.should eq("one")
       list.last?.should eq("two")
+      list[0].should eq("one")
+      list[1].should eq("two")
     end
 
     it "works on transfer none" do
@@ -109,6 +111,46 @@ describe "GObject Binding" do
       subject = Test::Subject.new
       list = subject.return_list_of_strings_transfer_container
       list.to_a.should eq(%w(one two))
+    end
+
+    it "has .each method" do
+      subject = Test::Subject.new
+      list = subject.return_list_of_strings_transfer_container
+      res = [] of String
+      list.each { |s| res << s }
+      res.should eq(%w(one two))
+    end
+  end
+
+  describe "GSList" do
+    it "works on transfer full" do
+      subject = Test::Subject.new
+      list = subject.return_slist_of_strings_transfer_full
+      list.size.should eq(2)
+      list[0].should eq("one")
+      list[1].should eq("two")
+    end
+
+    it "works on transfer none" do
+      subject = Test::Subject.new
+      list = subject.return_slist_of_strings_transfer_container
+      list.size.should eq(2)
+      list[0].should eq("one")
+      list[1].should eq("two")
+    end
+
+    it "can be converted to an array" do
+      subject = Test::Subject.new
+      list = subject.return_slist_of_strings_transfer_container
+      list.to_a.should eq(%w(one two))
+    end
+
+    it "has .each method" do
+      subject = Test::Subject.new
+      list = subject.return_list_of_strings_transfer_container
+      res = [] of String
+      list.each { |s| res << s }
+      res.should eq(%w(one two))
     end
   end
 

@@ -95,6 +95,8 @@ module Generator
         Log.info { "Copying '#{file}' to '#{dest}'" }
         File.copy(file, dest)
       end
+    rescue e : File::NotFoundError
+      raise Error.new(e.message)
     end
 
     private def generate_dependencies(io : IO)

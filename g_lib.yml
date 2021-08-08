@@ -1,6 +1,8 @@
 include:
+ - src/gi_crystal/lib_g_lib_extra.cr
  - src/gi_crystal/util.cr
- - src/gi_crystal/glib.cr
+ - src/gi_crystal/list.cr
+ - src/gi_crystal/slist.cr
 
 # All GLib class and functions that have Crystal versions in the stdlib must be removed from bindings
 ignore:
