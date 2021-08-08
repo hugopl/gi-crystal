@@ -4,29 +4,6 @@ include:
 
 # All GLib class and functions that have Crystal versions in the stdlib must be removed from bindings
 ignore:
- - g_base64_decode
- - g_base64_decode_inplace
- - g_base64_encode
- - g_base64_encode_close
- - g_base64_encode_step
- - g_basename
- - g_environ_setenv
- - g_environ_unsetenv
- - g_get_environ
- - g_get_host_name
- - g_listenv
- - g_compute_checksum_for_bytes
- - g_compute_checksum_for_data
- - g_compute_checksum_for_string
- - g_compute_hmac_for_bytes
- - g_compute_hmac_for_data
- - g_compute_hmac_for_string
- - g_str_to_ascii
- - g_str_tokenize_and_fold
- - g_double_equal
- - g_double_hash
- - g_convert
- - g_convert_with_fallback
  - g_ascii_digit_value
  - g_ascii_dtostr
  - g_ascii_formatd
@@ -42,15 +19,49 @@ ignore:
  - g_ascii_tolower
  - g_ascii_toupper
  - g_ascii_xdigit_value
+ - g_base64_decode
+ - g_base64_decode_inplace
+ - g_base64_encode
+ - g_base64_encode_close
+ - g_base64_encode_step
+ - g_basename
  - g_build_filenamev
  - g_build_pathv
+ - g_byte_array_new
+ - g_byte_array_new_take
  - g_checksum_type_get_length
+ - g_compute_checksum_for_bytes
+ - g_compute_checksum_for_data
+ - g_compute_checksum_for_string
+ - g_compute_hmac_for_bytes
+ - g_compute_hmac_for_data
+ - g_compute_hmac_for_string
+ - g_convert
+ - g_convert_with_fallback
  - g_datalist_foreach
  - g_datalist_get_data
  - g_datalist_get_flags
  - g_datalist_id_get_data
  - g_datalist_set_flags
  - g_datalist_unset_flags
+ - g_double_equal
+ - g_double_hash
+ - g_environ_setenv
+ - g_environ_unsetenv
+ - g_error_copy
+ - g_get_environ
+ - g_get_host_name
+ - g_listenv
+ - g_locale_from_utf8
+ - g_quark_from_static_string
+ - g_regex_check_replacement
+ - g_regex_error_quark
+ - g_regex_escape_nul
+ - g_regex_escape_string
+ - g_regex_match_simple
+ - g_regex_split_simple
+ - g_str_to_ascii
+ - g_str_tokenize_and_fold
  - g_uri_build
  - g_uri_build_with_user
  - g_uri_error_quark
@@ -102,34 +113,30 @@ ignore:
  - g_utf8_validate_len
  - g_uuid_string_is_valid
  - g_uuid_string_random
- - g_error_copy
- - g_regex_escape_string
- - g_regex_match_simple
- - g_regex_split_simple
- - g_regex_escape_nul
- - g_regex_error_quark
- - g_regex_check_replacement
- - g_quark_from_static_string
  - Array
+ - ByteArray
  - Checksum
  - ChecksumType
  - Cond
- - DebugKey
  - Data
  - Date
  - DateTime
+ - DebugKey
  - Dir
  - HashTable
  - HashTableIter
  - Hmac
+ - Hook
+ - HookList
+ - IOChannel
  - List
+ - LogField
  - MatchInfo
  - Node
  - PollFD
  - Private
  - PtrArray
  - Queue
- - LogField
  - Rand
  - RecMutex
  - Regex
@@ -154,8 +161,6 @@ ignore:
  - TreeNode
  - Uri
  - UriParamsIter
- - Hook
- - HookList
 
 # This is not done yet... the idea is to put here the objects that you want to remove from bindings and replace by
 # Crystal objects, so `to_crystal(LibType, TransferMode) : CrystalType` and `to_lib(CrystalType, TransferMode) : LibType`

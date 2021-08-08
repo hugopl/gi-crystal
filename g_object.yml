@@ -1,2 +1,12 @@
 include:
  - src/gi_crystal/gobject.cr
+
+ignore:
+ - g_object_interface_list_properties
+ - g_param_spec_pool_list
+ - g_signal_list_ids
+ - g_type_children
+ - g_type_interface_prerequisites
+ - g_type_interfaces
+ - Value
+ - SignalQuery
