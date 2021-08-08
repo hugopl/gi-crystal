@@ -153,7 +153,7 @@ module Generator
         # Crystal auto-generate All and None flag entries, so we check if the C flag also defines that, if so
         # we check if the value is corretc, otherwise we warn ⚠️
         all_value = 0_u64
-        flag.values.each { |v| all_value | v.value }
+        flag.values.each { |v| all_value |= v.value }
 
         flag.values.each do |value|
           name = to_type_name(value.name)
@@ -161,7 +161,8 @@ module Generator
           next if name == "None" && value.zero? && flag.values.size != 1
           if name == "All"
             if value != all_value
-              Log.warn { "Ignoring enum entry named 'All' for #{flag_name} flag for not representing all bits set." }
+              Log.warn { "#{flag_name}::All (0x#{value.to_s(16)}) doesn't have all possible bits set " \
+                         "(0x#{all_value.to_s(16)})." }
             end
             next
           end
