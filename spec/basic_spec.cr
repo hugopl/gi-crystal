@@ -177,6 +177,12 @@ describe "GObject Binding" do
       subject.concat_strings({"hey", "ho"}).should eq("heyho")
     end
 
+    it "can be zero-terminated and returned as value" do
+      subject = Test::Subject.new
+      subject.return_null_terminated_array_transfer_none.should eq(%w(Hello World))
+      subject.return_null_terminated_array_transfer_full.should eq(%w(Hello World))
+    end
+
     describe "of filenames" do
       it "can be received in arguments as Array(String)" do
         subject = Test::Subject.new

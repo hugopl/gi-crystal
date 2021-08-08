@@ -139,6 +139,19 @@ void test_subject_put_42_on_out_argument(TestSubject *self, int *out) {
   *out = 42;
 }
 
+const gchar** test_subject_return_null_terminated_array_transfer_none(TestSubject* self) {
+  static const gchar* ret[] = { "Hello", "World", NULL };
+  return ret;
+}
+
+gchar** test_subject_return_null_terminated_array_transfer_full(TestSubject* self) {
+  gchar** ret = g_malloc_n(3, sizeof(gchar*));
+  ret[0] = g_strdup("Hello");
+  ret[1] = g_strdup("World");
+  ret[2] = NULL;
+  return ret;
+}
+
 TestIface *test_subject_return_myself_as_interface(TestIface  *self) {
   TestSubject* subject = TEST_SUBJECT(self);
   g_object_set(subject, "string", __FUNCTION__, NULL);

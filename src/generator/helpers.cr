@@ -202,6 +202,13 @@ module Generator::Helpers
     when .g_list?
       param_type = to_crystal_type(type.param_type)
       "#{to_crystal_type(tag)}(#{param_type}).new(#{var}, GICrystal::Transfer::#{transfer})"
+    when .array?
+      if type.array_zero_terminated?
+        "GICrystal.transfer_null_ended_array(#{var}, GICrystal::Transfer::#{transfer})"
+      else
+        Log.warn { "Unknown conversion to crystal for non null terminated array" }
+        var
+      end
     else
       Log.warn { "Unknown conversion to crystal for #{tag}" }
       var

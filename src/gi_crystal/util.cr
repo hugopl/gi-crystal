@@ -17,13 +17,15 @@ module GICrystal
     !value.zero?
   end
 
-  def transfer_full_null_ended_list(ptr : Pointer(Pointer(UInt8))) : Array(String)
+  def transfer_null_ended_array(ptr : Pointer(Pointer(UInt8)), transfer : Transfer) : Array(String)
     res = Array(String).new
-    while !ptr.value.null?
-      res << String.new(ptr.value)
-      LibGLib.g_free(ptr.value)
-      ptr += 1
+    item_ptr = ptr
+    while !item_ptr.value.null?
+      res << String.new(item_ptr.value)
+      LibGLib.g_free(item_ptr.value) if transfer.full? || transfer.container?
+      item_ptr += 1
     end
+    LibGLib.g_free(ptr) if transfer.full?
     res
   end
 

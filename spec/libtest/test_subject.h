@@ -110,6 +110,20 @@ TestFlagFlags test_subject_return_or_on_flags(TestSubject* self, TestFlagFlags f
 void test_subject_put_42_on_out_argument(TestSubject *self, int *out);
 
 /**
+ * test_subject_return_null_terminated_array_transfer_none:
+ * Returns: (array zero-terminated=1) (transfer none):
+ * Used to test return of null terminated arrays, full copy is always done.
+ */
+const gchar** test_subject_return_null_terminated_array_transfer_none(TestSubject* self);
+
+/**
+ * test_subject_return_null_terminated_array_transfer_full:
+ * Returns: (array zero-terminated=1) (transfer full):
+ * Used to test return of null terminated arrays, full copy is always done.
+ */
+gchar** test_subject_return_null_terminated_array_transfer_full(TestSubject* self);
+
+/**
  * test_subject_return_list_of_strings_transfer_full:
  * Returns: (transfer full) (element-type utf8): `["one", "two"]`
  *

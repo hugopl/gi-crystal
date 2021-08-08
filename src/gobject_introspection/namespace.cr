@@ -34,12 +34,12 @@ module GObjectIntrospection
 
     def immediate_dependencies : Array(String)
       ptr = LibGIRepository.g_irepository_get_immediate_dependencies(@pointer, @name)
-      GICrystal.transfer_full_null_ended_list(ptr)
+      GICrystal.transfer_null_ended_array(ptr, :full)
     end
 
     def dependencies : Array(String)
       ptr = LibGIRepository.g_irepository_get_dependencies(@pointer, @name)
-      GICrystal.transfer_full_null_ended_list(ptr)
+      GICrystal.transfer_null_ended_array(ptr, :full)
     end
 
     private def load
