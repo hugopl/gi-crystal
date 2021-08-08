@@ -8,11 +8,14 @@ targets:
   gi-crystal:
     main: src/generator/main.cr
 
-executables:
-  - gi-crystal
-
 libraries:
   libgirepository: ~> 1.0
+
+scripts:
+  postinstall: shards build
+
+executables:
+  - gi-crystal
 
 crystal: ">= 1.1.0"
 
