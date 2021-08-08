@@ -46,7 +46,8 @@ def setup_logger
   end
 
   backend_with_formatter = Log::IOBackend.new(formatter: formatter)
-  Log.setup(:notice, backend_with_formatter)
+  log_level = ENV["LOG_LEVEL"]? ? Log::Severity.parse(ENV["LOG_LEVEL"]) : Log::Severity::Notice
+  Log.setup(log_level, backend_with_formatter)
 end
 
 def main(argv)

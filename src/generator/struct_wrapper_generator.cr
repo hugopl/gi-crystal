@@ -26,8 +26,12 @@ module Generator
       io << "@pointer : Pointer(Void)\n" \
             "@transfer : GICrystal::Transfer\n"
       generate_struct_initialize(io)
-      generate_struct_accessors(io)
-      generate_method_wrappers(io, @struct_info.methods)
+      # Ideally we shouldn't bind the structs that represent a GObject type, but some methods require these types, so
+      # for now we only generate constructors for them.
+      unless @struct_info.gtype_struct?
+        generate_struct_accessors(io)
+        generate_method_wrappers(io, @struct_info.methods)
+      end
       generate_to_unsafe(io)
       generate_finalizer(io)
 
@@ -72,6 +76,7 @@ module Generator
 
     private def generate_getter(io : IO, field : FieldInfo)
       field_name = field.name
+      Log.context.set(scope: "#{subject}.#{field_name}")
       io << "# Property getter\n"
       io << "def " << field_name << " : " << to_crystal_type(field.type_info) << LF
       io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field.type_info) << "))\n"
@@ -81,6 +86,7 @@ module Generator
 
     private def generate_setter(io : IO, field : FieldInfo)
       field_name = field.name
+      Log.context.set(scope: "#{subject}.#{field_name}=")
       io << "# Property setter\n"
       io << "def " << field_name << "=(value : " << to_crystal_type(field.type_info) << ")\n"
       io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field.type_info) << ")).value = "
