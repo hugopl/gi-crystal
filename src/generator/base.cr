@@ -15,8 +15,8 @@ module Generator
     end
 
     # True if this generator should be ignored.
-    def skip? : Bool
-      Config.for(@namespace.name).ignore?(subject)
+    def skip?(key : String = subject) : Bool
+      Config.for(@namespace.name).ignore?(key)
     end
 
     # File name created by the the generator or nil if the generator uses a file created by another generator.

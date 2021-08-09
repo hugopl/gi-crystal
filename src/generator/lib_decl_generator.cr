@@ -19,7 +19,7 @@ module Generator
       generate_unions(io)
       generate_objects(io)
       io << "# Module Functions\n"
-      generate_c_functions(io, @namespace.functions)
+      generate_c_functions(io, @namespace.functions, false)
       io << "end\n"
     rescue e : Error
       raise Error.new("failed to generate lib block for #{@namespace.name}: #{e.message}")
@@ -43,16 +43,18 @@ module Generator
     private def generate_flags(io : IO)
       io << "# Flags\n"
       @namespace.flags.each do |flag|
+        add_ignore_comment(io, flag.name)
         io << "type " << to_lib_type(flag, include_namespace: false) << " = " << to_lib_type(flag.storage_type) << LF
       end
       io.puts
     end
 
     private def generate_structs(io : IO)
-      io << "# Structs\n"
+      io << "# Structs\n\n"
       @namespace.structs.each do |struct_info|
         next if struct_info.gtype_struct?
 
+        force_ignore = add_ignore_comment(io, struct_info.name)
         if struct_info.bytesize.zero?
           io << "# Struct with zero bytes\n"
           generate_void_alias(io, struct_info)
@@ -66,7 +68,7 @@ module Generator
         if struct_info.bytesize.zero?
           io << "fun #{to_get_type_function(struct_info)} : LibC::SizeT\n"
         end
-        generate_c_functions(io, struct_info.methods)
+        generate_c_functions(io, struct_info.methods, force_ignore)
         io << LF
       end
     end
@@ -75,6 +77,7 @@ module Generator
       io << "# Unions\n"
       @namespace.unions.each do |union_info|
         if union_info.bytesize.zero?
+          add_ignore_comment(io, union_info.name)
           io << "# Union with zero bytes\n"
           generate_void_alias(io, union_info)
           next
@@ -89,6 +92,7 @@ module Generator
     private def generate_enums(io : IO)
       io << "# Enums\n"
       @namespace.enums.each do |enum_info|
+        add_ignore_comment(io, enum_info.name)
         io << "type " << to_lib_type(enum_info, include_namespace: false) << " = " << to_lib_type(enum_info.storage_type) << LF
       end
       io.puts
@@ -97,9 +101,10 @@ module Generator
     private def generate_interfaces(io : IO)
       io << "# Interfaces\n"
       @namespace.interfaces.each do |iface|
+        force_ignore = add_ignore_comment(io, iface.name)
         generate_void_alias(io, iface)
         io << "# " << to_lib_type(iface) << " C Functions\n"
-        generate_c_functions(io, iface.methods)
+        generate_c_functions(io, iface.methods, force_ignore)
       end
       io.puts
     end
@@ -113,6 +118,7 @@ module Generator
 
     private def generate_obj(io : IO, obj_info : ObjectInfo)
       obj_fields = obj_info.fields
+      force_ignore = add_ignore_comment(io, obj_info.name)
       if obj_fields.empty?
         generate_void_alias(io, obj_info)
       else
@@ -123,12 +129,13 @@ module Generator
 
       return if obj_info.methods.empty?
       io << "# " << to_lib_type(obj_info) << " C Functions\n"
-      generate_c_functions(io, obj_info.methods)
+      generate_c_functions(io, obj_info.methods, force_ignore)
       io << "\n\n"
     end
 
-    private def generate_c_functions(io : IO, functions : Array(FunctionInfo))
+    private def generate_c_functions(io : IO, functions : Array(FunctionInfo), force_ignore : Bool)
       functions.each do |func|
+        add_ignore_comment(io, func.symbol, force_ignore)
         generate_c_function(io, func)
       end
     end
@@ -166,6 +173,12 @@ module Generator
 
     private def generate_void_alias(io : IO, info : BaseInfo)
       io << "type " << to_type_name(info.name) << " = Void\n"
+    end
+
+    private def add_ignore_comment(io : IO, subject : String, force_ignore = false) : Bool
+      ignored = force_ignore || skip?(subject)
+      io << "# IGNORED for binding\n" if ignored
+      ignored
     end
   end
 end

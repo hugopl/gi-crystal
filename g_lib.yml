@@ -31,8 +31,14 @@ ignore:
  - g_basename
  - g_build_filenamev
  - g_build_pathv
+ - g_byte_array_free
+ - g_byte_array_free_to_bytes
  - g_byte_array_new
  - g_byte_array_new_take
+ - g_byte_array_steal
+ - g_byte_array_unref
+ - g_canonicalize_filename
+ - g_chdir
  - g_checksum_type_get_length
  - g_compute_checksum_for_bytes
  - g_compute_checksum_for_data
@@ -48,13 +54,64 @@ ignore:
  - g_datalist_id_get_data
  - g_datalist_set_flags
  - g_datalist_unset_flags
+ - g_date_get_days_in_month
+ - g_date_get_monday_weeks_in_year
+ - g_date_get_sunday_weeks_in_year
+ - g_date_is_leap_year
+ - g_date_strftime
+ - g_date_valid_day
+ - g_date_valid_dmy
+ - g_date_valid_julian
+ - g_date_valid_month
+ - g_date_valid_weekday
+ - g_date_valid_year
+ - g_direct_equal
+ - g_direct_hash
+ - g_dir_make_tmp
  - g_double_equal
  - g_double_hash
+ - g_environ_getenv
  - g_environ_setenv
  - g_environ_unsetenv
  - g_error_copy
+ - g_file_get_contents
+ - g_filename_display_basename
+ - g_filename_display_name
+ - g_filename_from_uri
+ - g_filename_from_utf8
+ - g_filename_to_uri
+ - g_filename_to_utf8
+ - g_file_open_tmp
+ - g_file_read_link
+ - g_file_set_contents
+ - g_file_set_contents_full
+ - g_file_test
+ - g_find_program_in_path
+ - g_format_size
+ - g_format_size_full
+ - g_free
+ - g_get_current_dir
+ - g_getenv
  - g_get_environ
+ - g_get_filename_charsets
+ - g_get_home_dir
  - g_get_host_name
+ - g_get_monotonic_time
+ - g_get_tmp_dir
+ - g_hash_table_add
+ - g_hash_table_contains
+ - g_hash_table_destroy
+ - g_hash_table_insert
+ - g_hash_table_lookup
+ - g_hash_table_lookup_extended
+ - g_hash_table_remove
+ - g_hash_table_remove_all
+ - g_hash_table_replace
+ - g_hash_table_size
+ - g_hash_table_steal
+ - g_hash_table_steal_all
+ - g_hash_table_steal_extended
+ - g_hash_table_unref
  - g_idle_add_full
  - g_listenv
  - g_locale_from_utf8
@@ -138,8 +195,13 @@ ignore:
  - IOChannel
  - List
  - LogField
+ - MemVTable
  - MatchInfo
  - Node
+ - Once
+ - OptionContext
+ - OptionEntry
+ - OptionGroup
  - PollFD
  - Private
  - PtrArray

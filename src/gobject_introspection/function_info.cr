@@ -3,6 +3,7 @@ require "./callable_info"
 module GObjectIntrospection
   module FunctionInfoContainer
     @methods : Array(FunctionInfo)?
+    @symbol : String?
 
     abstract def methods : Array(FunctionInfo)
 
@@ -29,7 +30,7 @@ module GObjectIntrospection
     end
 
     def symbol
-      String.new(LibGIRepository.g_function_info_get_symbol(self))
+      @symbol ||= String.new(LibGIRepository.g_function_info_get_symbol(self))
     end
 
     def flags
