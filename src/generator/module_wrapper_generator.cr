@@ -67,14 +67,7 @@ module Generator
     end
 
     def do_generate(io : IO)
-      generate_dependencies(io)
-
-      io << "# C lib declaration\n" \
-            "require \"./" << @lib.filename << "\"\n\n"
-      io << "# Wrappers\n"
-      (@objects + @structs).reject(&.skip?).compact_map(&.filename).sort!.each do |filename|
-        io << "require \"./" << filename << "\"\n"
-      end
+      generate_require_calls(io)
 
       io << "# Module functions\n"
       io << "module " << to_type_name(@namespace.name) << LF
@@ -83,6 +76,29 @@ module Generator
       generate_method_wrappers(io, @namespace.functions)
       io << "extend self\n"
       io << "end\n"
+
+      generate_extra_includes(io)
+    end
+
+    private def generate_require_calls(io : IO)
+      generate_dependencies(io)
+
+      io << "# C lib declaration\nrequire \"./" << @lib.filename << "\"\n\n"
+      io << "# Wrappers\n"
+      (@objects + @structs).reject(&.skip?).compact_map(&.filename).sort!.each do |filename|
+        io << "require \"./" << filename << "\"\n"
+      end
+    end
+
+    private def generate_extra_includes(io : IO)
+      extra_includes = Config.for(@namespace.name).includes
+      return if extra_includes.empty?
+
+      io << "\n# Extra includes\n"
+      extra_includes.each do |file|
+        io << "require \"./includes/" << file.basename << "\"\n"
+      end
+      io << LF
     end
 
     private def copy_extra_includes(output_dir : String)
@@ -100,15 +116,6 @@ module Generator
     end
 
     private def generate_dependencies(io : IO)
-      extra_includes = Config.for(@namespace.name).includes
-      if extra_includes.any?
-        io << "# Extra includes\n"
-        extra_includes.each do |file|
-          io << "require \"./includes/" << file.basename << "\"\n"
-        end
-        io << LF
-      end
-
       io << "# Dependencies\n"
       immediate_dependencies.each do |dep|
         io << "require \"../" << dep.module_dir << "/" << dep.filename << "\"\n"

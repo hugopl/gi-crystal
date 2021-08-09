@@ -54,7 +54,6 @@ module GLib
       to_crystal(value)
     end
 
-
     private def to_crystal(item : Pointer(LibGLib::List))
       data = item.value.data
 

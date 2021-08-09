@@ -1,5 +1,5 @@
 include:
- - src/gi_crystal/gobject.cr
+ - src/gi_crystal/signal.cr
 
 ignore:
  - g_object_interface_list_properties

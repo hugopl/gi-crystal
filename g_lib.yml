@@ -3,6 +3,8 @@ include:
  - src/gi_crystal/util.cr
  - src/gi_crystal/list.cr
  - src/gi_crystal/slist.cr
+ - src/gi_crystal/timeout.cr
+ - src/gi_crystal/closure_data_manager.cr
 
 # All GLib class and functions that have Crystal versions in the stdlib must be removed from bindings
 ignore:
@@ -53,6 +55,7 @@ ignore:
  - g_error_copy
  - g_get_environ
  - g_get_host_name
+ - g_idle_add_full
  - g_listenv
  - g_locale_from_utf8
  - g_quark_from_static_string
@@ -64,6 +67,8 @@ ignore:
  - g_regex_split_simple
  - g_str_to_ascii
  - g_str_tokenize_and_fold
+ - g_timeout_add_full
+ - g_timeout_add_seconds_full
  - g_uri_build
  - g_uri_build_with_user
  - g_uri_error_quark
