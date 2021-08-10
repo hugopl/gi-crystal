@@ -21,6 +21,10 @@ module Generator
       @method_info.symbol
     end
 
+    private def constructor?
+      @method_info.flags.constructor?
+    end
+
     private def generate_gi_flags_comments(io : IO)
       tags = [] of String
       args = @method_info.args
@@ -49,23 +53,31 @@ module Generator
       io << "# Returns: (transfer " << @method_info.caller_owns.to_s.downcase << ")\n" unless @method_info.caller_owns.none?
     end
 
-    private def generate_method_declaration(io : IO)
-      is_ctor = @method_info.flags.constructor?
-      identifier = is_ctor ? "initialize" : to_identifier(@method_info.name)
-
-      if @method_info.args.empty? && identifier.starts_with?("get_") && identifier.size > 4
-        identifier = identifier[4..]
-      elsif @method_info.args.size == 1 && identifier.starts_with?("set_") && identifier.size > 4
-        identifier = "#{identifier[4..]}="
-      end
-
+    private def method_identifier : String
+      identifier = to_identifier(@method_info.name)
+      identifier = if constructor?
+                     if identifier == "new"
+                       "initialize"
+                     else
+                       "self.#{identifier[4..]}"
+                     end
+                   elsif @method_info.args.empty? && identifier.starts_with?("get_") && identifier.size > 4
+                     identifier[4..]
+                   elsif @method_info.args.size == 1 && identifier.starts_with?("set_") && identifier.size > 4
+                     "#{identifier[4..]}="
+                   else
+                     identifier
+                   end
       # No flags means static methods
       identifier = "self.#{identifier}" if @method_info.flags.none?
+      identifier
+    end
 
+    private def generate_method_declaration(io : IO)
       io << "[@Deprecated]\n" if @method_info.deprecated?
-      io << "def " << identifier
+      io << "def " << method_identifier
       generate_method_wrapper_args(io) if @method_info.args.any?
-      io << " : " << to_crystal_type(@method_info.return_type, include_namespace: true) unless is_ctor
+      io << " : " << to_crystal_type(@method_info.return_type, include_namespace: true) unless constructor?
       io << LF
     end
 
@@ -87,7 +99,6 @@ module Generator
 
     def generate_method_wrapper_impl(io : IO)
       args = @method_info.args
-      flags = @method_info.flags
       return_type_info = @method_info.return_type
 
       if args.any?
@@ -97,8 +108,10 @@ module Generator
 
       generate_return_variable(io)
       generate_lib_call(io)
-      if flags.constructor?
-        io << "initialize(_ptr, GICrystal::Transfer::Full)\n"
+      if constructor?
+        call = method_identifier
+        call = "new" if method_identifier != "initialize"
+        io << call << "(_ptr, GICrystal::Transfer::Full)\n"
       else
         generate_return_value(io)
       end

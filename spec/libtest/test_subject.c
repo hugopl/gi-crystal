@@ -92,6 +92,10 @@ TestSubject *test_subject_new(void) {
   return g_object_new(TEST_TYPE_SUBJECT, "string", "", NULL);
 }
 
+TestSubject *test_subject_new_from_string(const gchar *string) {
+  return g_object_new(TEST_TYPE_SUBJECT, "string", string, NULL);
+}
+
 gchar* test_subject_concat_strings(TestSubject *self, int n, const gchar **strings) {
   if (n == 0 || strings == NULL)
     return g_strdup("");

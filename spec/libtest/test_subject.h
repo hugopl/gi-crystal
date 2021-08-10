@@ -48,6 +48,15 @@ struct _TestSubjectClass {
 TestSubject *test_subject_new(void);
 
 /**
+ * test_subject_new_from_whatever:
+ * @value:
+ * Returns: (transfer full): Obj instance with value set on string property
+ *
+ * Used to test transformation of this into `Subject.from_string(...)`.
+ */
+TestSubject *test_subject_new_from_string(const gchar *string);
+
+/**
  * test_subject_concat_strings:
  * @n: number of strings to concat.
  * @strings: (array length=n) (element-type utf8) (nullable): a buffer
