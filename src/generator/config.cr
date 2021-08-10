@@ -8,7 +8,7 @@ module Generator
     def initialize
     end
 
-    def initialize(any : YAML::Any, yaml_dir : String)
+    def initialize(any : Hash, yaml_dir : String)
       load_ignore_list(any)
       load_include_list(any, yaml_dir)
     end
@@ -48,24 +48,34 @@ module Generator
   class Config
     class_property search_paths = [Path.new(Dir.current)]
     @@configs = Hash(String, NamespaceConfig).new
-    @@mappings = Hash(String, String).new
 
     def self.load(namespace : String) : NamespaceConfig
       @@configs[namespace] ||= begin
         filename = "#{namespace.underscore}.yml"
-        filepath = find_in_search_paths(filename)
-        if filepath.nil?
+        config = load_yaml(filename)
+        if config.nil?
           Log.notice do
-            "No configuration found for #{namespace} (#{filename}), " \
+            "No valid configuration found for #{namespace} (#{filename}), " \
             "looked at #{Config.search_paths.map(&.expand).join(", ")}."
           end
           NamespaceConfig.new
         else
-          Log.notice { "Loading #{filepath}" }
-          any = YAML.parse(File.read(filepath))
-          add_mappings(any)
-          NamespaceConfig.new(any, filepath.dirname)
+          config
         end
+      end
+    end
+
+    private def self.load_yaml(filename : String) : NamespaceConfig?
+      filepath = find_in_search_paths(filename)
+      return if filepath.nil?
+
+      Log.notice { "Loading #{filepath}" }
+      any_hash = YAML.parse(File.read(filepath)).as_h?
+      if any_hash.nil?
+        Log.warn { "#{filepath} is blank!" }
+        NamespaceConfig.new
+      else
+        NamespaceConfig.new(any_hash, filepath.dirname)
       end
     end
 
@@ -79,23 +89,6 @@ module Generator
         return Path.new(path).expand if File.exists?(path)
       end
       nil
-    end
-
-    private def self.add_mappings(any : YAML::Any)
-      mappings = any["mappings"]?
-      return if mappings.nil?
-
-      hash = mappings.as_h?
-      raise Error.new("Expecting a hash on mappings entry, got #{any.raw.class.name}") if hash.nil?
-
-      hash.each do |key, value|
-        str_key = key.as_s?
-        str_value = value.as_s?
-        raise Error.new("Mappings must be strings") if str_key.nil? || str_value.nil?
-        raise Error.new("Mapping for #{str_key} already exists.") if @@mappings.has_key?(str_key)
-
-        @@mappings[str_key] = str_value
-      end
     end
   end
 end
