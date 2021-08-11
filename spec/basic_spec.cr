@@ -112,12 +112,12 @@ describe "GObject Binding" do
       boxed.data.should eq("hell yeah!")
     end
 
-    it "can be returned by transfer none" do
+    it "are always copyed, even on transfer none" do
       boxed = Test::BoxedStruct.return_boxed_struct("boxed")
 
       ret = boxed.return_transfer_none
       ret.data.should eq("boxed")
-      ret.to_unsafe.should eq(boxed.to_unsafe)
+      ret.to_unsafe.should_not eq(boxed.to_unsafe)
     end
   end
 

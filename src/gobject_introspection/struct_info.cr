@@ -15,6 +15,14 @@ module GObjectIntrospection
       LibGIRepository.g_struct_info_get_size(self)
     end
 
+    def copyable?
+      bytesize > 0
+    end
+
+    def boxed?
+      bytesize.zero? && !type_init.nil?
+    end
+
     def gtype_struct?
       GICrystal.to_bool(LibGIRepository.g_struct_info_is_gtype_struct(self))
     end

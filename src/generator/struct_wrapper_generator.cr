@@ -16,15 +16,10 @@ module Generator
       @struct_info.name
     end
 
-    def boxed? : Bool
-      @struct_info.bytesize.zero?
-    end
-
     def do_generate(io : IO)
       io << "module " << to_type_name(@namespace.name) << LF
       io << "class " << to_crystal_type(@struct_info, include_namespace: false) << LF
-      io << "@pointer : Pointer(Void)\n" \
-            "@transfer : GICrystal::Transfer\n"
+      io << "@pointer : Pointer(Void)\n"
       generate_struct_initialize(io)
       # Ideally we shouldn't bind the structs that represent a GObject type, but some methods require these types, so
       # for now we only generate constructors for them.
@@ -39,12 +34,31 @@ module Generator
     end
 
     private def generate_struct_initialize(io : IO)
-      io << "def initialize(@pointer, @transfer)\n"
+      if @struct_info.boxed?
+        generate_boxed_initializer(io)
+      elsif @struct_info.copyable?
+        generate_struct_initializer(io)
+      else
+        Log.warn { "#{subject} struct has zero bytes and isn't a Boxed struct. Wrapper wont be safe!" }
+        io << "def initialize(@pointer : Pointer(Void), _transfer : GICrystal::Transfer)\nend\n\n"
+      end
+    end
+
+    def generate_boxed_initializer(io : IO)
+      io << "def initialize(pointer : Pointer(Void), transfer : GICrystal::Transfer)\n"
+      io << "raise ArgumentError.new if pointer.null?\n"
+      io << "@pointer = if transfer.full?\n"
+      io << "pointer\n"
+      io << "else\n"
+      io << "LibGObject.g_boxed_copy(" << to_lib_namespace(@namespace) << "." << @struct_info.type_init << ", pointer)\n"
+      io << "end\n"
+      io << "end\n"
+    end
+
+    def generate_struct_initializer(io : IO)
+      io << "def initialize(@pointer : Pointer(Void), _transfer)\n"
       io << "raise ArgumentError.new if @pointer.null?\n"
       io << "end\n"
-
-      # Boxed structs are opaque pointers, the user isn't allowed to construct them.
-      return if boxed?
 
       # Initialize by parameters
       io << "def self.new("
@@ -52,8 +66,9 @@ module Generator
       io << @struct_info.fields.map do |field|
         "#{to_crystal_arg_decl(field.name)} : #{to_crystal_type(field.type_info)}? = nil"
       end.join(", ")
-      io << ")\n" \
-            "_ptr = LibGLib.g_malloc0(" << @struct_info.bytesize << ")\n"
+      io << ")\n"
+
+      io << "_ptr = Pointer(Void).malloc(" << @struct_info.bytesize << ")\n"
       io << "_instance = new(_ptr, GICrystal::Transfer::Full)\n"
       generate_ctor_fields_assignment(io)
       io << "_instance\n"
@@ -103,11 +118,10 @@ module Generator
 
     private def generate_finalizer(io : IO)
       # Non-boxed structs are never owner by wrappers
-      return unless boxed?
+      return unless @struct_info.boxed?
 
-      io << "def finalize\n" \
-            "return unless @transfer.full?\n"
-      io << "LibGLib.g_boxed_free(" << to_lib_namespace(@namespace) << '.' << to_get_type_function(@struct_info) << ", self)\n"
+      io << "def finalize\n"
+      io << "LibGObject.g_boxed_free(" << to_lib_namespace(@namespace) << '.' << to_get_type_function(@struct_info) << ", self)\n"
       io << "end\n"
     end
   end

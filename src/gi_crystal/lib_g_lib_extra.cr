@@ -3,7 +3,6 @@ lib LibGLib
   # Memory related functions
   fun g_malloc0(size : LibC::SizeT) : Void*
   fun g_free(mem : Void*)
-  fun g_boxed_free(type : UInt64, mem : Void*)
 
   # GList
   fun g_list_length(list : List*) : UInt32

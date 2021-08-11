@@ -115,6 +115,7 @@ ignore:
  - g_idle_add_full
  - g_listenv
  - g_locale_from_utf8
+ - g_pattern_spec_free
  - g_quark_from_static_string
  - g_regex_check_replacement
  - g_regex_error_quark
@@ -178,7 +179,10 @@ ignore:
  - g_uuid_string_is_valid
  - g_uuid_string_random
  - Array
+ - AsyncQueue
+ - Bytes
  - ByteArray
+ - BookmarkFile
  - Checksum
  - ChecksumType
  - Cond
@@ -202,6 +206,7 @@ ignore:
  - OptionContext
  - OptionEntry
  - OptionGroup
+ - PatternSpec
  - PollFD
  - Private
  - PtrArray
@@ -212,7 +217,11 @@ ignore:
  - RWLock
  - Scanner
  - ScannerConfig
+ - Sequence
+ - SequenceIter
  - SList
+ - SourcePrivate
+ - StatBuf
  - String
  - StringChunk
  - StrvBuilder
@@ -223,6 +232,7 @@ ignore:
  - TestSuite
  - Thread
  - ThreadPool
+ - Timer
  - TimeVal
  - TimeZone
  - TrashStack

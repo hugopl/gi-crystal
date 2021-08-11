@@ -65,9 +65,8 @@ module Generator
         end
 
         io << "# " << to_lib_type(struct_info) << " C Functions\n"
-        if struct_info.bytesize.zero?
-          io << "fun #{to_get_type_function(struct_info)} : LibC::SizeT\n"
-        end
+        type_init = struct_info.type_init
+        io << "fun #{type_init} : LibC::SizeT\n" if type_init
         generate_c_functions(io, struct_info.methods, force_ignore)
         io << LF
       end
