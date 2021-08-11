@@ -30,6 +30,8 @@ module Generator
       if parent.nil?
         generate_to_unsafe(io)
       end
+      generate_casts(io)
+      generate_ref_count(io)
       generate_method_wrappers(io, @obj_info.methods)
       generate_property_wrappers(io)
       generate_signals(io)
@@ -65,6 +67,14 @@ module Generator
       io << "def to_unsafe\n" \
             "@pointer\n" \
             "end\n"
+    end
+
+    private def generate_casts(io : IO)
+      # TODO: Trigger glib cast warnning on wrong casts
+      # TODO: Implement cast? to return nil when the types can't be casted
+      io << "def self.cast(obj)\n"
+      io << "new(obj.to_unsafe, GICrystal::Transfer::Full)"
+      io << "end\n"
     end
 
     private def generate_require_calls(io : IO)

@@ -24,4 +24,12 @@ TestSubjectChild *test_subject_child_new(const gchar *string);
  */
 TestSubjectChild *test_subject_child_new_renamed(const gchar *string);
 
+/**
+ * test_subject_child_me_as_gobject:
+ * Returns: (transfer none): Self obj casted to GObject
+ *
+ * Used to test object casts
+ */
+GObject *test_subject_child_me_as_gobject(TestSubjectChild *self);
+
 G_END_DECLS

@@ -48,3 +48,7 @@ TestSubjectChild *test_subject_child_new(const gchar *string) {
 TestSubjectChild *test_subject_child_new_renamed(const gchar *string) {
   return test_subject_child_new(string);
 }
+
+GObject *test_subject_child_me_as_gobject(TestSubjectChild *self) {
+  return G_OBJECT(self);
+}

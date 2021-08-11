@@ -22,6 +22,15 @@ describe "GObject Binding" do
     5.times { GC.collect }
   end
 
+  describe "reference counting" do
+    it "accessible by ref_count method" do
+      subject = Test::Subject.new
+      subject.ref_count.should eq(1)
+      iface = subject.return_myself_as_interface
+      subject.ref_count.should eq(1)
+    end
+  end
+
   describe "binding configuration" do
     describe "method removal" do
       it "removes GLib.g_get_environ" do
@@ -40,6 +49,18 @@ describe "GObject Binding" do
       subject = Test::SubjectChild.new("hello")
       subject.string.should eq("hello")
     end
+  end
+
+  describe "casts" do
+    it "can downcast objects" do
+      child = Test::SubjectChild.new("hey")
+      gobj = child.me_as_gobject
+      gobj.class.should eq(GObject::Object)
+      cast = Test::Subject.cast(gobj)
+      cast.string.should eq("hey")
+    end
+
+    pending "can upcast objects"
   end
 
   describe "basic properties" do
