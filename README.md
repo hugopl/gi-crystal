@@ -38,11 +38,7 @@ The basic rules are:
 
 - All objects (except enums, flags and unions) are created in the heap (including non GObject C Structs).
 - Boxed structs memory are always allocated by GLib but owned by Crystal wrappers.
-- All GObjects have a pointer to the C object (always allocated by GLib) and a flag to tell the about memory ownership, this
-  flag can have the values:
-  - Full, memory owner by Crystal wrapper, freed or unref'ed at `finalizer`.
-  - None, memory owner by GLib, nothing is done at `finalizer`.
-  - Container, used on GList bindings to tell that only the container is owner by Crystal, not the contents.
+- All GObjects have just a pointer to the C object (always allocated by GLib) and always hold a reference during their lifetime
 
 ### Gtk::Widget and derivated classes (⚠️ Not Implemented yet!)
 

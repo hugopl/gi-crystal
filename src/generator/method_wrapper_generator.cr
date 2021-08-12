@@ -86,11 +86,16 @@ module Generator
       args_to_remove = [] of ArgInfo
       args.each do |arg|
         type_info = arg.type_info
+        iface = type_info.interface
+        if iface && Config.for(arg.namespace.name).ignore?(iface.name)
+          Log.warn { "method using ignored type #{to_crystal_type(iface, true)} on arguments" }
+        end
         args_to_remove << args[type_info.array_length] if type_info.array_length >= 0
       end
+      args -= args_to_remove
 
       io << "("
-      io << (args - args_to_remove).map do |arg|
+      io << args.map do |arg|
         null_mark = "?" if arg.nullable?
         "#{to_crystal_arg_decl(arg.name)} : #{to_crystal_type(arg.type_info)}#{null_mark}"
       end.join(", ")

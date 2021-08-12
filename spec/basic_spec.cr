@@ -6,12 +6,12 @@ class GlobalVar
 end
 
 # Used on basic signal tests
-def full_notify_slot(gobj : GObject::Object, param_spec : GObject::ParamSpec) : Nil
+def full_notify_slot(gobj : GObject::Object) : Nil
   GlobalVar.value = "#{GlobalVar.value}\nfull_notify_slot called #{gobj.to_unsafe}".strip
 end
 
 # Used on basic signal tests
-def lean_notify_slot(param_spec : GObject::ParamSpec) : Nil
+def lean_notify_slot : Nil
   GlobalVar.value = "#{GlobalVar.value}\nlean_notify_slot called".strip
 end
 
@@ -211,7 +211,7 @@ describe "GObject Binding" do
 
     it "can receive details and connect to a non-closure slot without receiving the sender" do
       subject = Test::Subject.new
-      subject.notify_signal["string"].connect(->lean_notify_slot(GObject::ParamSpec))
+      subject.notify_signal["string"].connect(->lean_notify_slot)
       GlobalVar.value = ""
       subject.string = "new value"
       GlobalVar.value.should eq("lean_notify_slot called")
@@ -219,7 +219,7 @@ describe "GObject Binding" do
 
     it "can receive details and connect to a non-closure slot receiving the sender" do
       subject = Test::Subject.new
-      subject.notify_signal["string"].connect(->full_notify_slot(GObject::Object, GObject::ParamSpec))
+      subject.notify_signal["string"].connect(->full_notify_slot(GObject::Object))
       GlobalVar.value = ""
       subject.string = "new value"
       GlobalVar.value.should eq("full_notify_slot called #{subject.to_unsafe}")
@@ -227,8 +227,8 @@ describe "GObject Binding" do
 
     it "can connecy a after signal" do
       subject = Test::Subject.new
-      subject.notify_signal["string"].connect_after(->lean_notify_slot(GObject::ParamSpec))
-      subject.notify_signal["string"].connect(->full_notify_slot(GObject::Object, GObject::ParamSpec))
+      subject.notify_signal["string"].connect_after(->lean_notify_slot)
+      subject.notify_signal["string"].connect(->full_notify_slot(GObject::Object))
       GlobalVar.value = ""
       subject.string = "new value"
       GlobalVar.value.should eq("full_notify_slot called #{subject.to_unsafe}\n" \

@@ -15,14 +15,6 @@ module GObjectIntrospection
       ObjectInfo.new(ptr) if ptr
     end
 
-    def unref_function
-      ptr = LibGIRepository.g_object_info_get_unref_function(self)
-      if ptr
-        puts String.new(ptr)
-        String.new(ptr)
-      end
-    end
-
     def methods : Array(FunctionInfo)
       methods(->LibGIRepository.g_object_info_get_n_methods, ->LibGIRepository.g_object_info_get_method)
     end

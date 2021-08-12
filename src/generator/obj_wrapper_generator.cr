@@ -28,6 +28,7 @@ module Generator
       generate_interface_includes(io)
       generate_initialize(io)
       if parent.nil?
+        generate_finalize(io)
         generate_to_unsafe(io)
       end
       generate_casts(io)
@@ -59,8 +60,19 @@ module Generator
 
     private def generate_initialize(io : IO)
       io << "@pointer : Pointer(Void)\n" \
-            "@transfer : GICrystal::Transfer\n" \
-            "def initialize(@pointer, @transfer)\nend\n"
+            "def initialize(@pointer, transfer : GICrystal::Transfer)\n"
+      if @obj_info.parent.nil?
+        io << "LibGObject.g_object_ref(self)  unless transfer.full?\n"
+      else
+        io << "super\n"
+      end
+      io << "end\n"
+    end
+
+    private def generate_finalize(io : IO)
+      io << "def finalize\n"
+      io << "LibGObject.g_object_unref(self)\n"
+      io << "end\n"
     end
 
     private def generate_to_unsafe(io : IO)
@@ -73,7 +85,7 @@ module Generator
       # TODO: Trigger glib cast warnning on wrong casts
       # TODO: Implement cast? to return nil when the types can't be casted
       io << "def self.cast(obj)\n"
-      io << "new(obj.to_unsafe, GICrystal::Transfer::Full)"
+      io << "new(obj.to_unsafe, GICrystal::Transfer::None)"
       io << "end\n"
     end
 
@@ -144,27 +156,31 @@ module Generator
         s << ", box : Pointer(Void)"
       end
 
+      signal_binding_args = signal.args.reject do |arg|
+        Config.for(arg.namespace.name).ignore?(to_crystal_type(arg.type_info, false))
+      end
+
       crystal_return_type = to_crystal_type(signal.return_type)
 
       slot_crystal_proc_params = String.build do |s|
-        signal.args.each do |arg|
+        signal_binding_args.each do |arg|
           s << to_crystal_type(arg.type_info) << ", "
         end
         s << crystal_return_type
       end
 
-      crystal_box_args = signal.args.size.times.map { |i| "arg#{i}" }.join(",")
+      crystal_box_args = signal_binding_args.size.times.map { |i| "arg#{i}" }.join(",")
 
       io << "full_slot = ->(" << slot_c_args << ") {\n"
       io << "sender = " << convert_to_crystal("lib_sender", @obj_info, :none) << LF
-      generate_signal_args_conversion(io, signal)
+      generate_signal_args_conversion(io, signal, signal_binding_args)
       io << "::Box(Proc(" << to_crystal_type(@obj_info) << "," << slot_crystal_proc_params << ")).unbox(box).call(sender, "
       io << crystal_box_args << ")"
       io << ".to_unsafe" unless crystal_return_type == "Nil"
       io << "\n}\n"
 
       io << "lean_slot = ->(" << slot_c_args << ") {\n"
-      generate_signal_args_conversion(io, signal)
+      generate_signal_args_conversion(io, signal, signal_binding_args)
       io << "::Box(Proc(" << slot_crystal_proc_params << ")).unbox(box).call(" << crystal_box_args << ")"
       io << ".to_unsafe" unless crystal_return_type == "Nil"
       io << "\n}\n"
@@ -172,15 +188,19 @@ module Generator
       io << "GObject::Signal("
       io << to_crystal_type(@obj_info) << ","
       io << to_crystal_type(signal.return_type)
-      signal.args.each do |arg|
+      signal_binding_args.each do |arg|
         io << "," << to_crystal_type(arg.type_info)
       end
       io << ").new(to_unsafe, \"" << signal.name << "\",\nfull_slot.pointer,\nlean_slot.pointer)\n"
     end
 
-    def generate_signal_args_conversion(io : IO, signal : SignalInfo)
+    def generate_signal_args_conversion(io : IO, signal : SignalInfo, signal_binding_args : Array(ArgInfo))
+      j = 0
       signal.args.each_with_index do |arg, i|
-        io << "arg" << i << " = " << convert_to_crystal("lib_arg#{i}", arg.type_info, :none) << LF
+        next unless signal_binding_args.includes?(arg)
+
+        io << "arg" << j << " = " << convert_to_crystal("lib_arg#{i}", arg.type_info, :none) << LF
+        j += 1
       end
     end
   end

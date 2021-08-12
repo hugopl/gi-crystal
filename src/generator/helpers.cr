@@ -150,7 +150,7 @@ module Generator::Helpers
     when .interface?
       iface = type.interface
       return "Pointer(Void)" if iface.nil?
-      to_crystal_type(iface)
+      to_crystal_type(iface, include_namespace)
     when .array?
       t = to_crystal_type(type.param_type, include_namespace)
       "Enumerable(#{t})"

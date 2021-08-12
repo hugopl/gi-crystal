@@ -123,6 +123,15 @@ ignore:
  - g_regex_escape_string
  - g_regex_match_simple
  - g_regex_split_simple
+ - g_sequence_get
+ - g_sequence_insert_before
+ - g_sequence_move
+ - g_sequence_move_range
+ - g_sequence_range_get_midpoint
+ - g_sequence_remove
+ - g_sequence_remove_range
+ - g_sequence_set
+ - g_sequence_swap
  - g_str_to_ascii
  - g_str_tokenize_and_fold
  - g_timeout_add_full
