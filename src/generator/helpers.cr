@@ -67,7 +67,12 @@ module Generator::Helpers
 
               case iface
               when CallbackInfo
-                "Pointer(Void)"
+                name = to_type_name(iface.name)
+                if iface.namespace.has_declared_callback?(name)
+                  include_namespace ? "#{to_lib_namespace(iface.namespace)}::#{name}" : name
+                else
+                  "-> Void"
+                end
               when EnumInfo
                 to_lib_type(iface.storage_type)
               when UnionInfo

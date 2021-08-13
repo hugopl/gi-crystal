@@ -10,9 +10,9 @@ module GLib
   def self.idle_add(priority : Priority = Priority::Default, &block : -> Bool)
     box = Box.box(block)
     slot = ->(box_ptr : Pointer(Void)) { Box(Proc(Bool)).unbox(box_ptr).call.to_unsafe }
-    dereg = ->GICrystal::ClosureDataManager.deregister(Void*)
 
-    LibGLib.g_idle_add_full(priority, slot.pointer, GICrystal::ClosureDataManager.register(box), dereg.pointer)
+    LibGLib.g_idle_add_full(priority, slot,
+      GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister)
   end
 
   def self.timeout_seconds(interval : UInt32, priority : Priority = Priority::Default, &block : -> Bool)
@@ -20,10 +20,9 @@ module GLib
 
     box = Box.box(block)
     slot = ->(box_ptr : Pointer(Void)) { Box(Proc(Bool)).unbox(box_ptr).call.to_unsafe }
-    dereg = ->GICrystal::ClosureDataManager.deregister(Void*)
 
-    LibGLib.g_timeout_add_seconds_full(priority, interval, slot.pointer,
-      GICrystal::ClosureDataManager.register(box), dereg.pointer)
+    LibGLib.g_timeout_add_seconds_full(priority, interval, slot,
+      GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister)
   end
 
   def self.timeout_milliseconds(interval : UInt32, priority : Priority = Priority::Default, &block : -> Bool)
@@ -31,10 +30,9 @@ module GLib
 
     box = Box.box(block)
     slot = ->(box_ptr : Pointer(Void)) { Box(Proc(Bool)).unbox(box_ptr).call.to_unsafe }
-    dereg = ->GICrystal::ClosureDataManager.deregister(Void*)
 
-    LibGLib.g_timeout_add_full(priority, interval, slot.pointer,
-      GICrystal::ClosureDataManager.register(box), dereg.pointer)
+    LibGLib.g_timeout_add_full(priority, interval, slot,
+      GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister)
   end
 
   def self.timeout(interval : Time::Span, priority : Priority = Priority::Default, &block : -> Bool)

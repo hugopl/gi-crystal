@@ -14,6 +14,7 @@ module Generator
       generate_extra_gobj_fun(io)
       generate_flags(io)
       generate_enums(io)
+      generate_callbacks(io)
       generate_interfaces(io)
       generate_structs(io)
       generate_unions(io)
@@ -154,17 +155,19 @@ module Generator
     end
 
     private def generate_c_function_args(io : IO, func_info : FunctionInfo)
+      func_namespace = func_info.namespace.name
       flags = func_info.flags
 
       if func_info.args.empty?
-        io << "(self : Void*)" if flags.method?
+        io << "(this : Void*)" if flags.method?
         return
       end
 
       lib_args = [] of String
-      lib_args << "self : Void*" if flags.method?
+      lib_args << "this : Void*" if flags.method?
       func_info.args.each do |arg|
-        lib_args << "#{to_identifier(arg.name)} : #{to_lib_type(arg.type_info)}"
+        include_namespace = func_namespace != arg.type_info.interface.try(&.namespace).try(&.name)
+        lib_args << "#{to_identifier(arg.name)} : #{to_lib_type(arg.type_info, include_namespace)}"
       end
 
       io << "(" << lib_args.join(", ") << ")"
@@ -178,6 +181,20 @@ module Generator
       ignored = force_ignore || skip?(subject)
       io << "# IGNORED for binding\n" if ignored
       ignored
+    end
+
+    private def generate_callbacks(io : IO)
+      callbacks = @namespace.callbacks
+      return if callbacks.empty?
+
+      io << "# Callbacks\n"
+      callbacks.each do |callback|
+        io << "alias " << to_type_name(callback.name) << " = "
+        callback.args.join(io, ", ") do |arg, iio|
+          iio << to_lib_type(arg.type_info)
+        end
+        io << " -> " << to_lib_type(callback.return_type) << LF
+      end
     end
   end
 end

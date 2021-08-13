@@ -15,6 +15,8 @@ module GObjectIntrospection
     getter constants = Array(ConstantInfo).new
     getter callbacks = Array(CallbackInfo).new
 
+    @declared_callbacks = Set(String).new
+
     protected def initialize(@name, version : String? = nil)
       @pointer = LibGIRepository.g_irepository_get_default
       error = Pointer(LibGLib::Error).new(0)
@@ -42,6 +44,11 @@ module GObjectIntrospection
       GICrystal.transfer_null_ended_array(ptr, :full)
     end
 
+    # Some callbacks are not declared as new types, like the the ones in GLib IOFunc struct.
+    def has_declared_callback?(callback_name : String) : Bool
+      @declared_callbacks.includes?(callback_name)
+    end
+
     private def load
       n = LibGIRepository.g_irepository_get_n_infos(@pointer, @name)
       n.times do |i|
@@ -64,7 +71,9 @@ module GObjectIntrospection
         in .constant?
           @constants << ConstantInfo.new(info_ptr)
         in .callback?
-          @callbacks << CallbackInfo.new(info_ptr)
+          callback = CallbackInfo.new(info_ptr)
+          @declared_callbacks << callback.name
+          @callbacks << callback
         in .boxed?
           Log.warn { "Boxed not working for enums" }
         in .function?
