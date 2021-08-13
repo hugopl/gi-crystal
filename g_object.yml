@@ -2,12 +2,45 @@ include:
  - src/gi_crystal/signal.cr
 
 ignore:
+ - g_cclosure_marshal_BOOLEAN__BOXED_BOXED
+ - g_cclosure_marshal_BOOLEAN__FLAGS
+ - g_cclosure_marshal_generic
+ - g_cclosure_marshal_STRING__OBJECT_POINTER
+ - g_cclosure_marshal_VOID__BOOLEAN
+ - g_cclosure_marshal_VOID__BOXED
+ - g_cclosure_marshal_VOID__CHAR
+ - g_cclosure_marshal_VOID__DOUBLE
+ - g_cclosure_marshal_VOID__ENUM
+ - g_cclosure_marshal_VOID__FLAGS
+ - g_cclosure_marshal_VOID__FLOAT
+ - g_cclosure_marshal_VOID__INT
+ - g_cclosure_marshal_VOID__LONG
+ - g_cclosure_marshal_VOID__OBJECT
+ - g_cclosure_marshal_VOID__PARAM
+ - g_cclosure_marshal_VOID__POINTER
+ - g_cclosure_marshal_VOID__STRING
+ - g_cclosure_marshal_VOID__UCHAR
+ - g_cclosure_marshal_VOID__UINT
+ - g_cclosure_marshal_VOID__UINT_POINTER
+ - g_cclosure_marshal_VOID__ULONG
+ - g_cclosure_marshal_VOID__VARIANT
+ - g_cclosure_marshal_VOID__VOID
+ - g_object_interface_install_property
+ - g_object_interface_list_properties
+ - g_object_notify_by_pspec
  - g_object_ref
  - g_object_unref
- - g_object_interface_list_properties
  - g_param_spec_pool_list
  - g_param_type_register_static
+ - g_param_value_convert
+ - g_param_value_defaults
+ - g_param_values_cmp
+ - g_param_value_set_default
+ - g_param_value_validate
+ - g_signal_emitv
  - g_signal_list_ids
+ - g_signal_query
+ - g_strdup_value_contents
  - g_type_children
  - g_type_interface_prerequisites
  - g_type_interfaces

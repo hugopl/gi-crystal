@@ -112,10 +112,23 @@ ignore:
  - g_hash_table_steal_all
  - g_hash_table_steal_extended
  - g_hash_table_unref
+ - g_hook_destroy
+ - g_hook_destroy_link
+ - g_hook_free
+ - g_hook_insert_before
+ - g_hook_prepend
+ - g_hook_unref
  - g_idle_add_full
+ - g_io_add_watch_full
+ - g_io_create_watch
  - g_listenv
  - g_locale_from_utf8
+ - g_main_context_add_poll
+ - g_main_context_remove_poll
+ - g_pattern_match
+ - g_pattern_match_string
  - g_pattern_spec_free
+ - g_poll
  - g_quark_from_static_string
  - g_regex_check_replacement
  - g_regex_error_quark
@@ -132,8 +145,11 @@ ignore:
  - g_sequence_remove_range
  - g_sequence_set
  - g_sequence_swap
+ - g_source_add_poll
+ - g_source_remove_poll
  - g_str_to_ascii
  - g_str_tokenize_and_fold
+ - g_test_run_suite
  - g_timeout_add_full
  - g_timeout_add_seconds_full
  - g_uri_build
