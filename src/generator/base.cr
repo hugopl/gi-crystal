@@ -10,6 +10,7 @@ module Generator
     LF = "\n"
 
     @namespace : Namespace
+    getter output_dir = "build"
 
     def initialize(@namespace)
     end
@@ -25,7 +26,7 @@ module Generator
     # Name of what is being generated, basically BaseInfo#name
     abstract def subject : String
 
-    def generate(output_dir : String)
+    def generate(@output_dir : String)
       filename = self.filename
       abort("bug") if filename.nil?
 

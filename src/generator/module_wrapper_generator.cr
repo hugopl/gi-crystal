@@ -55,8 +55,7 @@ module Generator
 
       output_dir = File.join(output_dir, module_dir)
       FileUtils.mkdir_p(output_dir)
-      Log.notice { "Generating #{@namespace.name} bindings at '#{output_dir}'." }
-      super
+      super(output_dir)
 
       @lib.generate(output_dir)
       @objects.each(&.generate(output_dir))
@@ -67,6 +66,7 @@ module Generator
     end
 
     def do_generate(io : IO)
+      Log.notice { "Generating #{@namespace.name} bindings at '#{output_dir}'." }
       generate_require_calls(io)
 
       io << "# Module functions\n"
