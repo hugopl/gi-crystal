@@ -1,5 +1,9 @@
 module Generator
   class MethodWrapperGenerator < Base
+    @method_info : FunctionInfo
+    @method_args : Array(ArgInfo)?
+    @method_identifier : String?
+
     def initialize(@method_info : FunctionInfo)
       super(@method_info.namespace)
     end
@@ -10,6 +14,7 @@ module Generator
       generate_method_declaration(io)
       generate_method_wrapper_impl(io)
       io << "end\n"
+      generate_method_splat_overload(io)
     rescue e : Error
       raise Error.new("Error generating binding for #{symbol}: #{e.message}")
     end
@@ -54,23 +59,25 @@ module Generator
     end
 
     private def method_identifier : String
-      identifier = to_identifier(@method_info.name)
-      identifier = if constructor?
-                     if identifier == "new"
-                       "initialize"
+      @method_identifier ||= begin
+        identifier = to_identifier(@method_info.name)
+        identifier = if constructor?
+                       if identifier == "new"
+                         "initialize"
+                       else
+                         "self.#{identifier[4..]}"
+                       end
+                     elsif @method_info.args.empty? && identifier.starts_with?("get_") && identifier.size > 4
+                       identifier[4..]
+                     elsif @method_info.args.size == 1 && identifier.starts_with?("set_") && identifier.size > 4
+                       "#{identifier[4..]}="
                      else
-                       "self.#{identifier[4..]}"
+                       identifier
                      end
-                   elsif @method_info.args.empty? && identifier.starts_with?("get_") && identifier.size > 4
-                     identifier[4..]
-                   elsif @method_info.args.size == 1 && identifier.starts_with?("set_") && identifier.size > 4
-                     "#{identifier[4..]}="
-                   else
-                     identifier
-                   end
-      # No flags means static methods
-      identifier = "self.#{identifier}" if @method_info.flags.none?
-      identifier
+        # No flags means static methods
+        identifier = "self.#{identifier}" if @method_info.flags.none?
+        identifier
+      end
     end
 
     private def generate_method_declaration(io : IO)
@@ -81,21 +88,25 @@ module Generator
       io << LF
     end
 
-    private def generate_method_wrapper_args(io : IO)
-      args = @method_info.args.dup
-      args_to_remove = [] of ArgInfo
-      args.each do |arg|
-        type_info = arg.type_info
-        iface = type_info.interface
-        if iface && Config.for(arg.namespace.name).ignore?(iface.name)
-          Log.warn { "method using ignored type #{to_crystal_type(iface, true)} on arguments" }
+    private def method_args
+      @method_args ||= begin
+        args = @method_info.args.dup
+        args_to_remove = [] of ArgInfo
+        args.each do |arg|
+          type_info = arg.type_info
+          iface = type_info.interface
+          if iface && Config.for(arg.namespace.name).ignore?(iface.name)
+            Log.warn { "method using ignored type #{to_crystal_type(iface, true)} on arguments" }
+          end
+          args_to_remove << args[type_info.array_length] if type_info.array_length >= 0
         end
-        args_to_remove << args[type_info.array_length] if type_info.array_length >= 0
+        args -= args_to_remove
       end
-      args -= args_to_remove
+    end
 
+    private def generate_method_wrapper_args(io : IO)
       io << "("
-      io << args.map do |arg|
+      io << method_args.map do |arg|
         null_mark = "?" if arg.nullable?
         "#{to_crystal_arg_decl(arg.name)} : #{to_crystal_type(arg.type_info)}#{null_mark}"
       end.join(", ")
@@ -184,6 +195,20 @@ module Generator
 
       expr = convert_to_crystal("_retval", ret_type, @method_info.caller_owns)
       io << expr << LF if expr != "_retval"
+    end
+
+    # If the method only receive a array as argument, create a splat overload, so if
+    # `def foo(bar : Enumerable(String))` exists, `def foo(*bar : String)` will also be generated.
+    def generate_method_splat_overload(io : IO)
+      return if method_args.size != 1
+      arg = method_args.first
+
+      return unless arg.type_info.tag.array?
+      return if method_identifier.ends_with?("=")
+
+      io << "def " << method_identifier << "(*" << to_identifier(arg.name) << ")\n"
+      io << method_identifier << "(" << to_identifier(arg.name) << ")\n"
+      io << "end\n"
     end
   end
 end
