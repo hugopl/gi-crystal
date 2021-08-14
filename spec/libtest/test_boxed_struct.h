@@ -31,7 +31,8 @@ void test_boxed_struct_free(TestBoxedStruct *obj);
 /*
  * test_boxed_struct_return_boxed_struct:
  * @data: Data to set on new BoxedStruct
- * Returns: A copy of obj
+ *
+ * Returns: The only way to create this boxed struct.
  */
 TestBoxedStruct *test_boxed_struct_return_boxed_struct(const gchar* data);
 
@@ -46,5 +47,11 @@ const TestBoxedStruct *test_boxed_struct_return_transfer_none(const TestBoxedStr
   * Returns: data, a string.
   */
 const gchar *test_boxed_struct_get_data(TestBoxedStruct *self);
+
+/**
+  * test_boxed_struct_set_data:
+  * @data: Data that will be set in the boxed struct
+  */
+void test_boxed_struct_set_data(TestBoxedStruct *self, const gchar* data);
 
 G_END_DECLS

@@ -40,3 +40,9 @@ const TestBoxedStruct *test_boxed_struct_return_transfer_none(const TestBoxedStr
 const gchar *test_boxed_struct_get_data(TestBoxedStruct *self) {
   return self->data;
 }
+
+void test_boxed_struct_set_data(TestBoxedStruct *self, const gchar* data) {
+  if (self->data)
+    g_free(self->data);
+  self->data = g_strdup(data);
+}

@@ -76,6 +76,13 @@ describe "GObject Binding" do
       subject = Test::Subject.new
       subject.getter_without_args.should eq("some string")
     end
+
+    it "removes out params" do
+      subject = Test::Subject.new
+      ret = subject.out_param
+      ret.in.should eq(1)
+      ret.begin.should eq(2)
+    end
   end
 
   describe "setters" do
@@ -272,6 +279,23 @@ describe "GObject Binding" do
       end
       pending "can be received as argument as Array(Path)"
       pending "can be received as argument as Tuple(Path)"
+    end
+
+    describe "of primitive types" do
+      it "works" do
+        subject = Test::Subject.new
+        subject.sum(1, 2, 3).should eq(6)
+        subject.sum({1, 2, 3}).should eq(6)
+        subject.sum([1, 2, 3]).should eq(6)
+      end
+
+      it "can be nullable" do
+        subject = Test::Subject.new
+        subject.sum_nullable(nil).should eq(0)
+        subject.sum_nullable(1, 2, 3).should eq(6)
+        subject.sum_nullable({1, 2, 3}).should eq(6)
+        subject.sum_nullable([1, 2, 3]).should eq(6)
+      end
     end
   end
 

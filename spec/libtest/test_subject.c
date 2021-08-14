@@ -119,6 +119,17 @@ gchar* test_subject_concat_filenames(TestSubject *self, int n, const gchar **fil
   return test_subject_concat_strings(self, n, filenames);
 }
 
+int test_subject_sum(TestSubject *self, int n, int* numbers) {
+  int sum = 0;
+  for(int i = 0; i < n; ++i)
+    sum += numbers[i];
+  return sum;
+}
+
+int test_subject_sum_nullable(TestSubject *self, int n, int* numbers) {
+  return numbers == NULL ? 0 : test_subject_sum(self, n, numbers);
+}
+
 int test_subject_receive_nullable_object(TestSubject *self, TestSubject* nullable) {
   return nullable == NULL;
 }
@@ -188,4 +199,9 @@ GSList* test_subject_return_slist_of_strings_transfer_container(TestSubject* sel
   list = g_slist_append(list, "one");
   list = g_slist_append(list, "two");
   return list;
+}
+
+void test_subject_get_out_param(TestSubject* self, TestStruct *out) {
+  out->in = 1;
+  out->begin = 2;
 }

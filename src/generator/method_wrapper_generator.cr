@@ -3,6 +3,7 @@ module Generator
     @method_info : FunctionInfo
     @method_args : Array(ArgInfo)?
     @method_identifier : String?
+    @return_type : TypeInfo | ArgInfo | Nil
 
     def initialize(@method_info : FunctionInfo)
       super(@method_info.namespace)
@@ -10,6 +11,9 @@ module Generator
 
     def do_generate(io : IO)
       symbol = @method_info.symbol
+
+      find_return_type
+
       generate_gi_flags_comments(io)
       generate_method_declaration(io)
       generate_method_wrapper_impl(io)
@@ -28,6 +32,19 @@ module Generator
 
     private def constructor?
       @method_info.flags.constructor?
+    end
+
+    private def find_return_type
+      ret_type = @method_info.return_type
+      out_arg = @method_info.args.find do |arg|
+        arg.direction.out? && arg.caller_allocates? && !arg.type_info.array?
+      end
+
+      if out_arg
+        @return_type = out_arg
+      elsif !ret_type.tag.void?
+        @return_type = ret_type
+      end
     end
 
     private def generate_gi_flags_comments(io : IO)
@@ -67,7 +84,7 @@ module Generator
                        else
                          "self.#{identifier[4..]}"
                        end
-                     elsif @method_info.args.empty? && identifier.starts_with?("get_") && identifier.size > 4
+                     elsif method_args.empty? && identifier.starts_with?("get_") && identifier.size > 4
                        identifier[4..]
                      elsif @method_info.args.size == 1 && identifier.starts_with?("set_") && identifier.size > 4
                        "#{identifier[4..]}="
@@ -84,8 +101,20 @@ module Generator
       io << "[@Deprecated]\n" if @method_info.deprecated?
       io << "def " << method_identifier
       generate_method_wrapper_args(io) if @method_info.args.any?
-      io << " : " << to_crystal_type(@method_info.return_type, include_namespace: true) unless constructor?
-      io << LF
+      if constructor?
+        io << LF
+        return
+      end
+
+      return_type = @return_type
+      type = if return_type.nil? || constructor?
+               "Nil"
+             elsif return_type.is_a?(ArgInfo)
+               to_crystal_type(return_type.type_info)
+             elsif return_type.is_a?(TypeInfo)
+               to_crystal_type(return_type)
+             end
+      io << " : " << type << LF
     end
 
     private def method_args
@@ -98,7 +127,12 @@ module Generator
           if iface && Config.for(arg.namespace.name).ignore?(iface.name)
             Log.warn { "method using ignored type #{to_crystal_type(iface, true)} on arguments" }
           end
-          args_to_remove << args[type_info.array_length] if type_info.array_length >= 0
+
+          if type_info.array_length >= 0
+            args_to_remove << args[type_info.array_length]
+          elsif arg.direction.out? && arg.caller_allocates? && !arg.type_info.array?
+            args_to_remove << arg
+          end
         end
         args -= args_to_remove
       end
@@ -120,6 +154,8 @@ module Generator
       if args.any?
         generate_lenght_param_impl(io)
         generate_nullable_and_arrays_param_impl(io)
+        generate_array_param_impl(io)
+        generate_caller_allocates_param_impl(io)
       end
 
       generate_return_variable(io)
@@ -153,13 +189,43 @@ module Generator
           io << to_lib_type(arg.type_info) << ".null\n"
           io << "else\n"
           if arg.type_info.array?
-            io << arg_name << ".to_a.map(&.to_unsafe).to_unsafe\n"
+            array_to_unsafe(io, arg)
           else
-            io << arg_name << ".to_unsafe\n"
+            io << arg_name << ".to_unsafe"
           end
-          io << "end\n"
+          io << "\nend\n"
         end
       end
+    end
+
+    private def generate_array_param_impl(io : IO)
+      @method_info.args.each do |arg|
+        next if arg.nullable?
+
+        if arg.type_info.array?
+          io << to_identifier(arg.name) << " = "
+          array_to_unsafe(io, arg)
+          io << LF
+        end
+      end
+    end
+
+    private def generate_caller_allocates_param_impl(io : IO)
+      return_type = @return_type
+      if return_type.is_a?(ArgInfo)
+        io << to_identifier(return_type.name) << "=" << to_crystal_type(return_type.type_info) << ".new\n"
+      end
+    end
+
+    private def array_to_unsafe(io : IO, arg : ArgInfo)
+      tag = arg.type_info.param_type.tag
+      arg_name = to_identifier(arg.name)
+
+      io << arg_name
+      if tag.interface? || tag.utf8? || tag.filename?
+        io << ".to_a.map(&.to_unsafe)"
+      end
+      io << ".to_a.to_unsafe"
     end
 
     def generate_return_variable(io : IO)
@@ -190,10 +256,14 @@ module Generator
     end
 
     def generate_return_value(io : IO)
-      ret_type = @method_info.return_type
-      return if ret_type.tag.void? && !ret_type.pointer?
+      return_type = @return_type
+      return if return_type.nil?
 
-      expr = convert_to_crystal("_retval", ret_type, @method_info.caller_owns)
+      expr = if return_type.is_a?(ArgInfo)
+               to_identifier(return_type.name)
+             elsif return_type.is_a?(TypeInfo)
+               convert_to_crystal("_retval", return_type, @method_info.caller_owns)
+             end
       io << expr << LF if expr != "_retval"
     end
 
@@ -206,7 +276,8 @@ module Generator
       return unless arg.type_info.tag.array?
       return if method_identifier.ends_with?("=")
 
-      io << "def " << method_identifier << "(*" << to_identifier(arg.name) << ")\n"
+      param_type = to_crystal_type(arg.type_info.param_type)
+      io << "def " << method_identifier << "(*" << to_identifier(arg.name) << " : " << param_type << ")\n"
       io << method_identifier << "(" << to_identifier(arg.name) << ")\n"
       io << "end\n"
     end

@@ -1,26 +1,24 @@
 module GObject
-  enum Type : UInt64
-    Invalid   = 0 << 2
-    None      = 1 << 2
-    Interface = 2 << 2
-    Char      = 3 << 2
-    Uchar     = 4 << 2
-    Boolean   = 5 << 2
-    Int       = 6 << 2
-    Uint      = 7 << 2
-    Long      = 8 << 2
-    Ulong     = 9 << 2
-    Int64     = 10 << 2
-    Uint64    = 11 << 2
-    Enum      = 12 << 2
-    Flags     = 13 << 2
-    Float     = 14 << 2
-    Double    = 15 << 2
-    Utf8      = 16 << 2
-    Pointer   = 17 << 2
-    Boxed     = 18 << 2
-    Param     = 19 << 2
-    Object    = 20 << 2
-    Variant   = 21 << 2
-  end
+  TYPE_INVALID   =  0x0_u64
+  TYPE_NONE      =  0x4_u64
+  TYPE_INTERFACE =  0x8_u64
+  TYPE_CHAR      =  0xc_u64
+  TYPE_UCHAR     = 0x10_u64
+  TYPE_BOOL      = 0x14_u64
+  TYPE_INT       = 0x18_u64
+  TYPE_UINT      = 0x1c_u64
+  TYPE_LONG      = 0x20_u64
+  TYPE_ULONG     = 0x24_u64
+  TYPE_INT64     = 0x28_u64
+  TYPE_UINT64    = 0x2c_u64
+  TYPE_ENUM      = 0x30_u64
+  TYPE_FLAGS     = 0x34_u64
+  TYPE_FLOAT     = 0x38_u64
+  TYPE_DOUBLE    = 0x3c_u64
+  TYPE_UTF8      = 0x40_u64
+  TYPE_POINTER   = 0x44_u64
+  TYPE_BOXED     = 0x48_u64
+  TYPE_PARAM     = 0x4c_u64
+  TYPE_OBJECT    = 0x50_u64
+  TYPE_VARIANT   = 0x54_u64
 end

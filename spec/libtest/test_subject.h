@@ -27,10 +27,10 @@ G_BEGIN_DECLS
  *
  * A plain struct to test stuff
  */
-struct TestStruct {
+typedef struct _TestStruct {
   gint16 in;
   gint16 begin;
-};
+} TestStruct;
 
 #define TEST_TYPE_SUBJECT test_subject_get_type()
 G_DECLARE_DERIVABLE_TYPE(TestSubject, test_subject, TEST, SUBJECT, GObject)
@@ -67,11 +67,29 @@ gchar* test_subject_concat_strings(TestSubject *self, int n, const gchar **strin
 /**
  * test_subject_concat_filenames:
  * @n: number of filenames to concat.
- * @filenames: (array length=n) (element-type filename) (nullable): a buffer
+ * @filenames: (array length=n) (element-type filename): a buffer
  *
- * Used to test filename arguments as C arrays
+ * Used to test filename arguments as C arrays and also non-nullable arrays
  */
 gchar* test_subject_concat_filenames(TestSubject *self, int n, const gchar **filenames);
+
+/**
+ * test_subject_sum:
+ * @n: number of integers to sum.
+ * @numbers: (array length=n) (element-type int): integers
+ *
+ * Used to test non-nullable array of primitive arguments
+ */
+int test_subject_sum(TestSubject *self, int n, int* numbers);
+
+/**
+ * test_subject_sum_nullable:
+ * @n: number of integers to sum.
+ * @numbers: (array length=n) (element-type int) (nullable): integers
+ *
+ * Used to test non-nullable array of primitive arguments
+ */
+int test_subject_sum_nullable(TestSubject *self, int n, int* numbers);
 
 /**
  * test_subject_receive_nullable_object:
@@ -163,6 +181,15 @@ GSList* test_subject_return_slist_of_strings_transfer_full(TestSubject* self);
  * Used to test GSList transfer container conversions.
  */
 GSList* test_subject_return_slist_of_strings_transfer_container(TestSubject* self);
+
+/**
+ * test_subject_get_out_param:
+ * @out: (out caller-allocates)
+ *
+ * Used to test out params and get_ remove, this must be `TestSubject#out_param`
+ * out param will have in: 1, begin: 2 as value
+ */
+void test_subject_get_out_param(TestSubject* self, TestStruct *out);
 
 /**
  * test_subject_return_myself_as_interface:

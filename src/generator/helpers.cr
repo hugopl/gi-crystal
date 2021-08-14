@@ -150,7 +150,6 @@ module Generator::Helpers
 
   def to_crystal_type(type : TypeInfo, include_namespace : Bool = true) : String
     tag = type.tag
-
     case tag
     when .interface?
       iface = type.interface
