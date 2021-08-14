@@ -1,5 +1,6 @@
 include:
  - src/gi_crystal/signal.cr
+ - src/gi_crystal/type.cr
 
 ignore:
  - g_cclosure_marshal_BOOLEAN__BOXED_BOXED
