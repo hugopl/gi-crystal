@@ -91,6 +91,14 @@ describe "GObject Binding" do
     subject.string.should eq("hello man!")
   end
 
+  describe "enums" do
+    it "works" do
+      Test::RegularEnum::Value1.to_i.should eq(0)
+      Test::RegularEnum::Value2.to_i.should eq(1)
+      Test::RegularEnum::Value3.to_i.should eq(2)
+    end
+  end
+
   describe "flags" do
     it "can be passed as arguments and returned by value" do
       subject = Test::Subject.new

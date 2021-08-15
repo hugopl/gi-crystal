@@ -16,7 +16,7 @@ module Generator::Helpers
 
   def to_type_name(name : String) : String
     name = name.camelcase
-    if name.starts_with?("_")
+    if name.starts_with?(/[_0-9]/)
       "G#{name}"
     elsif name[0].lowercase?
       "#{name[0].upcase}#{name[1..-1]}"

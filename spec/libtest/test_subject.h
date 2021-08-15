@@ -21,6 +21,18 @@ G_BEGIN_DECLS
 #define TEST_CONSTANT 123
 
 /**
+ * TestRegularEnum:
+ * @TEST_VALUE1:
+ * @TEST_VALUE2:
+ * @TEST_VALUE3:
+ */
+typedef enum {
+  TEST_VALUE1,
+  TEST_VALUE2,
+  TEST_VALUE3
+} TestRegularEnum;
+
+/**
  * TestStruct:
  * @in: A attribute using a invalid Crystal keyword.
  * @begin: Another attribute using a invalid Crystal keyword.

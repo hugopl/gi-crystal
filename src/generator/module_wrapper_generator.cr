@@ -72,6 +72,7 @@ module Generator
       io << "# Module functions\n"
       io << "module " << to_type_name(@namespace.name) << LF
       generate_constants(io)
+      generate_enums(io)
       generate_flags(io)
       generate_method_wrappers(io, @namespace.functions)
       io << "extend self\n"
@@ -141,6 +142,20 @@ module Generator
       io << "# Constants\n"
       @namespace.constants.each do |constant|
         io << constant.name << " = " << constant.literal << LF
+      end
+    end
+
+    private def generate_enums(io : IO)
+      return if @namespace.enums.empty?
+
+      io << "# Enums\n"
+      @namespace.enums.each do |info|
+        io << "enum " << to_type_name(info.name) << " : " << to_crystal_type(info.storage_type) << LF
+        info.values.each do |value|
+          next if value.deprecated?
+          io << to_type_name(value.name) << " = " << value.value << LF
+        end
+        io << "end\n"
       end
     end
 
