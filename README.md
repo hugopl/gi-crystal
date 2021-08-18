@@ -37,27 +37,23 @@ without corner cases, etc... but we try our best to reduce the mess.
 The basic rules are:
 
 - All objects (except enums, flags and unions) are created in the heap (including non GObject C Structs).
-- Boxed structs memory are always allocated by GLib but owned by Crystal wrappers.
+- Boxed structs are always allocated by GLib but owned by Crystal wrappers.
+- If the struct is passed from C to Crystal with "transfer none", the struct is copied anyway to ensure that every Crystal object
+  wrapper always points to valid memory. On "transfer full" no copy is needed.
 - All GObjects have just a pointer to the C object (always allocated by GLib) and always hold a reference during their lifetime
-
-### Gtk::Widget and derivated classes (⚠️ Not Implemented yet!)
-
-Not sure if this is going to work... but I took note.
-
-- If the object has full ownership, the `destroy` signal is connected to the `destroyed` slot to set the C pointer
-  to `NULL `.
-- All access to the C pointer check for null pointers and throw an exception if the pointer is `NULL`.
-- At `finalizer` we do nothing it the C pointer is `NULL`.
 
 ### Interfaces
 
 GObject interfaces are mapped to Crystal modules + a dummy class that only implements this module, used when there's some
 function returning the interface.
 
-### Casts (⚠️ Not Implemented yet!)
+### Casts
 
-Upcasts must have no problems while downcasts must be done using `ClassName.cast(instance)`. Casts always imply in full
-transfer of memory ownership to the new object.
+Upcasts must have no problems while downcasts must be done using `ClassName.cast(instance)`, e.g.: `Gtk::Widget.cast(gobj)`.
+
+A cast just creates a new wrapper object, so it increases the object reference count and allocate memory for the Crystal object instance.
+
+No GTK warnings are triggered on bad casts, but it's on my plans to raise an exception if the cast can't be done and add a `cast?` method.
 
 ## Signal Connections
 
@@ -96,6 +92,9 @@ widget.focus_signal.connect do |direction|
 end
 ```
 
+If the signal requires a slot that returns nothing, a slot that returns nothing (Nil) must be used, this is a limitation of the current
+implementation that will probably change in the future to just ignore the return value those slots.
+
 ### After signals
 
 Instead of `widget.focus_signal.connect`, use `widget.focus_signal.connect_after`.
@@ -114,6 +113,10 @@ end
 - TBD
 
 ## GObject inheritance
+
+- TBD
+
+## Declaring GObject signals
 
 - TBD
 
