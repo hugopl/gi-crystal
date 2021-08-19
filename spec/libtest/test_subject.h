@@ -211,7 +211,7 @@ void test_subject_get_out_param(TestSubject* self, TestStruct *out);
  *
  * Used to test GValue in array parameters,
  */
-const gchar* test_subject_array_of_g_values(TestSubject* self, int n, GValue **values);
+const gchar* test_subject_array_of_g_values(TestSubject* self, int n, GValue *values);
 
 /**
  * test_subject_g_value_parameter:

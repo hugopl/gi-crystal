@@ -248,13 +248,12 @@ static gchar* g_value_to_string(gchar* buffer, GValue* value) {
     return buffer;
 }
 
-const gchar* test_subject_array_of_g_values(TestSubject* self, int n, GValue **values) {
+const gchar* test_subject_array_of_g_values(TestSubject* self, int n, GValue *values) {
   static gchar buffer[1024];
   gchar* ptr = buffer;
 
   for (int i = 0; i < n; ++i) {
-    GValue* value = values[i];
-    ptr = g_value_to_string(ptr, value);
+    ptr = g_value_to_string(ptr, &values[i]);
   }
   *ptr = 0;
   return buffer;

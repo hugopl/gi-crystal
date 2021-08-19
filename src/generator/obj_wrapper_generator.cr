@@ -151,7 +151,11 @@ module Generator
       slot_c_args = String.build do |s|
         s << "lib_sender : Pointer(Void)"
         signal.args.each_with_index do |arg, i|
-          s << ", lib_arg" << i << " : " << to_lib_type(arg.type_info)
+          arg_type = to_lib_type(arg.type_info, structs_as_void: true)
+          # If arg_type is Void, it's probably a struct, GObjIntrospection doesn't inform that signal args are pointer when
+          # they are structs
+          arg_type = "Pointer(#{arg_type})" if arg_type == "Void"
+          s << ", lib_arg" << i << " : " << arg_type
         end
         s << ", box : Pointer(Void)"
       end

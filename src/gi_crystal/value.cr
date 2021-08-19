@@ -7,10 +7,16 @@ module GObject
   #
   # To convert a `RawGValue` back to `Value`, use `.to_raw_value`.
   class RawGValue
-    @pointer : Pointer(Void)
+    @g_value = LibGObject::Value.new
 
+    # Creates an unitialized GValue.
+    def initialize
+    end
+
+    # Creates a GValue and initializes it with `value`.
     def initialize(value : Bool | Float32 | Float64 | Int32 | Int64 | Int8 | Object | String | UInt32 | UInt64 | UInt8)
-      @pointer = init_g_value(value)
+      LibGObject.g_value_init(self, RawGValue.g_type_for(value))
+
       case value
       when Bool    then LibGObject.g_value_set_boolean(self, value)
       when Float32 then LibGObject.g_value_set_float(self, value)
@@ -28,68 +34,64 @@ module GObject
       end
     end
 
-    def initialize
-      @pointer = Pointer(LibGObject::Value).malloc.as(Pointer(Void))
-    end
-
-    private def init_g_value(value) : Pointer(Void)
-      type = case value
-             when Bool    then TYPE_BOOL
-             when Float32 then TYPE_FLOAT
-             when Float64 then TYPE_DOUBLE
-             when Int32   then TYPE_INT
-             when Int64   then TYPE_INT64
-             when Int8    then TYPE_CHAR
-             when Object  then TYPE_OBJECT
-             when String  then TYPE_STRING
-             when UInt32  then TYPE_UINT
-             when UInt64  then TYPE_UINT64
-             when UInt8   then TYPE_UCHAR
-             else
-               raise ArgumentError.new("Unable to wrap a #{value.class} into a GValue, probably not implemented.")
-             end
-      g_value_ptr = Pointer(LibGObject::Value).malloc.as(Pointer(Void))
-      LibGObject.g_value_init(g_value_ptr, type)
-      g_value_ptr
-    end
-
-    def initialize(value, type : UInt64)
-      initialize
-      LibGObject.g_value_init(self, type)
+    # Returns the GType for the Crystal variable, if the value can be wrap in a RawGValue
+    def self.g_type_for(value)
+      case value
+      when Bool    then TYPE_BOOL
+      when Float32 then TYPE_FLOAT
+      when Float64 then TYPE_DOUBLE
+      when Int32   then TYPE_INT
+      when Int64   then TYPE_INT64
+      when Int8    then TYPE_CHAR
+      when Object  then TYPE_OBJECT
+      when String  then TYPE_STRING
+      when UInt32  then TYPE_UINT
+      when UInt64  then TYPE_UINT64
+      when UInt8   then TYPE_UCHAR
+      else
+        raise ArgumentError.new("Unable to wrap a #{value.class} into a GValue, probably not implemented.")
+      end
     end
 
     def finalize
-      LibGObject.g_value_unset(self) unless @pointer.null?
+      LibGObject.g_value_unset(self)
     end
 
+    # Returns the GValue GType
     def g_type : UInt64
-      @pointer.as(Pointer(LibGObject::Value)).value.g_type
+      @g_value.g_type
     end
 
     def to_raw_value : Value
       case g_type
-      when TYPE_BOOL then GICrystal.to_bool(LibGObject.g_value_get_boolean(self))
-      when TYPE_CHAR then LibGObject.g_value_get_schar(self)
+      when TYPE_BOOL   then GICrystal.to_bool(LibGObject.g_value_get_boolean(self))
+      when TYPE_CHAR   then LibGObject.g_value_get_schar(self)
       when TYPE_DOUBLE then LibGObject.g_value_get_double(self)
-      when TYPE_FLOAT then LibGObject.g_value_get_float(self)
-      when TYPE_INT then LibGObject.g_value_get_int(self)
-      when TYPE_INT64 then LibGObject.g_value_get_int64(self)
+      when TYPE_FLOAT  then LibGObject.g_value_get_float(self)
+      when TYPE_INT    then LibGObject.g_value_get_int(self)
+      when TYPE_INT64  then LibGObject.g_value_get_int64(self)
       when TYPE_OBJECT then GObject::Object.new(LibGObject.g_value_get_object(self), GICrystal::Transfer::None)
       when TYPE_STRING then String.new(LibGObject.g_value_get_string(self))
-      when TYPE_UCHAR then LibGObject.g_value_get_uchar(self)
-      when TYPE_UINT then LibGObject.g_value_get_uint(self)
+      when TYPE_UCHAR  then LibGObject.g_value_get_uchar(self)
+      when TYPE_UINT   then LibGObject.g_value_get_uint(self)
       when TYPE_UINT64 then LibGObject.g_value_get_uint64(self)
       else
         self
       end.as(Value)
     end
 
+    # Returns self.
     def to_g_value
       self
     end
 
-    def to_unsafe : Pointer(Void)
-      @pointer
+    # Returns internal C representation of GValue
+    def c_g_value
+      @g_value
+    end
+
+    def to_unsafe
+      pointerof(@g_value).as(Pointer(Void))
     end
   end
 

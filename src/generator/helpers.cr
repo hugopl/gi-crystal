@@ -55,7 +55,7 @@ module Generator::Helpers
     end
   end
 
-  def to_lib_type(type : TypeInfo, include_namespace : Bool = true) : String
+  def to_lib_type(type : TypeInfo, structs_as_void : Bool = false, include_namespace : Bool = true) : String
     tag = type.tag
 
     is_pointer = type.pointer?
@@ -78,8 +78,12 @@ module Generator::Helpers
               when UnionInfo
                 to_lib_type(iface, include_namespace)
               when ObjectInfo, StructInfo, InterfaceInfo
-                is_pointer = true
-                "Void"
+                if structs_as_void
+                  "Void"
+                else
+                  name = to_type_name(iface.name)
+                  include_namespace ? "#{to_lib_namespace(iface.namespace)}::#{name}" : name
+                end
               else
                 raise Error.new("Unknown lib representation for #{iface.class.name}.")
               end

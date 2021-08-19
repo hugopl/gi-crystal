@@ -187,7 +187,7 @@ module Generator
         if arg.nullable?
           arg_name = to_identifier(arg.name)
           io << arg_name << " = if " << arg_name << ".nil?\n"
-          io << to_lib_type(arg.type_info) << ".null\n"
+          io << to_lib_type(arg.type_info, structs_as_void: true) << ".null\n"
           io << "else\n"
           if arg.type_info.array?
             array_to_unsafe(io, arg)
@@ -232,13 +232,13 @@ module Generator
       tag = arg.type_info.param_type.tag
       arg_name = to_identifier(arg.name)
 
-      io << arg_name
+      io << arg_name << ".to_a"
       if arg.type_info.param_type.g_value?
-        io << ".to_a.map(&.to_g_value.to_unsafe)"
+        io << ".map(&.to_g_value.c_g_value)"
       elsif tag.interface? || tag.utf8? || tag.filename?
-        io << ".to_a.map(&.to_unsafe)"
+        io << ".map(&.to_unsafe)"
       end
-      io << ".to_a.to_unsafe"
+      io << ".to_unsafe"
     end
 
     def generate_return_variable(io : IO)
