@@ -222,7 +222,9 @@ module Generator
       arg_name = to_identifier(arg.name)
 
       io << arg_name
-      if tag.interface? || tag.utf8? || tag.filename?
+      if arg.type_info.param_type.g_value?
+        io << ".to_a.map(&.to_g_value.to_unsafe)"
+      elsif tag.interface? || tag.utf8? || tag.filename?
         io << ".to_a.map(&.to_unsafe)"
       end
       io << ".to_a.to_unsafe"

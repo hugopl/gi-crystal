@@ -167,7 +167,7 @@ gchar** test_subject_return_null_terminated_array_transfer_full(TestSubject* sel
   return ret;
 }
 
-TestIface *test_subject_return_myself_as_interface(TestIface  *self) {
+TestIface *test_subject_return_myself_as_interface(TestIface *self) {
   TestSubject* subject = TEST_SUBJECT(self);
   g_object_set(subject, "string", __FUNCTION__, NULL);
   return self;
@@ -204,4 +204,49 @@ GSList* test_subject_return_slist_of_strings_transfer_container(TestSubject* sel
 void test_subject_get_out_param(TestSubject* self, TestStruct *out) {
   out->in = 1;
   out->begin = 2;
+}
+
+const gchar* test_subject_array_of_g_values(TestSubject* self, int n, GValue **values) {
+  static char buffer[1024];
+  memset(buffer, 0, sizeof(buffer));
+  char* ptr = buffer;
+
+  for (int i = 0; i < n; ++i) {
+    GValue* value = values[i];
+    const char* type_name = g_type_name(value->g_type);
+    int type_name_size = strlen(type_name);
+    strncpy(ptr, type_name, type_name_size);
+    ptr += type_name_size;
+    *ptr = ':';
+    ptr++;
+    switch (value->g_type) {
+    case G_TYPE_INT:
+      ptr += sprintf(ptr, "%d", g_value_get_int(value));
+      break;
+    case G_TYPE_UINT:
+      ptr += sprintf(ptr, "%u", g_value_get_uint(value));
+      break;
+    case G_TYPE_INT64:
+      ptr += sprintf(ptr, "%ld", g_value_get_int64(value));
+      break;
+    case G_TYPE_UINT64:
+      ptr += sprintf(ptr, "%lu", g_value_get_uint64(value));
+      break;
+    case G_TYPE_FLOAT:
+      ptr += sprintf(ptr, "%0.2f", g_value_get_float(value));
+      break;
+    case G_TYPE_DOUBLE:
+      ptr += sprintf(ptr, "%0.2f", g_value_get_double(value));
+      break;
+    case G_TYPE_STRING:
+      ptr += sprintf(ptr, "%s", g_value_get_string(value));
+      break;
+    default:
+      *ptr = '?'; // I think we have types enough for testing.
+      ptr++;
+    }
+    *ptr = ';';
+    ptr++;
+  }
+  return buffer;
 }

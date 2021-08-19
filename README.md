@@ -110,7 +110,15 @@ end
 
 ## GValue
 
-- TBD
+Implemented as Crystal union type:
+
+```Crystal
+GObject::Value = Bool | Float32 | Float64 | Int32 | Int64 | Int8 | Nil | Object | String | UInt32 | UInt64 | UInt8 | RawGValue
+```
+
+This mean you can pass e.g. a plain Int32 to a method that in C expects a GValue.
+
+For more specific things that doesn't have a direct map to Crystal you can use `GObject::RawGValue` class directly.
 
 ## GObject inheritance
 

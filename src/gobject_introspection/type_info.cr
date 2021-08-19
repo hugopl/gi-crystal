@@ -44,6 +44,15 @@ module GObjectIntrospection
       tag.void? && !pointer?
     end
 
+    def g_value? : Bool
+      return false unless tag.interface?
+
+      iface = interface
+      return false if iface.nil?
+
+      iface.name == "Value" && iface.namespace.name == "GObject"
+    end
+
     delegate array?, to: tag
 
     def interface : BaseInfo?

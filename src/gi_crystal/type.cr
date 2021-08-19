@@ -15,7 +15,7 @@ module GObject
   TYPE_FLAGS     = 0x34_u64
   TYPE_FLOAT     = 0x38_u64
   TYPE_DOUBLE    = 0x3c_u64
-  TYPE_UTF8      = 0x40_u64
+  TYPE_STRING    = 0x40_u64
   TYPE_POINTER   = 0x44_u64
   TYPE_BOXED     = 0x48_u64
   TYPE_PARAM     = 0x4c_u64
