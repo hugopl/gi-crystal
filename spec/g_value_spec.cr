@@ -1,7 +1,7 @@
 require "./spec_helper"
 
 describe "GValue" do
-  context "when used as parameter" do
+  context "when used as in parameter" do
     it { Test::Subject.g_value_parameter(42).should eq("gint:42;") }
     it { Test::Subject.g_value_parameter(42_u32).should eq("guint:42;") }
     it { Test::Subject.g_value_parameter(42_i64).should eq("gint64:42;") }
@@ -13,6 +13,15 @@ describe "GValue" do
     it { Test::Subject.g_value_parameter(4.56).should eq("gdouble:4.56;") }
 
     it { Test::Subject.g_value_parameter("hey").should eq("gchararray:hey;") }
+  end
+
+  context "when used as out parameter" do
+    it "works" do
+      res = Test::Subject.g_value_by_out_parameter
+      typeof(res).should eq(GObject::Value)
+      res.is_a?(Int32).should eq(true)
+      res.should eq(42)
+    end
   end
 
   context "when used as parameter in an array" do

@@ -266,3 +266,8 @@ const gchar* test_subject_g_value_parameter(GValue* value) {
   *ptr = 0;
   return buffer;
 }
+
+void test_subject_g_value_by_out_parameter(GValue* value) {
+  g_value_init(value, G_TYPE_INT);
+  g_value_set_int(value, 42);
+}

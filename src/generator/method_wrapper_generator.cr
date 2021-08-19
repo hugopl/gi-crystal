@@ -84,7 +84,7 @@ module Generator
                        else
                          "self.#{identifier[4..]}"
                        end
-                     elsif method_args.empty? && identifier.starts_with?("get_") && identifier.size > 4
+                     elsif identifier.starts_with?("get_") && identifier.size > 4
                        identifier[4..]
                      elsif @method_info.args.size == 1 && identifier.starts_with?("set_") && identifier.size > 4
                        "#{identifier[4..]}="
@@ -214,7 +214,8 @@ module Generator
     private def generate_caller_allocates_param_impl(io : IO)
       return_type = @return_type
       if return_type.is_a?(ArgInfo)
-        io << to_identifier(return_type.name) << "=" << to_crystal_type(return_type.type_info) << ".new\n"
+        type_name = return_type.type_info.g_value? ? "GObject::RawGValue" : to_crystal_type(return_type.type_info)
+        io << to_identifier(return_type.name) << "=" << type_name << ".new\n"
       end
     end
 
@@ -272,7 +273,8 @@ module Generator
       return if return_type.nil?
 
       expr = if return_type.is_a?(ArgInfo)
-               to_identifier(return_type.name)
+               is_g_value = return_type.type_info.g_value?
+               is_g_value ? "#{to_identifier(return_type.name)}.to_raw_value" : to_identifier(return_type.name)
              elsif return_type.is_a?(TypeInfo)
                convert_to_crystal("_retval", return_type, @method_info.caller_owns)
              end

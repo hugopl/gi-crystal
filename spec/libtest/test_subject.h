@@ -223,6 +223,14 @@ const gchar* test_subject_array_of_g_values(TestSubject* self, int n, GValue **v
 const gchar* test_subject_g_value_parameter(GValue* value);
 
 /**
+ * test_subject_g_value_by_out_parameter:
+ * @value: (out) (caller-allocates): A GValue to be initialized and set to int32-42.
+ *
+ * Used to test GValues as out parameters
+ */
+void test_subject_g_value_by_out_parameter(GValue* value);
+
+/**
  * test_subject_return_myself_as_interface:
  * Returns: (transfer none):
  */
