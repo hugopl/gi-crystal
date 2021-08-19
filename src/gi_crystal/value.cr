@@ -3,7 +3,7 @@ module GObject
   # GLib types, e.g. GValue supports boxed types and enums, but in Crystal enums can't be in Unions and we have
   # no way to know all BoxedTypes, maybe with some macro magic we can, but I don't want to spend a lot of time in
   # corner cases when in my not so great GTK experience most of the time you use GValue with strings, booleans and
-  # numeric types. So, this RawGValue (when implemented) must be used to cover these corner cases.
+  # numeric types. So, this RawGValue (when fully implemented) must be used to cover these corner cases.
   class RawGValue
     @pointer : Pointer(Void)
 

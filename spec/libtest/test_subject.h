@@ -207,11 +207,20 @@ void test_subject_get_out_param(TestSubject* self, TestStruct *out);
  * test_subject_array_of_g_values:
  * @n:
  * @values: (array length=n):
- * Returns: String in format "type-value;type-value;..." for each item.
+ * Returns: String in format "type:value;type:value;..." for each item.
  *
  * Used to test GValue in array parameters,
  */
 const gchar* test_subject_array_of_g_values(TestSubject* self, int n, GValue **values);
+
+/**
+ * test_subject_g_value_parameter:
+ * @value: A GValue
+ * Returns: String in format "type:value;"
+ *
+ * Used to test single GValue parameter
+ */
+const gchar* test_subject_g_value_parameter(GValue* value);
 
 /**
  * test_subject_return_myself_as_interface:

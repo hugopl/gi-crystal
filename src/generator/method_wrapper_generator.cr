@@ -156,6 +156,7 @@ module Generator
         generate_nullable_and_arrays_param_impl(io)
         generate_array_param_impl(io)
         generate_caller_allocates_param_impl(io)
+        generate_g_values_param_impl(io)
       end
 
       generate_return_variable(io)
@@ -214,6 +215,15 @@ module Generator
       return_type = @return_type
       if return_type.is_a?(ArgInfo)
         io << to_identifier(return_type.name) << "=" << to_crystal_type(return_type.type_info) << ".new\n"
+      end
+    end
+
+    private def generate_g_values_param_impl(io : IO)
+      method_args.each do |arg|
+        if arg.type_info.g_value?
+          arg_var = to_identifier(arg.name)
+          io << arg_var << "=" << arg_var << ".to_g_value\n"
+        end
       end
     end
 
