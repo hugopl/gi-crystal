@@ -82,7 +82,7 @@ module Generator
                        if identifier == "new"
                          "initialize"
                        else
-                         "self.#{identifier[4..]}"
+                         "self.#{identifier}"
                        end
                      elsif identifier.starts_with?("get_") && identifier.size > 4
                        identifier[4..]

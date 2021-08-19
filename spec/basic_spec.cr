@@ -41,7 +41,7 @@ describe "GObject Binding" do
 
   describe "cosntructors" do
     it "generate alternative constructors" do
-      subject = Test::Subject.from_string("hello")
+      subject = Test::Subject.new_from_string("hello")
       subject.string.should eq("hello")
     end
 
