@@ -7,7 +7,7 @@ module GObject
   class RawGValue
     @pointer : Pointer(Void)
 
-    def initialize(value)
+    def initialize(value : Bool | Float32 | Float64 | Int32 | Int64 | Int8 | Object | String | UInt32 | UInt64 | UInt8)
       @pointer = init_g_value(value)
       case value
       when Bool    then LibGObject.g_value_set_boolean(self, value)
@@ -22,7 +22,7 @@ module GObject
       when UInt64  then LibGObject.g_value_set_uint64(self, value)
       when UInt8   then LibGObject.g_value_set_uchar(self, value)
       else
-        raise ArgumentError.new("Unable to wrap a #{value.class} into a GValue, probably not implemented.")
+        raise ArgumentError.new("Unable to wrap a #{value.class} into a GValue.")
       end
     end
 
@@ -68,10 +68,10 @@ module GObject
     end
   end
 
-  alias Value = Bool | Float32 | Float64 | Int32 | Int64 | Int8 | Nil | Object | String | UInt32 | UInt64 | UInt8 | RawGValue
+  alias Value = Bool | Float32 | Float64 | Int32 | Int64 | Int8 | Object | String | UInt32 | UInt64 | UInt8 | RawGValue
 end
 
-{% for type in %w(Bool Float32 Float64 Int32 Int64 Int8 Nil UInt32 UInt64 UInt8) %}
+{% for type in %w(Bool Float32 Float64 Int32 Int64 Int8 UInt32 UInt64 UInt8) %}
   struct {{ type.id }}
     def to_g_value : GObject::RawGValue
       GObject::RawGValue.new(self)
