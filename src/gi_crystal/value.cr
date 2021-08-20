@@ -62,7 +62,7 @@ module GObject
       @g_value.g_type
     end
 
-    def to_raw_value : Value
+    def raw : Value
       case g_type
       when TYPE_BOOL   then GICrystal.to_bool(LibGObject.g_value_get_boolean(self))
       when TYPE_CHAR   then LibGObject.g_value_get_schar(self)
@@ -79,6 +79,34 @@ module GObject
         self
       end.as(Value)
     end
+
+    {% for name, type in {
+                           "i8"      => Int8,
+                           "u8"      => UInt8,
+                           "i32"     => Int32,
+                           "i"       => Int32,
+                           "u32"     => UInt32,
+                           "u"       => UInt32,
+                           "i64"     => Int64,
+                           "u64"     => UInt64,
+                           "f32"     => Float32,
+                           "f"       => Float32,
+                           "f64"     => Float64,
+                           "bool"    => Bool,
+                           "s"       => String,
+                           "gobject" => GObject::Object,
+                         } %}
+
+      def as_{{name.id}} : {{type}}
+        raw.as({{type}})
+      end
+
+      def as_{{name.id}}?  : {{type}}?
+        raw.as?({{type}})
+      rescue ArgumentError
+        nil
+      end
+    {% end %}
 
     # Returns self.
     def to_g_value

@@ -274,7 +274,7 @@ module Generator
 
       expr = if return_type.is_a?(ArgInfo)
                is_g_value = return_type.type_info.g_value?
-               is_g_value ? "#{to_identifier(return_type.name)}.to_raw_value" : to_identifier(return_type.name)
+               is_g_value ? "#{to_identifier(return_type.name)}.raw" : to_identifier(return_type.name)
              elsif return_type.is_a?(TypeInfo)
                convert_to_crystal("_retval", return_type, @method_info.caller_owns)
              end

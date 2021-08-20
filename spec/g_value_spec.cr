@@ -15,6 +15,16 @@ describe "GValue" do
     it { Test::Subject.g_value_parameter("hey").should eq("gchararray:hey;") }
   end
 
+  context "respond to as_* and as_*?" do
+    it { GObject::RawGValue.new(5).as_s?.should eq(nil) }
+    it { GObject::RawGValue.new(5).as_i32.should eq(5) }
+    it { GObject::RawGValue.new("hi").as_s?.should eq("hi") }
+    it { GObject::RawGValue.new("ho").as_s.should eq("ho") }
+    it do
+      expect_raises(TypeCastError) { GObject::RawGValue.new("ho").as_f }
+    end
+  end
+
   context "when used as out parameter" do
     it "works" do
       res = Test::Subject.g_value_by_out_parameter
