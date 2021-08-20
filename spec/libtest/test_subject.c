@@ -4,6 +4,8 @@
 /* Private structure definition. */
 typedef struct {
   gchar *string;
+  int int32;
+  TestIface* iface;
 } TestSubjectPrivate;
 
 static void test_subject_iface_interface_init(TestIfaceInterface *iface) {
@@ -18,6 +20,8 @@ G_DEFINE_TYPE_WITH_CODE(TestSubject, test_subject, G_TYPE_OBJECT,
 
 typedef enum {
   PROP_STRING = 1,
+  PROP_INT32,
+  PROP_IFACE,
   N_PROPERTIES
 } TestSubjectProperty;
 
@@ -45,6 +49,16 @@ static void test_subject_set_property(GObject *gobject, guint property_id, const
     g_free(priv->string);
     priv->string = g_value_dup_string(value);
     break;
+  case PROP_INT32:
+    priv->int32 = g_value_get_int(value);
+    break;
+  case PROP_IFACE:
+    if (priv->iface)
+      g_object_unref(G_OBJECT(priv->iface));
+    GObject* gobj = g_value_get_object(value);
+    g_object_ref(gobj);
+    priv->iface = TEST_IFACE(gobj);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID(gobject, property_id, pspec);
     break;
@@ -58,8 +72,13 @@ static void test_subject_get_property(GObject *gobject, guint property_id, GValu
   case PROP_STRING:
     g_value_set_string(value, priv->string);
     break;
+  case PROP_INT32:
+    g_value_set_int(value, priv->int32);
+    break;
+  case PROP_IFACE:
+    g_value_set_object(value, G_OBJECT(priv->iface));
+    break;
   default:
-    /* We don't have any other property... */
     G_OBJECT_WARN_INVALID_PROPERTY_ID(gobject, property_id, pspec);
     break;
   }
@@ -74,8 +93,12 @@ static void test_subject_class_init(TestSubjectClass *klass) {
   object_class->finalize = test_subject_finalize;
 
   obj_properties[PROP_STRING] = g_param_spec_string("string", "String", "A string property.",
-                                                    NULL  /* default value */,
-                                                    G_PARAM_STATIC_NAME | G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+                                                    NULL, G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+  obj_properties[PROP_INT32] = g_param_spec_int("int32", "Int32", "A int32 property.",
+                                                INT_MIN, INT_MAX, 0,
+                                                G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+  obj_properties[PROP_IFACE] = g_param_spec_object("iface", "IFace", "An IFace object.",
+                                                   TEST_TYPE_IFACE, G_PARAM_STATIC_STRINGS | G_PARAM_READWRITE);
 
   g_object_class_install_properties(object_class, N_PROPERTIES, obj_properties);
 
@@ -89,11 +112,11 @@ static void test_subject_init(TestSubject *self) {
 }
 
 TestSubject *test_subject_new(void) {
-  return g_object_new(TEST_TYPE_SUBJECT, "string", "", NULL);
+  return g_object_new(TEST_TYPE_SUBJECT, "string", "", "int32", 0, NULL);
 }
 
 TestSubject *test_subject_new_from_string(const gchar *string) {
-  return g_object_new(TEST_TYPE_SUBJECT, "string", string, NULL);
+  return g_object_new(TEST_TYPE_SUBJECT, "string", string, "int32", 0, NULL);
 }
 
 gchar* test_subject_concat_strings(TestSubject *self, int n, const gchar **strings) {

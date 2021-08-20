@@ -124,13 +124,21 @@ module Generator
 
     private def generate_property_getter(io : IO, prop : PropertyInfo)
       type_info = prop.type_info
-      type = to_crystal_type(type_info)
+      is_obj = type_info.tag.interface?
+      return_type = to_crystal_type(type_info)
+
       io << "# " << prop.ownership_transfer << LF
-      io << "def " << to_method_name(prop.name) << " : " << type << LF
-      io << "value = uninitialized " << to_lib_type(prop.type_info) << LF
+      io << "def " << to_method_name(prop.name) << " : " << to_crystal_type(type_info)
+      io << "?" if is_obj
+      io << LF
+
+      prop_type_name = is_obj ? "Pointer(Void)" : to_lib_type(type_info)
+      io << "value = uninitialized " << prop_type_name << LF
       io << "LibGObject.g_object_get(self, \"" << prop.name << "\", pointerof(value), Pointer(Void).null)\n"
-      io << convert_to_crystal("value", type_info, prop.ownership_transfer) << LF
-      io << "end\n"
+      io << convert_to_crystal("value", type_info, prop.ownership_transfer)
+      io << " unless value.null?" if is_obj
+
+      io << "\nend\n"
     end
 
     private def generate_signals(io : IO)

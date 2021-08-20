@@ -63,14 +63,6 @@ describe "GObject Binding" do
     pending "can upcast objects"
   end
 
-  describe "basic properties" do
-    it "works with strings" do
-      subject = Test::Subject.new
-      subject.string = "hey ho"
-      subject.string.should eq("hey ho")
-    end
-  end
-
   describe "getters" do
     it "bind get_foo as foo if foo has no params" do
       subject = Test::Subject.new
