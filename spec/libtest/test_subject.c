@@ -157,6 +157,10 @@ int test_subject_receive_nullable_object(TestSubject *self, TestSubject* nullabl
   return nullable == NULL;
 }
 
+int test_subject_no_optional_param(int* int32, const gchar** str, TestRegularEnum* en, GObject** gobj) {
+  return (int32 || str || en || gobj) ? -1 : 0;
+}
+
 int test_subject_receive_arguments_named_as_crystal_keywords(TestSubject *self_, int def, int alias, int module, int out, int begin, int self, int end, int abstract, int in) {
   return def + alias + module + out + begin + self + end + abstract + in;
 }

@@ -311,6 +311,12 @@ describe "GObject Binding" do
     end
   end
 
+  describe "optional parameters" do
+    it "are removed" do
+      Test::Subject.no_optional_param.should eq(0)
+    end
+  end
+
   describe "parameters named using Crystal keywords" do
     it "works on gobject parameters" do
       subject = Test::Subject.new

@@ -111,6 +111,18 @@ int test_subject_sum_nullable(TestSubject *self, int n, int* numbers);
 int test_subject_receive_nullable_object(TestSubject *self, TestSubject *nullable);
 
 /**
+ * test_subject_no_optional_param:
+ * @int32: (out) (optional):
+ * @str: (out) (optional):
+ * @en:  (out) (optional):
+ * @gobj: (out) (optional) (transfer none):
+ * Returns: -1 if any parameter has value != 0
+ *
+ * Used to test removal of optional parameters
+ */
+int test_subject_no_optional_param(int* int32, const gchar** str, TestRegularEnum* en, GObject** gobj);
+
+/**
  * test_subject_receive_arguments_named_as_crystal_keywords
  * Returns: Sum of all parameters
  */
@@ -224,7 +236,7 @@ const gchar* test_subject_g_value_parameter(GValue* value);
 
 /**
  * test_subject_g_value_by_out_parameter:
- * @value: (out) (caller-allocates): A GValue to be initialized and set to int32-42.
+ * @value: (out caller-allocates): A GValue to be initialized and set to int32-42.
  *
  * Used to test GValues as out parameters
  */

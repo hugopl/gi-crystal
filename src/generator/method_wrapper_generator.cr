@@ -130,7 +130,7 @@ module Generator
 
           if type_info.array_length >= 0
             args_to_remove << args[type_info.array_length]
-          elsif arg.direction.out? && arg.caller_allocates? && !arg.type_info.array?
+          elsif arg.optional? || (arg.direction.out? && arg.caller_allocates? && !arg.type_info.array?)
             args_to_remove << arg
           end
         end
@@ -153,6 +153,7 @@ module Generator
 
       if args.any?
         generate_lenght_param_impl(io)
+        generate_optional_param_impl(io)
         generate_nullable_and_arrays_param_impl(io)
         generate_array_param_impl(io)
         generate_caller_allocates_param_impl(io)
@@ -178,6 +179,15 @@ module Generator
           io << to_identifier(args[arg_type.array_length].name) << " = " << to_identifier(arg.name)
           io << (arg.nullable? ? ".try(&.size) || 0" : ".size") << LF
         end
+      end
+    end
+
+    def generate_optional_param_impl(io : IO)
+      @method_info.args.each do |arg|
+        next unless arg.optional?
+
+        type_name = to_lib_type(arg.type_info, structs_as_void: true)
+        io << to_identifier(arg.name) << " = " << "Pointer(" << type_name << ").null\n"
       end
     end
 
