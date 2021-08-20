@@ -26,11 +26,52 @@ module Generator
       raise Error.new("failed to generate lib block for #{@namespace.name}: #{e.message}")
     end
 
+    # Generate functions not declared by GObj Introspection by needed by the generated code.
     private def generate_extra_gobj_fun(io : IO)
-      return if @namespace.name != "GObject"
+      if @namespace.name == "GLib"
+        decl = <<-EOT
+        # Functions not declared by GObj Introspection
 
-      io << "fun g_object_get(object : Pointer(Void), property_name : Pointer(LibC::Char), ...)\n"
-      io << "fun g_object_set(object : Pointer(Void), property_name : Pointer(LibC::Char), ...)\n"
+        # Memory related functions
+        fun g_malloc0(size : LibC::SizeT) : Void*
+        fun g_free(mem : Void*)
+
+        # GList
+        fun g_list_length(list : List*) : UInt32
+        fun g_list_free(list : List*)
+        fun g_list_free_full(list : List*, free_func : Proc(Void*, Nil))
+        fun g_list_first(list : List*) : List*
+        fun g_list_last(list : List*) : List*
+        fun g_list_nth(list : List*, n : UInt32) : List*
+
+        # GSList
+        fun g_slist_length(list : SList*) : UInt32
+        fun g_slist_nth(list : SList*, n : UInt32) : SList*
+        fun g_slist_free(list : SList*)
+        fun g_slist_free_full(list : SList*, free_func : Proc(Void*, Nil))
+        EOT
+        io << decl
+      elsif @namespace.name == "GObject"
+        decl = <<-EOT
+        # Functions not declared by GObj Introspection
+
+        # Property related functions
+        fun g_object_get(object : Pointer(Void), property_name : Pointer(LibC::Char), ...)
+        fun g_object_set(object : Pointer(Void), property_name : Pointer(LibC::Char), ...)
+        fun g_object_new_with_properties(object_type : UInt64, n_properties : UInt32,
+                                         names : LibC::Char**, values : Value*) : Void*
+
+        # Signal related functions
+        fun g_signal_connect_data(instance : Void*,
+                                  detailed_signal : UInt8*,
+                                  c_handler : Void*,
+                                  data : Void*,
+                                  destroy_data : Void* -> Nil,
+                                  flags : UInt32) : UInt64
+
+        EOT
+        io << decl
+      end
     end
 
     private def generate_library_links(io : IO)
@@ -129,6 +170,7 @@ module Generator
 
       return if obj_info.methods.empty?
       io << "# " << to_lib_type(obj_info) << " C Functions\n"
+      io << "fun " << obj_info.type_init << " : UInt64\n"
       generate_c_functions(io, obj_info.methods, force_ignore)
       io << "\n\n"
     end

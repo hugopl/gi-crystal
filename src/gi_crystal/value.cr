@@ -9,26 +9,33 @@ module GObject
   class RawGValue
     @g_value = LibGObject::Value.new
 
+    alias Types = Bool | Float32 | Float64 | Int32 | Int64 | Int8 | Object | String | UInt32 | UInt64 | UInt8
+
     # Creates an unitialized GValue.
     def initialize
     end
 
     # Creates a GValue and initializes it with `value`.
-    def initialize(value : Bool | Float32 | Float64 | Int32 | Int64 | Int8 | Object | String | UInt32 | UInt64 | UInt8)
-      LibGObject.g_value_init(self, RawGValue.g_type_for(value))
+    def initialize(value : Types)
+      RawGValue.init_g_value(pointerof(@g_value), value)
+    end
+
+    # :nodoc:
+    def self.init_g_value(ptr : Pointer(LibGObject::Value), value : Types) : Nil
+      LibGObject.g_value_init(ptr, RawGValue.g_type_for(value))
 
       case value
-      when Bool    then LibGObject.g_value_set_boolean(self, value)
-      when Float32 then LibGObject.g_value_set_float(self, value)
-      when Float64 then LibGObject.g_value_set_double(self, value)
-      when Int32   then LibGObject.g_value_set_int(self, value)
-      when Int64   then LibGObject.g_value_set_int64(self, value)
-      when Int8    then LibGObject.g_value_set_schar(self, value)
-      when Object  then LibGObject.g_value_set_object(self, value)
-      when String  then LibGObject.g_value_set_string(self, value)
-      when UInt32  then LibGObject.g_value_set_uint(self, value)
-      when UInt64  then LibGObject.g_value_set_uint64(self, value)
-      when UInt8   then LibGObject.g_value_set_uchar(self, value)
+      when Bool    then LibGObject.g_value_set_boolean(ptr, value)
+      when Float32 then LibGObject.g_value_set_float(ptr, value)
+      when Float64 then LibGObject.g_value_set_double(ptr, value)
+      when Int32   then LibGObject.g_value_set_int(ptr, value)
+      when Int64   then LibGObject.g_value_set_int64(ptr, value)
+      when Int8    then LibGObject.g_value_set_schar(ptr, value)
+      when Object  then LibGObject.g_value_set_object(ptr, value)
+      when String  then LibGObject.g_value_set_string(ptr, value)
+      when UInt32  then LibGObject.g_value_set_uint(ptr, value)
+      when UInt64  then LibGObject.g_value_set_uint64(ptr, value)
+      when UInt8   then LibGObject.g_value_set_uchar(ptr, value)
       else
         raise ArgumentError.new("Unable to wrap a #{value.class} into a GValue.")
       end

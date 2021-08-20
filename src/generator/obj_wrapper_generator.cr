@@ -25,8 +25,10 @@ module Generator
 
       io << "module " << to_type_name(@namespace.name) << LF
       generate_class_declaration(io)
+      generate_g_type_declaration(io)
       generate_interface_includes(io)
       generate_initialize(io)
+      generate_generic_constructor(io)
       if parent.nil?
         generate_finalize(io)
         generate_to_unsafe(io)
@@ -50,6 +52,10 @@ module Generator
       io << LF
     end
 
+    private def generate_g_type_declaration(io : IO)
+      io << "G_TYPE = " << to_lib_namespace(@namespace) << '.' << @obj_info.type_init << LF
+    end
+
     private def generate_interface_includes(io : IO)
       my_namespace = @obj_info.namespace
       @obj_info.interfaces.each do |iface|
@@ -67,6 +73,40 @@ module Generator
         io << "super\n"
       end
       io << "end\n"
+    end
+
+    private def all_properties : Array(PropertyInfo)
+      obj = @obj_info
+      props = [] of PropertyInfo
+      while obj
+        props.concat(obj.properties)
+        obj = obj.parent
+      end
+      props.uniq!(&.name)
+    end
+
+    private def generate_generic_constructor(io : IO)
+      props = all_properties
+      return if props.empty?
+
+      io << "def initialize(*"
+      props.each do |prop|
+        io << "," << to_identifier(prop.name) << " : " << to_crystal_type(prop.type_info) << "? = nil"
+      end
+      io << ")\n"
+      io << "_names = uninitialized Pointer(LibC::Char)[" << props.size << "]\n"
+      io << "_values = StaticArray(LibGObject::Value, " << props.size << ").new(LibGObject::Value.new)\n"
+      io << "_n = 0\n"
+      props.each do |prop|
+        prop_name = to_identifier(prop.name)
+        io << "if " << prop_name << LF
+        io << "(_names.to_unsafe + _n).value = \"" << prop.name << "\".to_unsafe\n"
+        io << "GObject::RawGValue.init_g_value(_values.to_unsafe + _n, " << prop_name << ")\n"
+        io << "_n += 1\n"
+        io << "end\n"
+      end
+      io << "@pointer = LibGObject.g_object_new_with_properties(G_TYPE, _n, _names, _values)\n"
+      io << "\nend\n"
     end
 
     private def generate_finalize(io : IO)

@@ -39,7 +39,7 @@ describe "GObject Binding" do
     end
   end
 
-  describe "cosntructors" do
+  describe "constructors" do
     it "generate alternative constructors" do
       subject = Test::Subject.new_from_string("hello")
       subject.string.should eq("hello")
@@ -48,6 +48,12 @@ describe "GObject Binding" do
     it "generate renamed constructors" do
       subject = Test::SubjectChild.new("hello")
       subject.string.should eq("hello")
+    end
+
+    it "has generic constructors" do
+      subject = Test::Subject.new(string: "hey", int32: 42)
+      subject.string.should eq("hey")
+      subject.int32.should eq(42)
     end
   end
 

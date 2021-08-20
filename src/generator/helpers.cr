@@ -11,6 +11,7 @@ module Generator::Helpers
   end
 
   def to_identifier(name : String) : String
+    name = name.tr("-", "_") if name.index("-")
     KEYWORDS.includes?(name) ? "_#{name}" : name
   end
 

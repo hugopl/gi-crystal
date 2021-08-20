@@ -1,5 +1,4 @@
 include:
- - src/gi_crystal/lib_g_lib_extra.cr
  - src/gi_crystal/util.cr
  - src/gi_crystal/list.cr
  - src/gi_crystal/slist.cr

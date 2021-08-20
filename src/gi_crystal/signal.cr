@@ -1,13 +1,3 @@
-lib LibGObject
-  # Signals
-  fun g_signal_connect_data(instance : Void*,
-                            detailed_signal : UInt8*,
-                            c_handler : Void*,
-                            data : Void*,
-                            destroy_data : Void* -> Nil,
-                            flags : UInt32) : UInt64
-end
-
 module GObject
   struct Signal(Obj, Ret, *Params)
     @source : Pointer(Void)
