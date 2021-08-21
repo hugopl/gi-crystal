@@ -1,31 +1,23 @@
 module GObject
-  # GValue is mapped to a enum with all basic types, however there's not a perfect match between Crystal types and
-  # GLib types, e.g. GValue supports boxed types and enums, but in Crystal enums can't be in Unions and we have
-  # no way to know all BoxedTypes, maybe with some macro magic we can, but I don't want to spend a lot of time in
-  # corner cases when in my not so great GTK experience most of the time you use GValue with strings, booleans and
-  # numeric types. So, this RawGValue (when fully implemented) must be used to cover these corner cases.
-  #
-  # To convert a `RawGValue` back to `Value`, use `.to_raw_value`.
-  class RawGValue
+  class Value
     @g_value = LibGObject::Value.new
-
-    alias Types = Bool | Float32 | Float64 | Int32 | Int64 | Int8 | Object | String | UInt32 | UInt64 | UInt8
 
     # Creates an unitialized GValue.
     def initialize
     end
 
     # Creates a GValue and initializes it with `value`.
-    def initialize(value : Types)
-      RawGValue.init_g_value(pointerof(@g_value), value)
+    def initialize(value)
+      Value.init_g_value(pointerof(@g_value), value)
     end
 
     # :nodoc:
-    def self.init_g_value(ptr : Pointer(LibGObject::Value), value : Types) : Nil
-      LibGObject.g_value_init(ptr, RawGValue.g_type_for(value))
+    def self.init_g_value(ptr : Pointer(LibGObject::Value), value) : Nil
+      LibGObject.g_value_init(ptr, Value.g_type_for(value))
 
       case value
       when Bool    then LibGObject.g_value_set_boolean(ptr, value)
+      when Enum    then LibGObject.g_value_set_enum(ptr, value)
       when Float32 then LibGObject.g_value_set_float(ptr, value)
       when Float64 then LibGObject.g_value_set_double(ptr, value)
       when Int32   then LibGObject.g_value_set_int(ptr, value)
@@ -41,10 +33,11 @@ module GObject
       end
     end
 
-    # Returns the GType for the Crystal variable, if the value can be wrap in a RawGValue
+    # Returns the GType for the Crystal variable, if the value can be wrap in a `Value`.
     def self.g_type_for(value)
       case value
       when Bool    then TYPE_BOOL
+      when Enum    then TYPE_ENUM
       when Float32 then TYPE_FLOAT
       when Float64 then TYPE_DOUBLE
       when Int32   then TYPE_INT
@@ -69,7 +62,7 @@ module GObject
       @g_value.g_type
     end
 
-    def raw : Value
+    def raw
       case g_type
       when TYPE_BOOL   then GICrystal.to_bool(LibGObject.g_value_get_boolean(self))
       when TYPE_CHAR   then LibGObject.g_value_get_schar(self)
@@ -83,8 +76,8 @@ module GObject
       when TYPE_UINT   then LibGObject.g_value_get_uint(self)
       when TYPE_UINT64 then LibGObject.g_value_get_uint64(self)
       else
-        self
-      end.as(Value)
+        raise ArgumentError.new("Cannot obtain raw value for g_type #{g_type}")
+      end
     end
 
     {% for name, type in {
@@ -104,15 +97,15 @@ module GObject
                            "gobject" => GObject::Object,
                          } %}
 
-      def as_{{name.id}} : {{type}}
-        raw.as({{type}})
-      end
+       def as_{{name.id}} : {{type}}
+         raw.as({{type}})
+       end
 
-      def as_{{name.id}}?  : {{type}}?
-        raw.as?({{type}})
-      rescue ArgumentError
-        nil
-      end
+       def as_{{name.id}}?  : {{type}}?
+         raw.as?({{type}})
+       rescue ArgumentError
+         nil
+       end
     {% end %}
 
     # Returns self.
@@ -129,22 +122,20 @@ module GObject
       pointerof(@g_value).as(Pointer(Void))
     end
   end
-
-  alias Value = Bool | Float32 | Float64 | Int32 | Int64 | Int8 | Object | String | UInt32 | UInt64 | UInt8 | RawGValue
 end
 
 {% for type in %w(Bool Float32 Float64 Int32 Int64 Int8 UInt32 UInt64 UInt8) %}
   struct {{ type.id }}
-    def to_g_value : GObject::RawGValue
-      GObject::RawGValue.new(self)
+    def to_g_value : GObject::Value
+      GObject::Value.new(self)
     end
   end
 {% end %}
 
 {% for type in %w(GObject::Object String) %}
   class {{ type.id }}
-    def to_g_value : GObject::RawGValue
-      GObject::RawGValue.new(self)
+    def to_g_value : GObject::Value
+      GObject::Value.new(self)
     end
   end
 {% end %}

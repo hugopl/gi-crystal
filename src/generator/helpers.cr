@@ -1,5 +1,5 @@
 module Generator::Helpers
-  KEYWORDS = {"abstract", "alias", "begin", "def", "end", "in", "module", "next", "out", "self"}
+  KEYWORDS = {"abstract", "alias", "begin", "def", "end", "enum", "in", "module", "next", "out", "self"}
 
   def to_get_type_function(struct_info : StructInfo)
     "#{struct_info.namespace.name.underscore}_#{struct_info.name.underscore}_get_type"
@@ -123,7 +123,7 @@ module Generator::Helpers
     if KEYWORDS.includes?(name)
       "#{name} _#{name}"
     else
-      name
+      to_identifier(name)
     end
   end
 
@@ -153,7 +153,10 @@ module Generator::Helpers
     end
   end
 
-  def to_crystal_type(type : TypeInfo, include_namespace : Bool = true) : String
+  # @is_arg: The type is means to be used in a argument list for some method
+  def to_crystal_type(type : TypeInfo, include_namespace : Bool = true, is_arg : Bool = false) : String
+    return "_" if is_arg && type.g_value?
+
     tag = type.tag
     case tag
     when .interface?
@@ -161,7 +164,7 @@ module Generator::Helpers
       return "Pointer(Void)" if iface.nil?
       to_crystal_type(iface, include_namespace)
     when .array?
-      t = to_crystal_type(type.param_type, include_namespace)
+      t = to_crystal_type(type.param_type, include_namespace, is_arg: is_arg)
       "Enumerable(#{t})"
     when tag.utf8?, .filename?, .g_list?, .gs_list?
       to_crystal_type(tag)

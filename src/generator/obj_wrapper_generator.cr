@@ -91,7 +91,7 @@ module Generator
 
       io << "def initialize(*"
       props.each do |prop|
-        io << "," << to_identifier(prop.name) << " : " << to_crystal_type(prop.type_info) << "? = nil"
+        io << "," << to_crystal_arg_decl(prop.name) << " : " << to_crystal_type(prop.type_info) << "? = nil"
       end
       io << ")\n"
       io << "_names = uninitialized Pointer(LibC::Char)[" << props.size << "]\n"
@@ -101,7 +101,7 @@ module Generator
         prop_name = to_identifier(prop.name)
         io << "if " << prop_name << LF
         io << "(_names.to_unsafe + _n).value = \"" << prop.name << "\".to_unsafe\n"
-        io << "GObject::RawGValue.init_g_value(_values.to_unsafe + _n, " << prop_name << ")\n"
+        io << "GObject::Value.init_g_value(_values.to_unsafe + _n, " << prop_name << ")\n"
         io << "_n += 1\n"
         io << "end\n"
       end
@@ -162,9 +162,16 @@ module Generator
       io << "end\n"
     end
 
+    private def is_object?(info : TypeInfo)
+      iface = info.interface
+      return false if iface.nil? || iface.is_a?(EnumInfo)
+
+      true
+    end
+
     private def generate_property_getter(io : IO, prop : PropertyInfo)
       type_info = prop.type_info
-      is_obj = type_info.tag.interface?
+      is_obj = is_object?(type_info)
       return_type = to_crystal_type(type_info)
 
       io << "# " << prop.ownership_transfer << LF

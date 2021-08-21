@@ -15,9 +15,13 @@ module Generator
     def initialize(@namespace)
     end
 
+    def config
+      Config.for(@namespace.name)
+    end
+
     # True if this generator should be ignored.
     def skip?(key : String = subject) : Bool
-      Config.for(@namespace.name).ignore?(key)
+      config.ignore?(key) || config.skip?(key)
     end
 
     # File name created by the the generator or nil if the generator uses a file created by another generator.

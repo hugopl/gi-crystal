@@ -142,7 +142,8 @@ module Generator
       io << "("
       io << method_args.map do |arg|
         null_mark = "?" if arg.nullable?
-        "#{to_crystal_arg_decl(arg.name)} : #{to_crystal_type(arg.type_info)}#{null_mark}"
+        type = to_crystal_type(arg.type_info, is_arg: true)
+        "#{to_crystal_arg_decl(arg.name)} : #{type}#{null_mark}"
       end.join(", ")
       io << ")"
     end
@@ -224,8 +225,7 @@ module Generator
     private def generate_caller_allocates_param_impl(io : IO)
       return_type = @return_type
       if return_type.is_a?(ArgInfo)
-        type_name = return_type.type_info.g_value? ? "GObject::RawGValue" : to_crystal_type(return_type.type_info)
-        io << to_identifier(return_type.name) << "=" << type_name << ".new\n"
+        io << to_identifier(return_type.name) << "=" << to_crystal_type(return_type.type_info) << ".new\n"
       end
     end
 
@@ -283,8 +283,7 @@ module Generator
       return if return_type.nil?
 
       expr = if return_type.is_a?(ArgInfo)
-               is_g_value = return_type.type_info.g_value?
-               is_g_value ? "#{to_identifier(return_type.name)}.raw" : to_identifier(return_type.name)
+               to_identifier(return_type.name)
              elsif return_type.is_a?(TypeInfo)
                convert_to_crystal("_retval", return_type, @method_info.caller_owns)
              end
@@ -300,7 +299,7 @@ module Generator
       return unless arg.type_info.tag.array?
       return if method_identifier.ends_with?("=")
 
-      param_type = to_crystal_type(arg.type_info.param_type)
+      param_type = to_crystal_type(arg.type_info.param_type, is_arg: true)
       io << "def " << method_identifier << "(*" << to_identifier(arg.name) << " : " << param_type << ")\n"
       io << method_identifier << "(" << to_identifier(arg.name) << ")\n"
       io << "end\n"

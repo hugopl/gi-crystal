@@ -51,9 +51,10 @@ describe "GObject Binding" do
     end
 
     it "has generic constructors" do
-      subject = Test::Subject.new(string: "hey", int32: 42)
+      subject = Test::Subject.new(string: "hey", int32: 42, enum: :value2)
       subject.string.should eq("hey")
       subject.int32.should eq(42)
+      subject.enum.should eq(Test::RegularEnum::Value2)
     end
   end
 

@@ -5,6 +5,7 @@
 
 #include "test_iface.h"
 #include "test_flags.h"
+#include "test_regular_enum.h"
 
 G_BEGIN_DECLS
 
@@ -19,18 +20,6 @@ G_BEGIN_DECLS
  * A constant.
  */
 #define TEST_CONSTANT 123
-
-/**
- * TestRegularEnum:
- * @TEST_VALUE1:
- * @TEST_VALUE2:
- * @TEST_VALUE3:
- */
-typedef enum {
-  TEST_VALUE1,
-  TEST_VALUE2,
-  TEST_VALUE3
-} TestRegularEnum;
 
 /**
  * TestStruct:

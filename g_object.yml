@@ -3,6 +3,9 @@ include:
  - src/gi_crystal/type.cr
  - src/gi_crystal/value.cr
 
+skip:
+ - Value
+
 ignore:
  - g_cclosure_marshal_BOOLEAN__BOXED_BOXED
  - g_cclosure_marshal_BOOLEAN__FLAGS
@@ -73,6 +76,5 @@ ignore:
  - ParamSpecUnichar
  - ParamSpecValueArray
  - ParamSpecVariant
- - Value
  - SignalQuery
  - WeakRef

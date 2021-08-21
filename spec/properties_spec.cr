@@ -12,6 +12,13 @@ describe "GObject properties" do
     subject.int32.should eq(42)
   end
 
+  it "can be enums" do
+    subject = Test::Subject.new
+    subject.enum.should eq(Test::RegularEnum::Value1)
+    subject.enum = :value3
+    subject.enum.should eq(Test::RegularEnum::Value3)
+  end
+
   it "can be gobject interfaces" do
     subject = Test::Subject.new
     subject.iface.should eq(nil)

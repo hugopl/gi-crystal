@@ -3,28 +3,30 @@ require "yaml"
 module Generator
   class NamespaceConfig
     getter ignore = Set(String).new
+    getter skip = Set(String).new
     getter includes = Array(Path).new
 
     def initialize
     end
 
     def initialize(any : Hash, yaml_dir : String)
-      load_ignore_list(any)
+      load_list(any, "ignore", @ignore)
+      load_list(any, "skip", @skip)
       load_include_list(any, yaml_dir)
     end
 
-    private def load_ignore_list(any)
-      ignore = any["ignore"]?
-      return if ignore.nil?
+    private def load_list(hash, key : String, storage : Set(String))
+      any = hash[key]?
+      return if any.nil?
 
-      list = ignore.as_a?
-      raise Error.new("Ignore key must be a string list.") if list.nil?
+      list = any.as_a?
+      raise Error.new("'#{key}' key must be a string list.") if list.nil?
 
       list.each do |item|
         str_item = item.as_s?
-        raise Error.new("Ignore key must be a string list.") if str_item.nil?
-        Log.warn { "Duplicated item on ignore list: #{str_item}" } if @ignore.includes?(str_item)
-        @ignore << str_item
+        raise Error.new("'#{key}' key must be a string list.") if str_item.nil?
+        Log.warn { "Duplicated item on '#{key}' list: #{str_item}" } if storage.includes?(str_item)
+        storage << str_item
       end
     end
 
@@ -42,6 +44,10 @@ module Generator
 
     def ignore?(name : String) : Bool
       @ignore.includes?(name)
+    end
+
+    def skip?(name : String) : Bool
+      @skip.includes?(name)
     end
   end
 

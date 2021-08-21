@@ -5,6 +5,7 @@
 typedef struct {
   gchar *string;
   int int32;
+  TestRegularEnum _enum;
   TestIface* iface;
 } TestSubjectPrivate;
 
@@ -22,6 +23,7 @@ typedef enum {
   PROP_STRING = 1,
   PROP_INT32,
   PROP_IFACE,
+  PROP_ENUM,
   N_PROPERTIES
 } TestSubjectProperty;
 
@@ -59,6 +61,9 @@ static void test_subject_set_property(GObject *gobject, guint property_id, const
     g_object_ref(gobj);
     priv->iface = TEST_IFACE(gobj);
     break;
+  case PROP_ENUM:
+    priv->_enum = g_value_get_enum(value);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID(gobject, property_id, pspec);
     break;
@@ -77,6 +82,9 @@ static void test_subject_get_property(GObject *gobject, guint property_id, GValu
     break;
   case PROP_IFACE:
     g_value_set_object(value, G_OBJECT(priv->iface));
+    break;
+  case PROP_ENUM:
+    g_value_set_enum(value, priv->_enum);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID(gobject, property_id, pspec);
@@ -99,6 +107,9 @@ static void test_subject_class_init(TestSubjectClass *klass) {
                                                 G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
   obj_properties[PROP_IFACE] = g_param_spec_object("iface", "IFace", "An IFace object.",
                                                    TEST_TYPE_IFACE, G_PARAM_STATIC_STRINGS | G_PARAM_READWRITE);
+  obj_properties[PROP_ENUM] = g_param_spec_enum("enum", "Enum", "An enum.",
+                                                   TEST_TYPE_REGULAR_ENUM, TEST_VALUE1,
+                                                   G_PARAM_STATIC_STRINGS | G_PARAM_READWRITE);
 
   g_object_class_install_properties(object_class, N_PROPERTIES, obj_properties);
 
@@ -267,6 +278,9 @@ static gchar* g_value_to_string(gchar* buffer, GValue* value) {
       break;
     case G_TYPE_UCHAR:
       buffer += sprintf(buffer, "%d", g_value_get_uchar(value));
+      break;
+    case G_TYPE_ENUM:
+      buffer += sprintf(buffer, "%d", g_value_get_enum(value));
       break;
     default:
       *buffer++ = '?';

@@ -9,6 +9,8 @@ describe "GValue" do
     it { Test::Subject.g_value_parameter(65_i8).should eq("gchar:A;") }
     it { Test::Subject.g_value_parameter(42_u8).should eq("guchar:42;") }
 
+    it { Test::Subject.g_value_parameter(Test::RegularEnum::Value2).should eq("GEnum:1;") }
+
     it { Test::Subject.g_value_parameter(1.23_f32).should eq("gfloat:1.23;") }
     it { Test::Subject.g_value_parameter(4.56).should eq("gdouble:4.56;") }
 
@@ -16,12 +18,12 @@ describe "GValue" do
   end
 
   context "respond to as_* and as_*?" do
-    it { GObject::RawGValue.new(5).as_s?.should eq(nil) }
-    it { GObject::RawGValue.new(5).as_i32.should eq(5) }
-    it { GObject::RawGValue.new("hi").as_s?.should eq("hi") }
-    it { GObject::RawGValue.new("ho").as_s.should eq("ho") }
+    it { GObject::Value.new(5).as_s?.should eq(nil) }
+    it { GObject::Value.new(5).as_i32.should eq(5) }
+    it { GObject::Value.new("hi").as_s?.should eq("hi") }
+    it { GObject::Value.new("ho").as_s.should eq("ho") }
     it do
-      expect_raises(TypeCastError) { GObject::RawGValue.new("ho").as_f }
+      expect_raises(TypeCastError) { GObject::Value.new("ho").as_f }
     end
   end
 
@@ -29,8 +31,7 @@ describe "GValue" do
     it "works" do
       res = Test::Subject.g_value_by_out_parameter
       typeof(res).should eq(GObject::Value)
-      res.is_a?(Int32).should eq(true)
-      res.should eq(42)
+      res.as_i.should eq(42)
     end
   end
 
@@ -38,6 +39,11 @@ describe "GValue" do
     it "can convert integer types" do
       res = Test::Subject.new.array_of_g_values(-12, 34_u32, 56_i64, 78_u64, 66_i8, 10_u8)
       res.should eq("gint:-12;guint:34;gint64:56;guint64:78;gchar:B;guchar:10;")
+    end
+
+    it "can convert enum types" do
+      res = Test::Subject.new.array_of_g_values(Test::RegularEnum::Value1, Test::RegularEnum::Value2)
+      res.should eq("GEnum:0;GEnum:1;")
     end
 
     it "can convert float types" do
