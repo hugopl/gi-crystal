@@ -11,6 +11,16 @@ module Generator
       end
     end
 
+    def generate_g_type_method(io : IO, info : RegisteredTypeInfo)
+      type_init = info.type_init
+      return if type_init.nil?
+
+      io << "# Returns the type id (GType) registered in GLib type system.\n"
+      io << "def self.g_type : UInt64\n"
+      io << to_lib_namespace(info.namespace) << "." << type_init
+      io << "\nend\n"
+    end
+
     def generate_ref_count(io : IO)
       code = <<-EOS
       # Returns GObject reference counter.

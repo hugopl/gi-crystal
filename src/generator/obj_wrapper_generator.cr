@@ -25,7 +25,6 @@ module Generator
 
       io << "module " << to_type_name(@namespace.name) << LF
       generate_class_declaration(io)
-      generate_g_type_declaration(io)
       generate_interface_includes(io)
       generate_initialize(io)
       generate_generic_constructor(io)
@@ -33,6 +32,7 @@ module Generator
         generate_finalize(io)
         generate_to_unsafe(io)
       end
+      generate_g_type_method(io, @obj_info)
       generate_casts(io)
       generate_ref_count(io)
       generate_method_wrappers(io, @obj_info.methods)
@@ -44,16 +44,12 @@ module Generator
     private def generate_class_declaration(io : IO)
       parent = @obj_info.parent
 
-      io << "class " << to_lib_type(@obj_info, include_namespace: false)
+      io << "class " << to_crystal_type(@obj_info, include_namespace: false)
       if parent
         include_namespace = parent.namespace != @namespace
         io << " < " << to_crystal_type(parent, include_namespace)
       end
       io << LF
-    end
-
-    private def generate_g_type_declaration(io : IO)
-      io << "G_TYPE = " << to_lib_namespace(@namespace) << '.' << @obj_info.type_init << LF
     end
 
     private def generate_interface_includes(io : IO)
@@ -105,7 +101,8 @@ module Generator
         io << "_n += 1\n"
         io << "end\n"
       end
-      io << "@pointer = LibGObject.g_object_new_with_properties(G_TYPE, _n, _names, _values)\n"
+      io << "@pointer = LibGObject.g_object_new_with_properties(" << to_crystal_type(@obj_info, include_namespace: false) <<
+            ".g_type, _n, _names, _values)\n"
       io << "\nend\n"
     end
 
