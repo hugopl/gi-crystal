@@ -31,13 +31,13 @@ See https://github.com/hugopl/gtk4.cr/blob/master/shard.yml for an example of ho
 ## Memory Management ❤️‍🔥️
 
 Crystal is garbage collected, you create objects and have faith that the GC will free them at some point while GLib uses
-reference count, the clash of these two approaches of how to deal with memory management can't end up is something beautiful
+reference count, the clash of these two approaches of how to deal with memory management can't end up in something beautiful
 without corner cases, etc... but we try our best to reduce the mess.
 
 The basic rules are:
 
 - All objects (except enums, flags and unions) are created in the heap (including non GObject C Structs).
-- Boxed structs are always allocated by GLib but owned by Crystal wrappers.
+- Boxed structs (except GValue) are always allocated by GLib but owned by Crystal wrappers.
 - If the struct is passed from C to Crystal with "transfer none", the struct is copied anyway to ensure that every Crystal object
   wrapper always points to valid memory. On "transfer full" no copy is needed.
 - All GObjects have just a pointer to the C object (always allocated by GLib) and always hold a reference during their lifetime
@@ -86,14 +86,14 @@ end
 # Connect to a slot without the sender
 widget.focus_signal.connect(->slot_without_sender(Gtk::Direction)
 
-# Connect to a block
+# Connect to a block (always without sender parameter)
 widget.focus_signal.connect do |direction|
   # ...
 end
 ```
 
 If the signal requires a slot that returns nothing, a slot that returns nothing (Nil) must be used, this is a limitation of the current
-implementation that will probably change in the future to just ignore the return value those slots.
+implementation that will probably change in the future to just ignore the return value on those slots.
 
 ### After signals
 
@@ -103,7 +103,7 @@ Instead of `widget.focus_signal.connect`, use `widget.focus_signal.connect_after
 
 ```
 # To connect the equivalent in C to "notify::my_property" do
-widget.notify_signal["my_property"].connect do |param|
+widget.notify_signal["my_property"].connect do
   # ...
 end
 ```
