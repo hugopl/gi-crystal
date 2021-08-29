@@ -58,6 +58,12 @@ TestSubject *test_subject_new(void);
 TestSubject *test_subject_new_from_string(const gchar *string);
 
 /**
+ * test_subject_transfer_full_param:
+ * @subject: (transfer full):
+ */
+void test_subject_transfer_full_param(GObject* subject);
+
+/**
  * test_subject_concat_strings:
  * @n: number of strings to concat.
  * @strings: (array length=n) (element-type utf8) (nullable): a buffer

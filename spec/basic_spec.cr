@@ -8,6 +8,13 @@ describe "GObject Binding" do
       iface = subject.return_myself_as_interface
       subject.ref_count.should eq(1)
     end
+
+    it "increase object reference when passing it to a transfer full method" do
+      subject = Test::Subject.new
+      subject.ref_count.should eq(1)
+      Test::Subject.transfer_full_param(subject)
+      subject.ref_count.should eq(2)
+    end
   end
 
   describe "binding configuration" do

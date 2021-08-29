@@ -130,6 +130,9 @@ TestSubject *test_subject_new_from_string(const gchar *string) {
   return g_object_new(TEST_TYPE_SUBJECT, "string", string, "int32", 0, NULL);
 }
 
+void test_subject_transfer_full_param(GObject* subject) {
+}
+
 gchar* test_subject_concat_strings(TestSubject *self, int n, const gchar **strings) {
   if (n == 0 || strings == NULL)
     return g_strdup("");

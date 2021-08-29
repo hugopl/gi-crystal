@@ -159,6 +159,7 @@ module Generator
         generate_array_param_impl(io)
         generate_caller_allocates_param_impl(io)
         generate_g_values_param_impl(io)
+        generate_g_ref_on_transfer_full_param(io)
       end
 
       generate_return_variable(io)
@@ -303,6 +304,15 @@ module Generator
       io << "def " << method_identifier << "(*" << to_identifier(arg.name) << " : " << param_type << ")\n"
       io << method_identifier << "(" << to_identifier(arg.name) << ")\n"
       io << "end\n"
+    end
+
+    def generate_g_ref_on_transfer_full_param(io : IO)
+      method_args.each do |arg|
+        next if !arg.ownership_transfer.full? || !arg.type_info.tag.interface?
+
+
+        io << "LibGObject.g_object_ref(" << to_identifier(arg.name) << ")\n"
+      end
     end
   end
 end
