@@ -1,7 +1,7 @@
 module GObjectIntrospection
   class PropertyInfo < BaseInfo
     def type_info : TypeInfo
-      TypeInfo.new(LibGIRepository.g_property_info_get_type(self))
+      @type_info ||= TypeInfo.new(LibGIRepository.g_property_info_get_type(self))
     end
 
     def ownership_transfer

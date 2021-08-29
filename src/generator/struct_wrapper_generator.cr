@@ -29,7 +29,7 @@ module Generator
       # for now we only generate constructors for them.
       unless @struct_info.gtype_struct?
         generate_struct_accessors(io)
-        generate_method_wrappers(io, @struct_info.methods)
+        MethodWrapperGenerator.generate(io, @struct_info.methods)
       end
       io << "end\nend\n" # end-class, end-module
     end

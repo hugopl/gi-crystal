@@ -1,6 +1,7 @@
 require "file_utils"
 
 require "./obj_wrapper_generator"
+require "./method_wrapper_generator"
 require "./struct_wrapper_generator"
 require "./interface_wrapper_generator"
 require "./lib_decl_generator"
@@ -74,7 +75,7 @@ module Generator
       generate_constants(io)
       generate_enums(io)
       generate_flags(io)
-      generate_method_wrappers(io, @namespace.functions)
+      MethodWrapperGenerator.generate(io, @namespace.functions)
       io << "extend self\n"
       io << "end\n"
 

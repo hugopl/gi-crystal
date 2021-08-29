@@ -7,6 +7,7 @@ typedef struct {
   int int32;
   TestRegularEnum _enum;
   TestIface* iface;
+  char** str_list;
 } TestSubjectPrivate;
 
 static void test_subject_iface_interface_init(TestIfaceInterface *iface) {
@@ -24,6 +25,7 @@ typedef enum {
   PROP_INT32,
   PROP_IFACE,
   PROP_ENUM,
+  PROP_STR_LIST,
   N_PROPERTIES
 } TestSubjectProperty;
 
@@ -39,12 +41,14 @@ static void test_subject_finalize(GObject *gobject) {
   TestSubjectPrivate *priv = test_subject_get_instance_private(TEST_SUBJECT(gobject));
 
   g_free(priv->string);
+  g_strfreev(priv->str_list);
 
   G_OBJECT_CLASS(test_subject_parent_class)->finalize(gobject);
 }
 
 static void test_subject_set_property(GObject *gobject, guint property_id, const GValue *value, GParamSpec *pspec) {
-  TestSubjectPrivate *priv = test_subject_get_instance_private(TEST_SUBJECT(gobject));
+  TestSubject* self = TEST_SUBJECT(gobject);
+  TestSubjectPrivate *priv = test_subject_get_instance_private(self);
 
   switch ((TestSubjectProperty) property_id) {
   case PROP_STRING:
@@ -63,6 +67,9 @@ static void test_subject_set_property(GObject *gobject, guint property_id, const
     break;
   case PROP_ENUM:
     priv->_enum = g_value_get_enum(value);
+    break;
+  case PROP_STR_LIST:
+    test_subject_set_str_list(self, (const char**) g_value_get_boxed(value));
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID(gobject, property_id, pspec);
@@ -85,6 +92,9 @@ static void test_subject_get_property(GObject *gobject, guint property_id, GValu
     break;
   case PROP_ENUM:
     g_value_set_enum(value, priv->_enum);
+    break;
+  case PROP_STR_LIST:
+    g_value_set_boxed(value, priv->str_list);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID(gobject, property_id, pspec);
@@ -110,6 +120,8 @@ static void test_subject_class_init(TestSubjectClass *klass) {
   obj_properties[PROP_ENUM] = g_param_spec_enum("enum", "Enum", "An enum.",
                                                    TEST_TYPE_REGULAR_ENUM, TEST_VALUE1,
                                                    G_PARAM_STATIC_STRINGS | G_PARAM_READWRITE);
+  obj_properties[PROP_STR_LIST] = g_param_spec_boxed("str_list", "StrList", "A null terminated list of strings",
+                                                     G_TYPE_STRV, G_PARAM_READWRITE);
 
   g_object_class_install_properties(object_class, N_PROPERTIES, obj_properties);
 
@@ -129,6 +141,14 @@ TestSubject *test_subject_new(void) {
 TestSubject *test_subject_new_from_string(const gchar *string) {
   return g_object_new(TEST_TYPE_SUBJECT, "string", string, "int32", 0, NULL);
 }
+
+void test_subject_set_str_list(TestSubject* self, const char** list) {
+  TestSubjectPrivate *priv = test_subject_get_instance_private(self);
+
+  g_strfreev(priv->str_list);
+  priv->str_list = g_strdupv((char **)list);
+}
+
 
 void test_subject_transfer_full_param(GObject* subject) {
 }

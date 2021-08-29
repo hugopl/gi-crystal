@@ -69,6 +69,8 @@ module Generator
                                   destroy_data : Void* -> Nil,
                                   flags : UInt32) : UInt64
 
+        # Null terminated strings GType, used by GValue
+        fun g_strv_get_type : UInt64
         EOT
         io << decl
       end

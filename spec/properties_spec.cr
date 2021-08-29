@@ -1,4 +1,19 @@
+require "./spec_helper"
+
 describe "GObject properties" do
+  context "when set in constructors" do
+    it "works for more than one item" do
+      subject = Test::Subject.new(string: "hey", int32: 42, enum: :value2)
+      subject.string.should eq("hey")
+      subject.int32.should eq(42)
+      subject.enum.should eq(Test::RegularEnum::Value2)
+    end
+
+    it "works for null terminated strings" do
+      subject = Test::Subject.new(str_list: %w(hey ho))
+      subject.str_list.should eq(%w(hey ho))
+    end
+  end
   it "can be strings" do
     subject = Test::Subject.new
     subject.string = "hey ho"
@@ -27,5 +42,16 @@ describe "GObject properties" do
     subject.iface = value
     value.ref_count.should eq(2)
     subject.iface.not_nil!.to_unsafe.should eq(value.to_unsafe)
+  end
+
+  it "can be null terminated string lists" do
+    subject = Test::Subject.new
+    subject.str_list.empty?.should eq(true)
+
+    subject.str_list = {"hey", "ho"}
+    subject.str_list.should eq(%w(hey ho))
+
+    subject.str_list = %w(let go)
+    subject.str_list.should eq(%w(let go))
   end
 end

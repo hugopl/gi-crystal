@@ -21,4 +21,5 @@ module GObject
   TYPE_PARAM     = 0x4c_u64
   TYPE_OBJECT    = 0x50_u64
   TYPE_VARIANT   = 0x54_u64
+  TYPE_STRV      = LibGObject.g_strv_get_type
 end

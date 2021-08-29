@@ -58,6 +58,14 @@ TestSubject *test_subject_new(void);
 TestSubject *test_subject_new_from_string(const gchar *string);
 
 /**
+ * test_subject_set_str_list:
+ * @list: (array zero-terminated=1):
+ *
+ * Setter for str_list property.
+ */
+void test_subject_set_str_list(TestSubject* self, const char** list);
+
+/**
  * test_subject_transfer_full_param:
  * @subject: (transfer full):
  */

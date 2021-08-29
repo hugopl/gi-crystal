@@ -35,7 +35,7 @@ module Generator
       generate_g_type_method(io, @obj_info)
       generate_casts(io)
       generate_ref_count(io)
-      generate_method_wrappers(io, @obj_info.methods)
+      MethodWrapperGenerator.generate(io, @obj_info.methods)
       generate_property_wrappers(io)
       generate_signals(io)
       io << "end\nend\n" # end class, end module
@@ -102,7 +102,7 @@ module Generator
         io << "end\n"
       end
       io << "@pointer = LibGObject.g_object_new_with_properties(" << to_crystal_type(@obj_info, include_namespace: false) <<
-            ".g_type, _n, _names, _values)\n"
+        ".g_type, _n, _names, _values)\n"
       io << "\nend\n"
     end
 
@@ -152,9 +152,16 @@ module Generator
     end
 
     private def generate_property_setter(io : IO, prop : PropertyInfo)
-      type = to_crystal_type(prop.type_info)
-      io << "def " << to_method_name(prop.name) << "=(value : " << type << ") : " << type << LF
-      io << "LibGObject.g_object_set(self, \"" << prop.name << "\", value, Pointer(Void).null)\n"
+      type = prop.type_info
+      type_name = to_crystal_type(type)
+      io << "def " << to_method_name(prop.name) << "=(value : " << type_name << ") : " << type_name << LF
+      unsafe_identifier = "value"
+      if type.array?
+        unsafe_identifier = "unsafe_value"
+        io << "unsafe_value = "
+        generate_array_to_unsafe(io, "value", type)
+      end
+      io << "LibGObject.g_object_set(self, \"" << prop.name << "\", " << unsafe_identifier << ", Pointer(Void).null)\n"
       io << "value\n"
       io << "end\n"
     end

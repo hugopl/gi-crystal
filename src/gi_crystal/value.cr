@@ -28,6 +28,8 @@ module GObject
       when UInt32  then LibGObject.g_value_set_uint(ptr, value)
       when UInt64  then LibGObject.g_value_set_uint64(ptr, value)
       when UInt8   then LibGObject.g_value_set_uchar(ptr, value)
+      when Enumerable(String)
+        LibGObject.g_value_set_boxed(ptr, value.map(&.to_unsafe).to_a)
       else
         raise ArgumentError.new("Unable to wrap a #{value.class} into a GValue.")
       end
@@ -48,6 +50,7 @@ module GObject
       when UInt32  then TYPE_UINT
       when UInt64  then TYPE_UINT64
       when UInt8   then TYPE_UCHAR
+      when Enumerable(String) then TYPE_STRV
       else
         raise ArgumentError.new("Unable to wrap a #{value.class} into a GValue, probably not implemented.")
       end

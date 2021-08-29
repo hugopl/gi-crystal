@@ -19,6 +19,8 @@ module GICrystal
 
   def transfer_null_ended_array(ptr : Pointer(Pointer(UInt8)), transfer : Transfer) : Array(String)
     res = Array(String).new
+    return res if ptr.null?
+
     item_ptr = ptr
     while !item_ptr.value.null?
       res << String.new(item_ptr.value)

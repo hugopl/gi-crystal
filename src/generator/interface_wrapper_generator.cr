@@ -20,7 +20,7 @@ module Generator
       iface_name = to_lib_type(@iface_info, include_namespace: false)
       io << "module " << to_type_name(@namespace.name) << LF
       io << "module " << iface_name << LF
-      generate_method_wrappers(io, @iface_info.methods)
+      MethodWrapperGenerator.generate(io, @iface_info.methods)
       io << "end\n"
       io << "class " << iface_name << "__Impl\n"
       io << "  include " << iface_name << "\n"

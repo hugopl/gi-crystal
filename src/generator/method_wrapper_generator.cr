@@ -1,5 +1,9 @@
+require "./wrapper_util"
+
 module Generator
   class MethodWrapperGenerator < Base
+    include WrapperUtil
+
     @method_info : FunctionInfo
     @method_args : Array(ArgInfo)?
     @method_identifier : String?
@@ -7,6 +11,15 @@ module Generator
 
     def initialize(@method_info : FunctionInfo)
       super(@method_info.namespace)
+    end
+
+    def self.generate(io : IO, methods : Array(FunctionInfo))
+      methods.each do |func|
+        next if func.deprecated?
+
+        gen = MethodWrapperGenerator.new(func)
+        gen.generate(io)
+      end
     end
 
     def do_generate(io : IO)
@@ -155,7 +168,7 @@ module Generator
       if args.any?
         generate_lenght_param_impl(io)
         generate_optional_param_impl(io)
-        generate_nullable_and_arrays_param_impl(io)
+        generate_nullable_and_arrays_params(io)
         generate_array_param_impl(io)
         generate_caller_allocates_param_impl(io)
         generate_g_values_param_impl(io)
@@ -193,20 +206,18 @@ module Generator
       end
     end
 
-    def generate_nullable_and_arrays_param_impl(io : IO)
+    def generate_nullable_and_arrays_params(io : IO)
       args = @method_info.args
       args.each do |arg|
-        if arg.nullable?
-          arg_name = to_identifier(arg.name)
-          io << arg_name << " = if " << arg_name << ".nil?\n"
-          io << to_lib_type(arg.type_info, structs_as_void: true) << ".null\n"
-          io << "else\n"
+        next unless arg.type_info.array?
+
+        arg_name = to_identifier(arg.name)
+        generate_null_guard(io, arg_name, arg.type_info, nullable: arg.nullable?) do
           if arg.type_info.array?
-            array_to_unsafe(io, arg)
+            generate_array_to_unsafe(io, arg_name, arg.type_info)
           else
             io << arg_name << ".to_unsafe"
           end
-          io << "\nend\n"
         end
       end
     end
@@ -216,8 +227,9 @@ module Generator
         next if arg.nullable?
 
         if arg.type_info.array?
-          io << to_identifier(arg.name) << " = "
-          array_to_unsafe(io, arg)
+          arg_name = to_identifier(arg.name)
+          io << arg_name << " = "
+          generate_array_to_unsafe(io, arg_name, arg.type_info)
           io << LF
         end
       end
@@ -237,19 +249,6 @@ module Generator
           io << arg_var << "=" << arg_var << ".to_g_value\n"
         end
       end
-    end
-
-    private def array_to_unsafe(io : IO, arg : ArgInfo)
-      tag = arg.type_info.param_type.tag
-      arg_name = to_identifier(arg.name)
-
-      io << arg_name << ".to_a"
-      if arg.type_info.param_type.g_value?
-        io << ".map(&.to_g_value.c_g_value)"
-      elsif tag.interface? || tag.utf8? || tag.filename?
-        io << ".map(&.to_unsafe)"
-      end
-      io << ".to_unsafe"
     end
 
     def generate_return_variable(io : IO)
@@ -309,7 +308,6 @@ module Generator
     def generate_g_ref_on_transfer_full_param(io : IO)
       method_args.each do |arg|
         next if !arg.ownership_transfer.full? || !arg.type_info.tag.interface?
-
 
         io << "LibGObject.g_object_ref(" << to_identifier(arg.name) << ")\n"
       end
