@@ -2,11 +2,14 @@ require "spec"
 
 require "../build/test-1.0/test"
 
-class SpecException < RuntimeError
+# Used on basic signal tests or on something that would need a kind of global var to
+# be sure something was called in another context.
+class GlobalVar
+  class_property value = ""
 end
 
-module GLib
-  macro method_missing(call)
-    raise SpecException.new({{ call.id }})
-  end
+Spec.after_each do
+  # Run GC between tests to try to catch some GC related bugs
+  # Why 5 times? No idea... I was just unsure of doing just a single call.
+  5.times { GC.collect }
 end
