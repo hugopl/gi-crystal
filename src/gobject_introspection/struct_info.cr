@@ -23,7 +23,7 @@ module GObjectIntrospection
       bytesize.zero? && !type_init.nil?
     end
 
-    def gtype_struct?
+    def g_type_struct?
       GICrystal.to_bool(LibGIRepository.g_struct_info_is_gtype_struct(self))
     end
   end

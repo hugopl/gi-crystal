@@ -96,7 +96,7 @@ module Generator
     private def generate_structs(io : IO)
       io << "# Structs\n\n"
       @namespace.structs.each do |struct_info|
-        next if struct_info.gtype_struct?
+        next if struct_info.g_type_struct?
 
         force_ignore = add_ignore_comment(io, struct_info.name)
         if struct_info.bytesize.zero?
@@ -109,8 +109,7 @@ module Generator
         end
 
         io << "# " << to_lib_type(struct_info) << " C Functions\n"
-        type_init = struct_info.type_init
-        io << "fun #{type_init} : LibC::SizeT\n" if type_init
+        generate_type_init(io, struct_info)
         generate_c_functions(io, struct_info.methods, force_ignore)
         io << LF
       end
@@ -172,9 +171,14 @@ module Generator
 
       return if obj_info.methods.empty?
       io << "# " << to_lib_type(obj_info) << " C Functions\n"
-      io << "fun " << obj_info.type_init << " : UInt64\n"
+      generate_type_init(io, obj_info)
       generate_c_functions(io, obj_info.methods, force_ignore)
       io << "\n\n"
+    end
+
+    private def generate_type_init(io : IO, info : RegisteredTypeInfo)
+      type_init = info.type_init
+      io << "fun " << type_init << " : UInt64\n" if type_init
     end
 
     private def generate_c_functions(io : IO, functions : Array(FunctionInfo), force_ignore : Bool)

@@ -16,21 +16,21 @@ module Generator
       @struct_info.name
     end
 
+    def skip?
+      super || @struct_info.g_type_struct?
+    end
+
     def do_generate(io : IO)
       io << "module " << to_type_name(@namespace.name) << LF
       io << "class " << to_crystal_type(@struct_info, include_namespace: false) << LF
       io << "@pointer : Pointer(Void)\n"
       generate_struct_initialize(io)
-      generate_g_type_method(io, @struct_info) unless @struct_info.gtype_struct?
+      generate_g_type_method(io, @struct_info)
       generate_to_unsafe(io)
       generate_finalizer(io)
 
-      # Ideally we shouldn't bind the structs that represent a GObject type, but some methods require these types, so
-      # for now we only generate constructors for them.
-      unless @struct_info.gtype_struct?
-        generate_struct_accessors(io)
-        MethodWrapperGenerator.generate(io, @struct_info.methods)
-      end
+      generate_struct_accessors(io)
+      MethodWrapperGenerator.generate(io, @struct_info.methods)
       io << "end\nend\n" # end-class, end-module
     end
 
@@ -51,7 +51,7 @@ module Generator
       io << "@pointer = if transfer.full?\n"
       io << "pointer\n"
       io << "else\n"
-      io << "LibGObject.g_boxed_copy(" << to_lib_namespace(@namespace) << "." << @struct_info.type_init << ", pointer)\n"
+      io << "LibGObject.g_boxed_copy(" << to_crystal_type(@struct_info, include_namespace: false) << ".g_type, pointer)\n"
       io << "end\n"
       io << "end\n"
     end
