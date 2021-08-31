@@ -2,16 +2,16 @@ require "yaml"
 
 module Generator
   class NamespaceConfig
-    getter ignore = Set(String).new
-    getter skip = Set(String).new
     getter includes = Array(Path).new
+    getter ignore = Set(String).new
+    @handmade = Set(String).new
 
     def initialize
     end
 
     def initialize(any : Hash, yaml_dir : String)
       load_list(any, "ignore", @ignore)
-      load_list(any, "skip", @skip)
+      load_list(any, "handmade", @handmade)
       load_include_list(any, yaml_dir)
     end
 
@@ -46,8 +46,8 @@ module Generator
       @ignore.includes?(name)
     end
 
-    def skip?(name : String) : Bool
-      @skip.includes?(name)
+    def handmade?(name : String) : Bool
+      @handmade.includes?(name)
     end
   end
 
@@ -69,6 +69,15 @@ module Generator
           config
         end
       end
+    end
+
+    def self.handmade?(type_info) : Bool
+      return false unless type_info.tag.interface?
+
+      iface = type_info.interface
+      return false if iface.nil?
+
+      Config.for(iface.namespace.name).handmade?(iface.name)
     end
 
     private def self.load_yaml(filename : String) : NamespaceConfig?
@@ -98,3 +107,4 @@ module Generator
     end
   end
 end
+

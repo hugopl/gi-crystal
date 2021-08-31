@@ -1,9 +1,13 @@
 include:
- - src/gi_crystal/util.cr
+ - src/gi_crystal/closure_data_manager.cr
  - src/gi_crystal/list.cr
  - src/gi_crystal/slist.cr
  - src/gi_crystal/timeout.cr
- - src/gi_crystal/closure_data_manager.cr
+ - src/gi_crystal/util.cr
+ - src/gi_crystal/variant.cr
+
+handmade:
+ - Variant
 
 # All GLib class and functions that have Crystal versions in the stdlib must be removed from bindings
 ignore:

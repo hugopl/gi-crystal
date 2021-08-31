@@ -7,8 +7,6 @@ module Generator
   abstract class Base
     include Generator::Helpers
 
-    LF = "\n"
-
     @namespace : Namespace
     getter output_dir = "build"
 
@@ -21,7 +19,7 @@ module Generator
 
     # True if this generator should be ignored.
     def skip?(key : String = subject) : Bool
-      config.ignore?(key) || config.skip?(key)
+      config.ignore?(key) || config.handmade?(key)
     end
 
     # File name created by the the generator or nil if the generator uses a file created by another generator.

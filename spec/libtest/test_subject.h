@@ -246,6 +246,13 @@ const gchar* test_subject_g_value_parameter(GValue* value);
 void test_subject_g_value_by_out_parameter(GValue* value);
 
 /**
+ * test_subject_g_variant_parameter:
+ * @variant: (transfer none): A GVariant
+ * Returns: String representation of g_variant
+ */
+gchar* test_subject_g_variant_parameter(GVariant* variant);
+
+/**
  * test_subject_return_myself_as_interface:
  * Returns: (transfer none):
  */

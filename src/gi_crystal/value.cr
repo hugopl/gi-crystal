@@ -29,7 +29,8 @@ module GObject
       when UInt64  then LibGObject.g_value_set_uint64(ptr, value)
       when UInt8   then LibGObject.g_value_set_uchar(ptr, value)
       when Enumerable(String)
-        LibGObject.g_value_set_boxed(ptr, value.map(&.to_unsafe).to_a)
+        array = value.map(&.to_unsafe).to_a << Pointer(UInt8).null
+        LibGObject.g_value_set_boxed(ptr, array)
       else
         raise ArgumentError.new("Unable to wrap a #{value.class} into a GValue.")
       end
@@ -38,18 +39,18 @@ module GObject
     # Returns the GType for the Crystal variable, if the value can be wrap in a `Value`.
     def self.g_type_for(value)
       case value
-      when Bool    then TYPE_BOOL
-      when Enum    then TYPE_ENUM
-      when Float32 then TYPE_FLOAT
-      when Float64 then TYPE_DOUBLE
-      when Int32   then TYPE_INT
-      when Int64   then TYPE_INT64
-      when Int8    then TYPE_CHAR
-      when Object  then TYPE_OBJECT
-      when String  then TYPE_STRING
-      when UInt32  then TYPE_UINT
-      when UInt64  then TYPE_UINT64
-      when UInt8   then TYPE_UCHAR
+      when Bool               then TYPE_BOOL
+      when Enum               then TYPE_ENUM
+      when Float32            then TYPE_FLOAT
+      when Float64            then TYPE_DOUBLE
+      when Int32              then TYPE_INT
+      when Int64              then TYPE_INT64
+      when Int8               then TYPE_CHAR
+      when Object             then TYPE_OBJECT
+      when String             then TYPE_STRING
+      when UInt32             then TYPE_UINT
+      when UInt64             then TYPE_UINT64
+      when UInt8              then TYPE_UCHAR
       when Enumerable(String) then TYPE_STRV
       else
         raise ArgumentError.new("Unable to wrap a #{value.class} into a GValue, probably not implemented.")
@@ -111,34 +112,8 @@ module GObject
        end
     {% end %}
 
-    # Returns self.
-    def to_g_value
-      self
-    end
-
-    # Returns internal C representation of GValue
-    def c_g_value
-      @g_value
-    end
-
     def to_unsafe
       pointerof(@g_value).as(Pointer(Void))
     end
   end
 end
-
-{% for type in %w(Bool Float32 Float64 Int32 Int64 Int8 UInt32 UInt64 UInt8) %}
-  struct {{ type.id }}
-    def to_g_value : GObject::Value
-      GObject::Value.new(self)
-    end
-  end
-{% end %}
-
-{% for type in %w(GObject::Object String) %}
-  class {{ type.id }}
-    def to_g_value : GObject::Value
-      GObject::Value.new(self)
-    end
-  end
-{% end %}

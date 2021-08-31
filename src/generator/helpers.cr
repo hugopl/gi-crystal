@@ -155,7 +155,7 @@ module Generator::Helpers
 
   # @is_arg: The type is means to be used in a argument list for some method
   def to_crystal_type(type : TypeInfo, include_namespace : Bool = true, is_arg : Bool = false) : String
-    return "_" if is_arg && type.g_value?
+    return "_" if is_arg && Config.handmade?(type)
 
     tag = type.tag
     case tag

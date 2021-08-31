@@ -171,7 +171,7 @@ module Generator
         generate_nullable_and_arrays_params(io)
         generate_array_param_impl(io)
         generate_caller_allocates_param_impl(io)
-        generate_g_values_param_impl(io)
+        generate_handmade_types_param_impl(io)
         generate_g_ref_on_transfer_full_param(io)
       end
 
@@ -209,7 +209,7 @@ module Generator
     def generate_nullable_and_arrays_params(io : IO)
       args = @method_info.args
       args.each do |arg|
-        next unless arg.type_info.array?
+        next unless arg.nullable?
 
         arg_name = to_identifier(arg.name)
         generate_null_guard(io, arg_name, arg.type_info, nullable: arg.nullable?) do
@@ -242,11 +242,12 @@ module Generator
       end
     end
 
-    private def generate_g_values_param_impl(io : IO)
+    private def generate_handmade_types_param_impl(io : IO)
       method_args.each do |arg|
-        if arg.type_info.g_value?
-          arg_var = to_identifier(arg.name)
-          io << arg_var << "=" << arg_var << ".to_g_value\n"
+        if Config.handmade?(arg.type_info)
+          type = to_crystal_type(arg.type_info)
+          var = to_identifier(arg.name)
+          io << var << "=" << type << ".new("<< var << ") unless " << var << ".is_a?(" << type << ")\n"
         end
       end
     end

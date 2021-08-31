@@ -334,3 +334,7 @@ void test_subject_g_value_by_out_parameter(GValue* value) {
   g_value_init(value, G_TYPE_INT);
   g_value_set_int(value, 42);
 }
+
+gchar* test_subject_g_variant_parameter(GVariant* variant) {
+  return g_variant_print(variant, TRUE);
+}

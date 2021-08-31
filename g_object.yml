@@ -3,7 +3,7 @@ include:
  - src/gi_crystal/type.cr
  - src/gi_crystal/value.cr
 
-skip:
+handmade:
  - Value
 
 ignore:
