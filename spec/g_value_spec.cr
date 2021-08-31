@@ -58,6 +58,4 @@ describe "GValue" do
 
     pending "can convert objects"
   end
-
-  pending "when in a return value"
 end
