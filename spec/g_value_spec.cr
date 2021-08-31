@@ -15,6 +15,7 @@ describe "GValue" do
     it { Test::Subject.g_value_parameter(4.56).should eq("gdouble:4.56;") }
 
     it { Test::Subject.g_value_parameter("hey").should eq("gchararray:hey;") }
+    it { Test::Subject.g_value_parameter(Test::Subject.new).should eq("GObject:?;") }
   end
 
   context "respond to as_* and as_*?" do
@@ -24,6 +25,10 @@ describe "GValue" do
     it { GObject::Value.new("ho").as_s.should eq("ho") }
     it do
       expect_raises(TypeCastError) { GObject::Value.new("ho").as_f }
+    end
+    it do
+      gobj = Test::Subject.new
+      GObject::Value.new(gobj).as_gobject.to_unsafe.should eq(gobj.to_unsafe)
     end
   end
 
@@ -51,11 +56,9 @@ describe "GValue" do
       res.should eq("gdouble:3.14;gfloat:5.67;")
     end
 
-    it "can convert strings" do
-      res = Test::Subject.new.array_of_g_values("hey", "ho")
-      res.should eq("gchararray:hey;gchararray:ho;")
+    it "can convert strings and GObjects" do
+      res = Test::Subject.new.array_of_g_values("hey", "ho", Test::Subject.new)
+      res.should eq("gchararray:hey;gchararray:ho;GObject:?;")
     end
-
-    pending "can convert objects"
   end
 end
