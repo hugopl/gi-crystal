@@ -47,13 +47,16 @@ The basic rules are:
 GObject interfaces are mapped to Crystal modules + a dummy class that only implements this module, used when there's some
 function returning the interface.
 
-### Casts
+### Down Casts
 
-Upcasts must have no problems while downcasts must be done using `ClassName.cast(instance)`, e.g.: `Gtk::Widget.cast(gobj)`.
+Must be done using `ClassName.cast(instance)` or `ClassName.cast?(instance)`, since Crystal type system doesn't knows about GObject type system. `.cast` throws a `TypeCastError` if the cast can't be made while `.cast?` just returns `nil`.
+
+```Crystal
+  builder = Gtk::Builder.new_from_string("...") # Returns a Gtk::Object
+  label = Gtk::Label.cast(builder["label"])
+```
 
 A cast just creates a new wrapper object, so it increases the object reference count and allocate memory for the Crystal object instance.
-
-No GTK warnings are triggered on bad casts, but it's on my plans to raise an exception if the cast can't be done and add a `cast?` method.
 
 ## Signal Connections
 

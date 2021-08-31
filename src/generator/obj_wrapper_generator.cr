@@ -119,10 +119,14 @@ module Generator
     end
 
     private def generate_casts(io : IO)
-      # TODO: Trigger glib cast warnning on wrong casts
-      # TODO: Implement cast? to return nil when the types can't be casted
+      type_name = to_crystal_type(@obj_info)
       io << "def self.cast(obj)\n"
-      io << "new(obj.to_unsafe, GICrystal::Transfer::None)"
+      io << "  cast?(obj) || raise TypeCastError.new(\"can't cast \#{typeof(obj).name} to " << type_name << "\")\n"
+      io << "end\n"
+
+      io << "def self.cast?(obj)\n"
+      io << "  return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?\n"
+      io << "  new(obj.to_unsafe, GICrystal::Transfer::None)\n"
       io << "end\n"
     end
 

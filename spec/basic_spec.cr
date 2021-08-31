@@ -41,12 +41,20 @@ describe "GObject Binding" do
     it "can downcast objects" do
       child = Test::SubjectChild.new("hey")
       gobj = child.me_as_gobject
+      gobj.ref_count.should eq(2)
       gobj.class.should eq(GObject::Object)
       cast = Test::Subject.cast(gobj)
+      cast.ref_count.should eq(3)
       cast.string.should eq("hey")
     end
 
-    pending "can upcast objects"
+    it "thrown an exception on bad casts" do
+      expect_raises(TypeCastError) { Test::SubjectChild.cast(Test::Subject.new) }
+    end
+
+    it "return new on bad casts using cast?" do
+      Test::SubjectChild.cast?(Test::Subject.new).should eq(nil)
+    end
   end
 
   describe "getters" do
