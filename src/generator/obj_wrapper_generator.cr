@@ -24,6 +24,7 @@ module Generator
       generate_require_calls(io)
 
       io << "module " << to_type_name(@namespace.name) << LF
+      doc_repo.doc(io, @obj_info)
       generate_class_declaration(io)
       generate_interface_includes(io)
       generate_initialize(io)
@@ -62,6 +63,7 @@ module Generator
 
     private def generate_initialize(io : IO)
       io << "@pointer : Pointer(Void)\n" \
+            "# :nodoc:\n" \
             "def initialize(@pointer, transfer : GICrystal::Transfer)\n"
       if @obj_info.parent.nil?
         io << "LibGObject.g_object_ref(self)  unless transfer.full?\n"
@@ -120,11 +122,13 @@ module Generator
 
     private def generate_casts(io : IO)
       type_name = to_crystal_type(@obj_info)
-      io << "def self.cast(obj)\n"
+      io << "# Cast a `GObject::Object` to `" << type_name << "`, throw `TypeCastError` if cast can't be made.\n"
+      io << "def self.cast(obj : GObject::Object)\n"
       io << "  cast?(obj) || raise TypeCastError.new(\"can't cast \#{typeof(obj).name} to " << type_name << "\")\n"
       io << "end\n"
 
-      io << "def self.cast?(obj)\n"
+      io << "# Cast a `GObject::Object` to `" << type_name << "`, returns nil if cast can't be made.\n"
+      io << "def self.cast?(obj : GObject::Object)\n"
       io << "  return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?\n"
       io << "  new(obj.to_unsafe, GICrystal::Transfer::None)\n"
       io << "end\n"

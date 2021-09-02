@@ -33,6 +33,11 @@ typedef struct _TestStruct {
   gint16 begin;
 } TestStruct;
 
+/**
+ * TestSubject:
+ *
+ * Main class used to test all sort of things directly related or not to GObject.
+ */
 #define TEST_TYPE_SUBJECT test_subject_get_type()
 G_DECLARE_DERIVABLE_TYPE(TestSubject, test_subject, TEST, SUBJECT, GObject)
 

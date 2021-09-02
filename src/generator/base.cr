@@ -1,5 +1,6 @@
 require "../gobject_introspection"
 require "./helpers"
+require "./doc_repo"
 
 module Generator
   include GObjectIntrospection
@@ -15,6 +16,10 @@ module Generator
 
     def config
       Config.for(@namespace.name)
+    end
+
+    def doc_repo : DocRepo
+      DocRepo.for(@namespace)
     end
 
     # True if this generator should be ignored.

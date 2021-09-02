@@ -19,6 +19,7 @@ module Generator
     private def do_generate(io : IO)
       iface_name = to_lib_type(@iface_info, include_namespace: false)
       io << "module " << to_type_name(@namespace.name) << LF
+      doc_repo.doc(io, @iface_info)
       io << "module " << iface_name << LF
       MethodWrapperGenerator.generate(io, @iface_info.methods)
       io << "end\n"

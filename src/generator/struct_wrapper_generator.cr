@@ -22,6 +22,7 @@ module Generator
 
     def do_generate(io : IO)
       io << "module " << to_type_name(@namespace.name) << LF
+      doc_repo.doc(io, @struct_info)
       io << "class " << to_crystal_type(@struct_info, include_namespace: false) << LF
       io << "@pointer : Pointer(Void)\n"
       generate_struct_initialize(io)
