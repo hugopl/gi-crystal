@@ -1,0 +1,30 @@
+name: Crystal CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, crystal: latest}
+          - {os: ubuntu-latest, crystal: nightly}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get install gobject-introspection libgirepository1.0-dev
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: ${{ matrix.crystal }}
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: shards install
+      - name: Run tests
+        run: make test
