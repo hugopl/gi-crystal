@@ -68,6 +68,7 @@ module Generator
                                   data : Void*,
                                   destroy_data : Void* -> Nil,
                                   flags : UInt32) : UInt64
+        fun g_signal_emit_by_name(instance : Void*, detailed_signal : UInt8*, ...)
 
         # Null terminated strings GType, used by GValue
         fun g_strv_get_type : UInt64

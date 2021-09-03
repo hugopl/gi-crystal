@@ -29,7 +29,13 @@ typedef enum {
   N_PROPERTIES
 } TestSubjectProperty;
 
+typedef enum {
+  VARIANT_SIGNAL = 1,
+  N_SIGNALS
+} TestSubjectSignals;
+
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+static guint obj_signals[N_SIGNALS] = { 0, };
 
 static void test_subject_dispose(GObject *gobject) {
   // TestSubjectPrivate *priv = test_subject_get_instance_private(TEST_SUBJECT(gobject));
@@ -125,6 +131,18 @@ static void test_subject_class_init(TestSubjectClass *klass) {
 
   g_object_class_install_properties(object_class, N_PROPERTIES, obj_properties);
 
+  // Register signals
+  obj_signals[VARIANT_SIGNAL] = g_signal_new("variant",
+                                             G_TYPE_FROM_CLASS(klass),
+                                             G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                                             0,    // class_offset
+                                             NULL, // accumulator
+                                             NULL, // accumulator data
+                                             NULL, // C marshaller
+                                             G_TYPE_NONE, // return_type
+                                             1,     // n_params
+                                             G_TYPE_VARIANT,
+                                             NULL);
 }
 
 static void test_subject_init(TestSubject *self) {

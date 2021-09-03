@@ -38,7 +38,7 @@ describe "GObject signals" do
     GlobalVar.value.should eq("full_notify_slot called #{subject.to_unsafe}")
   end
 
-  it "can connecy a after signal" do
+  it "can connect a after signal" do
     subject = Test::Subject.new
     subject.notify_signal["string"].connect_after(->lean_notify_slot)
     subject.notify_signal["string"].connect(->full_notify_slot(GObject::Object))
@@ -47,4 +47,6 @@ describe "GObject signals" do
     GlobalVar.value.should eq("full_notify_slot called #{subject.to_unsafe}\n" \
                               "lean_notify_slot called")
   end
+
+  pending "test emit signals with return values"
 end

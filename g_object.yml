@@ -1,5 +1,4 @@
 include:
- - src/gi_crystal/signal.cr
  - src/gi_crystal/type.cr
  - src/gi_crystal/value.cr
 

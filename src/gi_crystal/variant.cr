@@ -21,12 +21,16 @@ module GLib
              end
     end
 
+    def initialize(@ptr, transfer : GICrystal::Transfer)
+      LibGLib.g_variant_ref(self) unless transfer.full?
+    end
+
     def finalize
       LibGLib.g_variant_unref(self)
     end
 
     def raw
-      raise NotImplementedError.new # 😁️
+      raise NotImplementedError.new("Variant implementation still a WIP 😁️")
     end
 
     {% for name, type in {

@@ -1,5 +1,6 @@
 require "./base"
 require "./wrapper_util"
+require "./signal_wrapper_generator"
 
 module Generator
   class ObjWrapperGenerator < Base
@@ -202,76 +203,7 @@ module Generator
 
     private def generate_signals(io : IO)
       @obj_info.signals.each do |signal|
-        generate_signal(io, signal)
-      end
-    end
-
-    private def generate_signal(io : IO, signal : SignalInfo)
-      io << "def " << to_method_name(signal.name) << "_signal" << LF
-      generate_signal_impl(io, signal)
-      io << "end\n"
-    end
-
-    private def generate_signal_impl(io : IO, signal : SignalInfo)
-      signal_name = signal.name
-
-      slot_c_args = String.build do |s|
-        s << "lib_sender : Pointer(Void)"
-        signal.args.each_with_index do |arg, i|
-          arg_type = to_lib_type(arg.type_info, structs_as_void: true)
-          # If arg_type is Void, it's probably a struct, GObjIntrospection doesn't inform that signal args are pointer when
-          # they are structs
-          arg_type = "Pointer(#{arg_type})" if arg_type == "Void"
-          s << ", lib_arg" << i << " : " << arg_type
-        end
-        s << ", box : Pointer(Void)"
-      end
-
-      signal_binding_args = signal.args.reject do |arg|
-        Config.for(arg.namespace.name).ignore?(to_crystal_type(arg.type_info, false))
-      end
-
-      crystal_return_type = to_crystal_type(signal.return_type)
-
-      slot_crystal_proc_params = String.build do |s|
-        signal_binding_args.each do |arg|
-          s << to_crystal_type(arg.type_info) << ", "
-        end
-        s << crystal_return_type
-      end
-
-      crystal_box_args = signal_binding_args.size.times.map { |i| "arg#{i}" }.join(",")
-
-      io << "full_slot = ->(" << slot_c_args << ") {\n"
-      io << "sender = " << convert_to_crystal("lib_sender", @obj_info, :none) << LF
-      generate_signal_args_conversion(io, signal, signal_binding_args)
-      io << "::Box(Proc(" << to_crystal_type(@obj_info) << "," << slot_crystal_proc_params << ")).unbox(box).call(sender, "
-      io << crystal_box_args << ")"
-      io << ".to_unsafe" unless crystal_return_type == "Nil"
-      io << "\n}\n"
-
-      io << "lean_slot = ->(" << slot_c_args << ") {\n"
-      generate_signal_args_conversion(io, signal, signal_binding_args)
-      io << "::Box(Proc(" << slot_crystal_proc_params << ")).unbox(box).call(" << crystal_box_args << ")"
-      io << ".to_unsafe" unless crystal_return_type == "Nil"
-      io << "\n}\n"
-
-      io << "GObject::Signal("
-      io << to_crystal_type(@obj_info) << ","
-      io << to_crystal_type(signal.return_type)
-      signal_binding_args.each do |arg|
-        io << "," << to_crystal_type(arg.type_info)
-      end
-      io << ").new(to_unsafe, \"" << signal.name << "\",\nfull_slot.pointer,\nlean_slot.pointer)\n"
-    end
-
-    def generate_signal_args_conversion(io : IO, signal : SignalInfo, signal_binding_args : Array(ArgInfo))
-      j = 0
-      signal.args.each_with_index do |arg, i|
-        next unless signal_binding_args.includes?(arg)
-
-        io << "arg" << j << " = " << convert_to_crystal("lib_arg#{i}", arg.type_info, :none) << LF
-        j += 1
+        SignalWrapperGenerator.new(@obj_info, signal).generate(io)
       end
     end
   end

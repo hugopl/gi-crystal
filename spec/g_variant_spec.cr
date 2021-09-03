@@ -16,6 +16,17 @@ describe "GVariant" do
     it { Test::Subject.g_variant_parameter(GLib::Variant.new("ho")).should eq("'ho'") }
   end
 
+  pending "can be used as a signal parameter" do
+    subject = Test::Subject.new
+    test_variant = nil
+    subject.variant_signal.connect do |variant|
+      test_variant = variant
+    end
+
+    subject.variant_signal.emit(42)
+    test_variant.not_nil!.as_i.should eq(42)
+  end
+
   context "respond to as_* and as_*?" do
   end
 
