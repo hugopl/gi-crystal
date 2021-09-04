@@ -14,6 +14,8 @@ describe "GVariant" do
     it { Test::Subject.g_variant_parameter(0.5).should eq("0.5") }
     it { Test::Subject.g_variant_parameter(1.0_f32).should eq("1.0") }
     it { Test::Subject.g_variant_parameter(GLib::Variant.new("ho")).should eq("'ho'") }
+    it { Test::Subject.g_variant_parameter(%w(hey ho)).should eq("['hey', 'ho']") }
+    it { Test::Subject.g_variant_parameter({"hey", "ho"}).should eq("['hey', 'ho']") }
   end
 
   pending "can be used as a signal parameter" do
@@ -28,6 +30,19 @@ describe "GVariant" do
   end
 
   context "respond to as_* and as_*?" do
+    it { GLib::Variant.new(8_u8).as_u8.should eq(8_u8) }
+    it { GLib::Variant.new(16_i16).as_i16.should eq(16_i16) }
+    it { GLib::Variant.new(17_u16).as_u16.should eq(17_u16) }
+    it { GLib::Variant.new(32).as_i.should eq(32) }
+    it { GLib::Variant.new(32).as_i32.should eq(32) }
+    it { GLib::Variant.new(33_u32).as_u32.should eq(33_u32) }
+    it { GLib::Variant.new(64_i64).as_i64.should eq(64_i64) }
+    it { GLib::Variant.new(65_u64).as_u64.should eq(65_u64) }
+    it { GLib::Variant.new(0.5).as_f.should eq(0.5) }
+    it { GLib::Variant.new(1.0).as_f64.should eq(1.0) }
+    it { GLib::Variant.new(true).as_bool.should eq(true) }
+    it { GLib::Variant.new(false).as_bool.should eq(false) }
+    it { GLib::Variant.new("hey").as_s.should eq("hey") }
   end
 
   pending "can be used in return values"

@@ -29,22 +29,51 @@ module GLib
       LibGLib.g_variant_unref(self)
     end
 
+    def classify : VariantClass
+      VariantClass.from_value(LibGLib.g_variant_classify(self))
+    end
+
     def raw
-      raise NotImplementedError.new("Variant implementation still a WIP 😁️")
+      case classify
+      when .boolean? then GICrystal.to_bool(LibGLib.g_variant_get_boolean(self))
+      when .byte?    then LibGLib.g_variant_get_byte(self)
+      when .int16?   then LibGLib.g_variant_get_int16(self)
+      when .uint16?  then LibGLib.g_variant_get_uint16(self)
+      when .int32?   then LibGLib.g_variant_get_int32(self)
+      when .uint32?  then LibGLib.g_variant_get_uint32(self)
+      when .int64?   then LibGLib.g_variant_get_int64(self)
+      when .uint64?  then LibGLib.g_variant_get_uint64(self)
+      when .double?  then LibGLib.g_variant_get_double(self)
+      when .string?  then String.new(LibGLib.g_variant_get_string(self, Pointer(UInt64).null))
+      when .variant? then Variant.new(LibGLib.g_variant_get_variant(self), :full)
+        # These types aren't implemented yet 😥️
+        # when .handle?     then LibGLib.g_variant_get_handle(self)
+        # when .object_path? then LibGLib.g_variant_get_object_path(self)
+        # when .signature?  then LibGLib.g_variant_get_signature(self)
+        # when .maybe?      then LibGLib.g_variant_get_maybe(self)
+        # when .array?      then LibGLib.g_variant_get_array(self)
+        # when .tuple?      then LibGLib.g_variant_get_tuple(self)
+        # when .dictentry?  then LibGLib.g_variant_get_dictentry(self)
+      else
+        raise NotImplementedError.new("Variant for #{classify} not fully implemented, can you help? 😁️")
+      end
     end
 
     {% for name, type in {
-                           "u8"   => UInt8,
-                           "i32"  => Int32,
-                           "i"    => Int32,
-                           "u32"  => UInt32,
-                           "u"    => UInt32,
-                           "i64"  => Int64,
-                           "u64"  => UInt64,
-                           "f"    => Float64,
-                           "f64"  => Float64,
-                           "bool" => Bool,
-                           "s"    => String,
+                           "u8"      => UInt8,
+                           "i16"     => Int16,
+                           "u16"     => UInt16,
+                           "i32"     => Int32,
+                           "i"       => Int32,
+                           "u32"     => UInt32,
+                           "u"       => UInt32,
+                           "i64"     => Int64,
+                           "u64"     => UInt64,
+                           "f"       => Float64,
+                           "f64"     => Float64,
+                           "bool"    => Bool,
+                           "s"       => String,
+                           "strlist" => Array(String),
                          } %}
 
        def as_{{name.id}} : {{type}}
