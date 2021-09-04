@@ -29,6 +29,7 @@ module Generator
             "  @transfer : GICrystal::Transfer\n" \
             "\n" \
             "  def initialize(@pointer, @transfer)\n" \
+            "    LibGObject.g_object_ref(self) unless transfer.full?\n" \
             "  end\n" \
             "\n" \
             "  def finalize\n" \

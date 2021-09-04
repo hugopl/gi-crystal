@@ -6,7 +6,8 @@ describe "GObject Binding" do
       subject = Test::Subject.new
       subject.ref_count.should eq(1)
       iface = subject.return_myself_as_interface
-      subject.ref_count.should eq(1)
+      iface.to_unsafe.should eq(subject.to_unsafe)
+      subject.ref_count.should eq(2)
     end
 
     it "increase object reference when passing it to a transfer full method" do
