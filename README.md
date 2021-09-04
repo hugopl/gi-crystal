@@ -1,3 +1,5 @@
+![Build Status](https://github.com/hugopl/gi-crystal/actions/workflows/crystal.yml/badge.svg?branch=master)
+
 # GI Crystal
 
 GI Crystal is a binding generator used to generate Crystal bindings for GObject based libraries using
