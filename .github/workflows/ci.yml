@@ -26,5 +26,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Install dependencies
         run: shards install
+      - name: Ameba
+        run: ./bin/ameba
+      - name: Linter
+        run: crystal tool format --exclude src/gobject_introspection/lib_gobject_introspection.cr
       - name: Run tests
         run: make test

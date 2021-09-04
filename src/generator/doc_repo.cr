@@ -62,8 +62,8 @@ module Generator
 
     private def xpath_for(info : BaseInfo) : String?
       case info
-      when ObjectInfo then "/xmlns:repository/xmlns:namespace/xmlns:class[@name=\"#{info.name}\"]/xmlns:doc[1]"
-      when StructInfo then "/xmlns:repository/xmlns:namespace/xmlns:record[@name=\"#{info.name}\"]/xmlns:doc[1]"
+      when ObjectInfo    then "/xmlns:repository/xmlns:namespace/xmlns:class[@name=\"#{info.name}\"]/xmlns:doc[1]"
+      when StructInfo    then "/xmlns:repository/xmlns:namespace/xmlns:record[@name=\"#{info.name}\"]/xmlns:doc[1]"
       when InterfaceInfo then "/xmlns:repository/xmlns:namespace/xmlns:interface[@name=\"#{info.name}\"]/xmlns:doc[1]"
       end
     end

@@ -197,9 +197,9 @@ module Generator::Helpers
     tag = type.tag
     case tag
     when .boolean?
-      return "GICrystal.to_bool(#{var})"
+      "GICrystal.to_bool(#{var})"
     when .int8?, .u_int8?, .int16?, .u_int16?, .int32?, .u_int32?, .int64?, .u_int64?, .float?, .double?, .unichar?, .gtype?
-      return var
+      var
     when .utf8?, .filename?
       if transfer.full?
         "GICrystal.transfer_full(#{var})"

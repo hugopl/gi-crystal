@@ -7,7 +7,7 @@ module Generator
   class Error < RuntimeError
   end
 
-  LF = "\n"
+  LF  = "\n"
   Log = ::Log.for("generator")
 
   def generate(namespace : String, version : String?, output_dir : String)

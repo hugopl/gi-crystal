@@ -162,10 +162,7 @@ module Generator
     end
 
     def generate_method_wrapper_impl(io : IO)
-      args = @method_info.args
-      return_type_info = @method_info.return_type
-
-      if args.any?
+      if @method_info.args.any?
         generate_lenght_param_impl(io)
         generate_optional_param_impl(io)
         generate_nullable_and_arrays_params(io)
@@ -247,7 +244,7 @@ module Generator
         if Config.handmade?(arg.type_info)
           type = to_crystal_type(arg.type_info)
           var = to_identifier(arg.name)
-          io << var << "=" << type << ".new("<< var << ") unless " << var << ".is_a?(" << type << ")\n"
+          io << var << "=" << type << ".new(" << var << ") unless " << var << ".is_a?(" << type << ")\n"
         end
       end
     end
@@ -263,7 +260,6 @@ module Generator
     end
 
     def generate_lib_call(io : IO)
-      args = @method_info.args
       flags = @method_info.flags
 
       io << to_lib_type(@method_info, include_namespace: true) << "("

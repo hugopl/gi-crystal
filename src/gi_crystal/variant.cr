@@ -34,17 +34,17 @@ module GLib
     end
 
     {% for name, type in {
-                           "u8"      => UInt8,
-                           "i32"     => Int32,
-                           "i"       => Int32,
-                           "u32"     => UInt32,
-                           "u"       => UInt32,
-                           "i64"     => Int64,
-                           "u64"     => UInt64,
-                           "f"       => Float64,
-                           "f64"     => Float64,
-                           "bool"    => Bool,
-                           "s"       => String,
+                           "u8"   => UInt8,
+                           "i32"  => Int32,
+                           "i"    => Int32,
+                           "u32"  => UInt32,
+                           "u"    => UInt32,
+                           "i64"  => Int64,
+                           "u64"  => UInt64,
+                           "f"    => Float64,
+                           "f64"  => Float64,
+                           "bool" => Bool,
+                           "s"    => String,
                          } %}
 
        def as_{{name.id}} : {{type}}

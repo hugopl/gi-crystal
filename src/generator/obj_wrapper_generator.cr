@@ -188,7 +188,7 @@ module Generator
       return_type = to_crystal_type(type_info)
 
       io << "# " << prop.ownership_transfer << LF
-      io << "def " << to_method_name(prop.name) << " : " << to_crystal_type(type_info)
+      io << "def " << to_method_name(prop.name) << " : " << return_type
       io << "?" if is_obj
       io << LF
 

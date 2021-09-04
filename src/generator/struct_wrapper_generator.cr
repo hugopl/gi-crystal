@@ -64,7 +64,6 @@ module Generator
 
       # Initialize by parameters
       io << "def self.new("
-      ctor_args = [] of String
       io << @struct_info.fields.map do |field|
         "#{to_crystal_arg_decl(field.name)} : #{to_crystal_type(field.type_info)}? = nil"
       end.join(", ")

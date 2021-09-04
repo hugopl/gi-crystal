@@ -1,0 +1,8 @@
+Excluded:
+  - build
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Performance/AnyInsteadOfEmpty:
+  Enabled: false
