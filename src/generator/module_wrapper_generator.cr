@@ -156,10 +156,6 @@ module Generator
           next if value.deprecated?
           io << to_type_name(value.name) << " = " << value.value << LF
         end
-
-        io << "def to_g_value : GObject::Value\n" \
-              "  GObject::Value.new(self)\n" \
-              "end\n"
         io << "end\n"
       end
     end
