@@ -94,7 +94,7 @@ module GObject
                            "i64"     => Int64,
                            "u64"     => UInt64,
                            "f32"     => Float32,
-                           "f"       => Float32,
+                           "f"       => Float64,
                            "f64"     => Float64,
                            "bool"    => Bool,
                            "s"       => String,
