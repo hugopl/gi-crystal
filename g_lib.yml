@@ -124,6 +124,7 @@ ignore:
  - g_idle_add_full
  - g_io_add_watch_full
  - g_io_create_watch
+ - g_key_file_load_from_bytes
  - g_listenv
  - g_locale_from_utf8
  - g_main_context_add_poll
