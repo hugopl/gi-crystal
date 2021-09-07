@@ -29,6 +29,6 @@ jobs:
       - name: Ameba
         run: ./bin/ameba
       - name: Linter
-        run: crystal tool format --exclude src/gobject_introspection/lib_gobject_introspection.cr
+        run: crystal tool format --check
       - name: Run tests
         run: make test
