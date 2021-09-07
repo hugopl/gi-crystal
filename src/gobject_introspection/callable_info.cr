@@ -21,15 +21,11 @@ module GObjectIntrospection
     end
 
     def may_return_null? : Bool
-      to_bool(LibGIRepository.g_callable_info_may_return_null(self))
+      GICrystal.to_bool(LibGIRepository.g_callable_info_may_return_null(self))
     end
 
     def caller_owns
       GICrystal::Transfer.from_value(LibGIRepository.g_callable_info_get_caller_owns(self))
-    end
-
-    def optimal?
-      to_bool(LibGIRepository.g_arg_info_is_optional(self))
     end
   end
 end

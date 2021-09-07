@@ -71,6 +71,15 @@ TestSubject *test_subject_new_from_string(const gchar *string);
 void test_subject_set_str_list(TestSubject* self, const char** list);
 
 /**
+ * test_subject_may_return_null:
+ * @return_nil:
+ * Returns: (transfer none) (nullable): Return self if `return_nil` is true, NULL otherwise.
+ *
+ * Used to test return null
+ */
+TestSubject* test_subject_may_return_null(TestSubject* self, gboolean return_nil);
+
+/**
  * test_subject_transfer_full_param:
  * @subject: (transfer full):
  */

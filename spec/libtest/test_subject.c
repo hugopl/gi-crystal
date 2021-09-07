@@ -167,6 +167,9 @@ void test_subject_set_str_list(TestSubject* self, const char** list) {
   priv->str_list = g_strdupv((char **)list);
 }
 
+TestSubject* test_subject_may_return_null(TestSubject* self, gboolean return_nil) {
+  return return_nil ? NULL : self;
+}
 
 void test_subject_transfer_full_param(GObject* subject) {
 }

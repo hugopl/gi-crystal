@@ -267,6 +267,14 @@ describe "GObject Binding" do
     end
   end
 
+  describe "return values" do
+    it "can be nullable" do
+      subject = Test::Subject.new
+      subject.may_return_null(true).should eq(nil)
+      subject.may_return_null(false).not_nil!.to_unsafe.should eq(subject.to_unsafe)
+    end
+  end
+
   describe "optional parameters" do
     it "are removed" do
       Test::Subject.no_optional_param.should eq(0)

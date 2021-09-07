@@ -120,14 +120,18 @@ module Generator
       end
 
       return_type = @return_type
+      nullable = false
       type = if return_type.nil? || constructor?
                "Nil"
-             elsif return_type.is_a?(ArgInfo)
+             elsif return_type.is_a?(ArgInfo) # If we got here, the return value is an out parameter
                to_crystal_type(return_type.type_info)
              elsif return_type.is_a?(TypeInfo)
+               nullable = @method_info.may_return_null?
                to_crystal_type(return_type)
              end
-      io << " : " << type << LF
+      io << " : " << type
+      io << '?' if nullable
+      io << LF
     end
 
     private def method_args
@@ -284,7 +288,9 @@ module Generator
              elsif return_type.is_a?(TypeInfo)
                convert_to_crystal("_retval", return_type, @method_info.caller_owns)
              end
-      io << expr << LF if expr != "_retval"
+      io << expr if expr != "_retval"
+      io << " if _retval" if @method_info.may_return_null?
+      io << LF
     end
 
     # If the method only receive a array as argument, create a splat overload, so if
