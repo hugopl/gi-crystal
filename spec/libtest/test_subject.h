@@ -47,6 +47,20 @@ struct _TestSubjectClass {
   /* Class virtual function fields. */
 };
 
+
+#define TEST_SUBJECT_ERROR test_subject_error_quark ()
+G_DEFINE_QUARK(test-subject-error-quark, test_subject_error)
+
+/**
+ * TestSubjectError:
+ * @TEST_SUBJECT_ERROR_WHATEVER: Whatever happened
+ *
+ * Error codes for TEST_SUBJECT_ERROR
+ */
+typedef enum {
+  TEST_SUBJECT_ERROR_WHATEVER
+} TestSubjectError;
+
 /**
  * test_subject_new:
  * Returns: (transfer full): Obj instance
@@ -265,6 +279,14 @@ void test_subject_g_value_by_out_parameter(GValue* value);
  * Returns: String representation of g_variant
  */
 gchar* test_subject_g_variant_parameter(GVariant* variant);
+
+/**
+ * test_subject_return_g_error:
+ * Returns: (transfer full): A GError
+ *
+ * Used to test GError as return value
+ */
+GError* test_subject_return_g_error();
 
 /**
  * test_subject_return_myself_as_interface:

@@ -50,7 +50,7 @@ module Generator::Helpers
     when .gs_list?          then "LibGLib::SList"
     when .g_hash?           then "Void"
     when .unichar?          then "UInt32"
-    when .error?            then "LibGLib::Error"
+    when .error?            then "Void"
     else
       raise Error.new("Unknown lib representation for #{tag}")
     end
@@ -166,7 +166,7 @@ module Generator::Helpers
     when .array?
       t = to_crystal_type(type.param_type, include_namespace, is_arg: is_arg)
       "Enumerable(#{t})"
-    when tag.utf8?, .filename?, .g_list?, .gs_list?
+    when tag.utf8?, .filename?, .g_list?, .gs_list?, .error?
       to_crystal_type(tag)
     else
       tag_str = to_crystal_type(tag)
@@ -209,6 +209,8 @@ module Generator::Helpers
     when .interface?
       iface = type.interface.not_nil!
       convert_to_crystal(var, iface, transfer)
+    when .error?
+      "GLib::Error.new(#{var}, GICrystal::Transfer::#{transfer})"
     when .void?
       type.pointer? ? "Pointer(Void)" : "Void"
     when .g_list?

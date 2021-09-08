@@ -156,7 +156,7 @@ module Generator
           next if value.deprecated?
           io << to_type_name(value.name) << " = " << value.value << LF
         end
-        io << "end\n"
+        io << "end\n\n"
       end
     end
 

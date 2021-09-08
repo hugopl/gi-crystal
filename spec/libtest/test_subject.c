@@ -359,3 +359,7 @@ void test_subject_g_value_by_out_parameter(GValue* value) {
 gchar* test_subject_g_variant_parameter(GVariant* variant) {
   return g_variant_print(variant, TRUE);
 }
+
+GError* test_subject_return_g_error() {
+  return g_error_new(TEST_SUBJECT_ERROR, TEST_SUBJECT_ERROR_WHATEVER, "whatever message");
+}
