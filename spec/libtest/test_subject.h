@@ -47,9 +47,7 @@ struct _TestSubjectClass {
   /* Class virtual function fields. */
 };
 
-
 #define TEST_SUBJECT_ERROR test_subject_error_quark ()
-G_DEFINE_QUARK(test-subject-error-quark, test_subject_error)
 
 /**
  * TestSubjectError:

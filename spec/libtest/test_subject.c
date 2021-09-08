@@ -1,6 +1,8 @@
 #include "test_subject.h"
 #include "test_iface.h"
 
+G_DEFINE_QUARK(test-subject-error-quark, test_subject_error)
+
 /* Private structure definition. */
 typedef struct {
   gchar *string;
