@@ -1,5 +1,7 @@
 module Generator
   class SignalWrapperGenerator < Base
+    include WrapperUtil
+
     @obj : ObjectInfo
     @signal : SignalInfo
     @signal_args : Array(ArgInfo)?
@@ -84,12 +86,11 @@ module Generator
             GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 1)
         end
 
-        def emit(*args)
-        end
-      end
-
       EOT
       io << obj
+
+      generate_emit_method(io)
+      io << "\nend\n"
     end
 
     private def has_return_value?
@@ -178,6 +179,27 @@ module Generator
         io << "arg" << j << " = " << convert_to_crystal("lib_arg#{i}", arg.type_info, :none) << LF
         j += 1
       end
+    end
+
+    private def generate_emit_method(io : IO)
+      arg_vars = signal_args.map { |arg| to_identifier(arg.name) }
+
+      # Emit declaration
+      io << "def emit("
+      io << signal_args.map_with_index do |arg, i|
+        "#{arg_vars[i]} : #{to_crystal_type(arg.type_info, is_arg: true)}"
+      end.join(",")
+      io << ") : Nil\n"
+
+      generate_handmade_types_param_conversion(io, signal_args)
+
+      # Signal emission
+      io << "LibGObject.g_signal_emit_by_name(@source, \"" << @signal.name << "\""
+      arg_vars.each do |arg|
+        io << ", " << arg
+      end
+      io << ")\n"
+      io << "end\n"
     end
   end
 end

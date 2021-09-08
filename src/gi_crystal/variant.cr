@@ -3,26 +3,27 @@ module GLib
     @ptr : Pointer(Void)
 
     def initialize(value)
-      @ptr = case value
-             when Bool               then LibGLib.g_variant_new_boolean(value)
-             when Enumerable(String) then LibGLib.g_variant_new_strv(value.map(&.to_unsafe).to_a, value.size)
-             when Float32, Float64   then LibGLib.g_variant_new_double(value)
-             when Int16              then LibGLib.g_variant_new_int16(value)
-             when Int32              then LibGLib.g_variant_new_int32(value)
-             when Int64              then LibGLib.g_variant_new_int64(value)
-             when String             then LibGLib.g_variant_new_string(value)
-             when UInt16             then LibGLib.g_variant_new_uint16(value)
-             when UInt32             then LibGLib.g_variant_new_uint32(value)
-             when UInt64             then LibGLib.g_variant_new_uint64(value)
-             when UInt8              then LibGLib.g_variant_new_byte(value)
-             when Variant            then LibGLib.g_variant_new_variant(value)
-             else
-               raise ArgumentError.new("Unable to wrap a #{value.class} into a GVariant.")
-             end
+      ptr = case value
+            when Bool               then LibGLib.g_variant_new_boolean(value)
+            when Enumerable(String) then LibGLib.g_variant_new_strv(value.map(&.to_unsafe).to_a, value.size)
+            when Float32, Float64   then LibGLib.g_variant_new_double(value)
+            when Int16              then LibGLib.g_variant_new_int16(value)
+            when Int32              then LibGLib.g_variant_new_int32(value)
+            when Int64              then LibGLib.g_variant_new_int64(value)
+            when String             then LibGLib.g_variant_new_string(value)
+            when UInt16             then LibGLib.g_variant_new_uint16(value)
+            when UInt32             then LibGLib.g_variant_new_uint32(value)
+            when UInt64             then LibGLib.g_variant_new_uint64(value)
+            when UInt8              then LibGLib.g_variant_new_byte(value)
+            when Variant            then LibGLib.g_variant_new_variant(value)
+            else
+              raise ArgumentError.new("Unable to wrap a #{value.class} into a GVariant.")
+            end
+      initialize(ptr, :none) # we must sink the floating ref.
     end
 
     def initialize(@ptr, transfer : GICrystal::Transfer)
-      LibGLib.g_variant_ref(self) unless transfer.full?
+      LibGLib.g_variant_ref_sink(self) unless transfer.full?
     end
 
     def finalize
@@ -73,7 +74,7 @@ module GLib
                            "f64"     => Float64,
                            "bool"    => Bool,
                            "s"       => String,
-                           "strlist" => Array(String),
+                           "variant" => Variant,
                          } %}
 
        def as_{{name.id}} : {{type}}

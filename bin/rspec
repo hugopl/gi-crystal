@@ -9,4 +9,4 @@ export LIBRARY_PATH="$BUILD_DIR/spec/build"
 export LD_LIBRARY_PATH="$BUILD_DIR/spec/build"
 # export G_DEBUG=fatal-warnings
 
-crystal spec --error-trace $@
+crystal spec -d --error-trace $@

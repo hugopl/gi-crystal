@@ -16,11 +16,13 @@ describe "GValue" do
 
     it { Test::Subject.g_value_parameter("hey").should eq("gchararray:hey;") }
     it { Test::Subject.g_value_parameter(Test::Subject.new).should eq("GObject:?;") }
+    it { Test::Subject.g_value_parameter(GLib::Variant.new(42)).should eq("GVariant:?;") }
   end
 
   context "respond to as_* and as_*?" do
     it { GObject::Value.new(5).as_s?.should eq(nil) }
     it { GObject::Value.new(5).as_i32.should eq(5) }
+    it { GObject::Value.new(true).as_bool.should eq(true) }
     it { GObject::Value.new("hi").as_s?.should eq("hi") }
     it { GObject::Value.new("ho").as_s.should eq("ho") }
     it do

@@ -18,7 +18,7 @@ describe "GVariant" do
     it { Test::Subject.g_variant_parameter({"hey", "ho"}).should eq("['hey', 'ho']") }
   end
 
-  pending "can be used as a signal parameter" do
+  it "can be used as a signal parameter" do
     subject = Test::Subject.new
     test_variant = nil
     subject.variant_signal.connect do |variant|

@@ -132,6 +132,11 @@ static void test_subject_class_init(TestSubjectClass *klass) {
   g_object_class_install_properties(object_class, N_PROPERTIES, obj_properties);
 
   // Register signals
+  /**
+   * TestSubject::variant:
+   * @subject: the subject who sent the signal.
+   * @variant: a GVariant
+   */
   obj_signals[VARIANT_SIGNAL] = g_signal_new("variant",
                                              G_TYPE_FROM_CLASS(klass),
                                              G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,

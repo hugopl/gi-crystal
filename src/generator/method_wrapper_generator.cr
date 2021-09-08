@@ -113,7 +113,7 @@ module Generator
     private def generate_method_declaration(io : IO)
       io << "[@Deprecated]\n" if @method_info.deprecated?
       io << "def " << method_identifier
-      generate_method_wrapper_args(io) if @method_info.args.any?
+      generate_method_wrapper_args(io, method_args) if method_args.any?
       if constructor?
         io << LF
         return
@@ -155,16 +155,6 @@ module Generator
       end
     end
 
-    private def generate_method_wrapper_args(io : IO)
-      io << "("
-      io << method_args.map do |arg|
-        null_mark = "?" if arg.nullable?
-        type = to_crystal_type(arg.type_info, is_arg: true)
-        "#{to_crystal_arg_decl(arg.name)} : #{type}#{null_mark}"
-      end.join(", ")
-      io << ")"
-    end
-
     def generate_method_wrapper_impl(io : IO)
       if @method_info.args.any?
         generate_lenght_param_impl(io)
@@ -172,7 +162,7 @@ module Generator
         generate_nullable_and_arrays_params(io)
         generate_array_param_impl(io)
         generate_caller_allocates_param_impl(io)
-        generate_handmade_types_param_impl(io)
+        generate_handmade_types_param_conversion(io, method_args)
         generate_g_ref_on_transfer_full_param(io)
       end
 
@@ -240,16 +230,6 @@ module Generator
       return_type = @return_type
       if return_type.is_a?(ArgInfo)
         io << to_identifier(return_type.name) << "=" << to_crystal_type(return_type.type_info) << ".new\n"
-      end
-    end
-
-    private def generate_handmade_types_param_impl(io : IO)
-      method_args.each do |arg|
-        if Config.handmade?(arg.type_info)
-          type = to_crystal_type(arg.type_info)
-          var = to_identifier(arg.name)
-          io << var << "=" << type << ".new(" << var << ") unless " << var << ".is_a?(" << type << ")\n"
-        end
       end
     end
 
