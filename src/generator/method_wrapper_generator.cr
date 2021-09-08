@@ -268,8 +268,10 @@ module Generator
              elsif return_type.is_a?(TypeInfo)
                convert_to_crystal("_retval", return_type, @method_info.caller_owns)
              end
-      io << expr if expr != "_retval"
-      io << " if _retval" if @method_info.may_return_null?
+      if expr != "_retval"
+        io << expr
+        io << " if _retval" if @method_info.may_return_null?
+      end
       io << LF
     end
 
