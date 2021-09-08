@@ -170,7 +170,6 @@ module Generator
         io << "end\n\n"
       end
 
-      return if obj_info.methods.empty?
       io << "# " << to_lib_type(obj_info) << " C Functions\n"
       generate_type_init(io, obj_info)
       generate_c_functions(io, obj_info.methods, force_ignore)
