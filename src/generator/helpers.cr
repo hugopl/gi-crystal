@@ -1,5 +1,5 @@
 module Generator::Helpers
-  KEYWORDS = {"abstract", "alias", "begin", "def", "end", "enum", "in", "module", "next", "out", "self"}
+  KEYWORDS = {"abstract", "alias", "begin", "def", "end", "enum", "in", "module", "next", "out", "self", "select", "extend"}
 
   def to_get_type_function(struct_info : StructInfo)
     "#{struct_info.namespace.name.underscore}_#{struct_info.name.underscore}_get_type"
