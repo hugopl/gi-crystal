@@ -33,10 +33,10 @@ module Generator
       if parent.nil?
         generate_finalize(io)
         generate_to_unsafe(io)
+        generate_ref_count(io)
       end
       generate_g_type_method(io, @obj_info)
       generate_casts(io)
-      generate_ref_count(io)
       MethodWrapperGenerator.generate(io, @obj_info.methods)
       generate_property_wrappers(io)
       generate_signals(io)
