@@ -87,7 +87,7 @@ module Generator
 
       io << "# C lib declaration\nrequire \"./" << @lib.filename << "\"\n\n"
       io << "# Wrappers\n"
-      (@objects + @structs).reject(&.skip?).compact_map(&.filename).sort!.each do |filename|
+      (@objects + @structs + @interfaces).reject!(&.skip?).compact_map(&.filename).sort!.each do |filename|
         io << "require \"./" << filename << "\"\n"
       end
     end
