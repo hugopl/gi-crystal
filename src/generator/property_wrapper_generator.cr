@@ -50,13 +50,18 @@ module Generator
       !iface.nil? && !iface.is_a?(EnumInfo)
     end
 
+    private def getter_method_name
+      name = to_method_name(@prop.name)
+      @prop.type_info.tag.boolean? ? "#{name}?" : name
+    end
+
     private def generate_property_getter(io : IO)
       type_info = @prop.type_info
       is_obj = is_object?(type_info)
       return_type = to_crystal_type(type_info)
 
       io << "# " << @prop.ownership_transfer << LF
-      io << "def " << to_method_name(@prop.name) << " : " << return_type
+      io << "def " << getter_method_name << " : " << return_type
       io << "?" if is_obj
       io << LF
 

@@ -6,6 +6,7 @@ G_DEFINE_QUARK(test-subject-error-quark, test_subject_error)
 /* Private structure definition. */
 typedef struct {
   gchar *string;
+  gboolean boolean;
   int int32;
   TestRegularEnum _enum;
   TestIface* iface;
@@ -25,6 +26,7 @@ G_DEFINE_TYPE_WITH_CODE(TestSubject, test_subject, G_TYPE_OBJECT,
 
 typedef enum {
   PROP_STRING = 1,
+  PROP_BOOLEAN,
   PROP_INT32,
   PROP_IFACE,
   PROP_ENUM,
@@ -66,6 +68,9 @@ static void test_subject_set_property(GObject *gobject, guint property_id, const
     g_free(priv->string);
     priv->string = g_value_dup_string(value);
     break;
+  case PROP_BOOLEAN:
+    priv->boolean = g_value_get_boolean(value);
+    break;
   case PROP_INT32:
     priv->int32 = g_value_get_int(value);
     break;
@@ -98,6 +103,9 @@ static void test_subject_get_property(GObject *gobject, guint property_id, GValu
   case PROP_STRING:
     g_value_set_string(value, priv->string);
     break;
+  case PROP_BOOLEAN:
+    g_value_set_boolean(value, priv->boolean);
+    break;
   case PROP_INT32:
     g_value_set_int(value, priv->int32);
     break;
@@ -129,6 +137,8 @@ static void test_subject_class_init(TestSubjectClass *klass) {
 
   obj_properties[PROP_STRING] = g_param_spec_string("string", "String", "A string property.",
                                                     "", G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+  obj_properties[PROP_BOOLEAN] = g_param_spec_boolean("boolean", "Boolean", "A boolean property.",
+                                                      FALSE, G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
   obj_properties[PROP_INT32] = g_param_spec_int("int32", "Int32", "A int32 property.",
                                                 INT_MIN, INT_MAX, 0,
                                                 G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT | G_PARAM_READWRITE);

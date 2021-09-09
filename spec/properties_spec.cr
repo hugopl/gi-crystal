@@ -3,9 +3,10 @@ require "./spec_helper"
 describe "GObject properties" do
   context "when set in constructors" do
     it "works for more than one item" do
-      subject = Test::Subject.new(string: "hey", int32: 42, enum: :value2)
+      subject = Test::Subject.new(string: "hey", int32: 42, enum: :value2, boolean: true)
       subject.string.should eq("hey")
       subject.int32.should eq(42)
+      subject.boolean?.should eq(true)
       subject.enum.should eq(Test::RegularEnum::Value2)
     end
 
@@ -31,6 +32,13 @@ describe "GObject properties" do
     subject = Test::Subject.new
     subject.string = "hey ho"
     subject.string.should eq("hey ho")
+  end
+
+  it "can be boolean" do
+    subject = Test::Subject.new
+    subject.boolean?.should eq(false)
+    subject.boolean = true
+    subject.boolean?.should eq(true)
   end
 
   it "can be integers" do
