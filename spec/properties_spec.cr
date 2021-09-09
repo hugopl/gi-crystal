@@ -14,6 +14,14 @@ describe "GObject properties" do
       subject.str_list.should eq(%w(hey ho))
     end
   end
+
+  it "can be float64/can be set in interfaces" do
+    subject = Test::Subject.new
+    subject.float64.should eq(0.0)
+    subject.float64 = 1.25
+    subject.float64.should eq(1.25)
+  end
+
   it "can be strings" do
     subject = Test::Subject.new
     subject.string = "hey ho"

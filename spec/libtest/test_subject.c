@@ -10,6 +10,7 @@ typedef struct {
   TestRegularEnum _enum;
   TestIface* iface;
   char** str_list;
+  gdouble float64;
 } TestSubjectPrivate;
 
 static void test_subject_iface_interface_init(TestIfaceInterface *iface) {
@@ -28,7 +29,9 @@ typedef enum {
   PROP_IFACE,
   PROP_ENUM,
   PROP_STR_LIST,
-  N_PROPERTIES
+  N_PROPERTIES,
+  // interface properties
+  PROP_FLOAT64
 } TestSubjectProperty;
 
 typedef enum {
@@ -79,6 +82,9 @@ static void test_subject_set_property(GObject *gobject, guint property_id, const
   case PROP_STR_LIST:
     test_subject_set_str_list(self, (const char**) g_value_get_boxed(value));
     break;
+  case PROP_FLOAT64:
+    priv->float64 = g_value_get_double(value);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID(gobject, property_id, pspec);
     break;
@@ -103,6 +109,9 @@ static void test_subject_get_property(GObject *gobject, guint property_id, GValu
     break;
   case PROP_STR_LIST:
     g_value_set_boxed(value, priv->str_list);
+    break;
+  case PROP_FLOAT64:
+    g_value_set_double(value, priv->float64);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID(gobject, property_id, pspec);
@@ -131,6 +140,7 @@ static void test_subject_class_init(TestSubjectClass *klass) {
   obj_properties[PROP_STR_LIST] = g_param_spec_boxed("str_list", "StrList", "A null terminated list of strings",
                                                      G_TYPE_STRV, G_PARAM_READWRITE);
 
+  g_object_class_override_property(object_class, PROP_FLOAT64, "float64");
   g_object_class_install_properties(object_class, N_PROPERTIES, obj_properties);
 
   // Register signals

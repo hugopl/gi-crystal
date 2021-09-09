@@ -3,7 +3,6 @@ require "./callable_info"
 module GObjectIntrospection
   module FunctionInfoContainer
     @methods : Array(FunctionInfo)?
-    @symbol : String?
 
     abstract def methods : Array(FunctionInfo)
 
@@ -19,6 +18,8 @@ module GObjectIntrospection
   end
 
   class FunctionInfo < CallableInfo
+    @symbol : String?
+
     @[Flags]
     enum Flags
       Method

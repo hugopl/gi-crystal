@@ -1,6 +1,7 @@
 require "./base"
 require "./wrapper_util"
 require "./signal_wrapper_generator"
+require "./property_wrapper_generator"
 
 module Generator
   class ObjWrapperGenerator < Base
@@ -38,7 +39,7 @@ module Generator
       generate_g_type_method(io, @obj_info)
       generate_casts(io)
       MethodWrapperGenerator.generate(io, @obj_info.methods)
-      generate_property_wrappers(io)
+      PropertyWrapperGenerator.generate(io, @obj_info.properties)
       generate_signals(io)
       io << "end\nend\n" # end class, end module
     end
@@ -150,55 +151,6 @@ module Generator
         io << "./" << namespace_gen.module_dir
       end
       io << '/' << info.name.underscore << "\"\n"
-    end
-
-    private def generate_property_wrappers(io : IO)
-      @obj_info.properties.each do |prop|
-        flags = prop.flags
-        generate_property_setter(io, prop) if flags.writable?
-        generate_property_getter(io, prop) if flags.readable?
-      end
-    end
-
-    private def generate_property_setter(io : IO, prop : PropertyInfo)
-      type = prop.type_info
-      type_name = to_crystal_type(type)
-      io << "def " << to_method_name(prop.name) << "=(value : " << type_name << ") : " << type_name << LF
-      unsafe_identifier = "value"
-      if type.array?
-        unsafe_identifier = "unsafe_value"
-        io << "unsafe_value = "
-        generate_array_to_unsafe(io, "value", type)
-      end
-      io << "LibGObject.g_object_set(self, \"" << prop.name << "\", " << unsafe_identifier << ", Pointer(Void).null)\n"
-      io << "value\n"
-      io << "end\n"
-    end
-
-    private def is_object?(info : TypeInfo)
-      iface = info.interface
-      return false if iface.nil? || iface.is_a?(EnumInfo)
-
-      true
-    end
-
-    private def generate_property_getter(io : IO, prop : PropertyInfo)
-      type_info = prop.type_info
-      is_obj = is_object?(type_info)
-      return_type = to_crystal_type(type_info)
-
-      io << "# " << prop.ownership_transfer << LF
-      io << "def " << to_method_name(prop.name) << " : " << return_type
-      io << "?" if is_obj
-      io << LF
-
-      prop_type_name = is_obj ? "Pointer(Void)" : to_lib_type(type_info)
-      io << "value = uninitialized " << prop_type_name << LF
-      io << "LibGObject.g_object_get(self, \"" << prop.name << "\", pointerof(value), Pointer(Void).null)\n"
-      io << convert_to_crystal("value", type_info, prop.ownership_transfer)
-      io << " unless value.null?" if is_obj
-
-      io << "\nend\n"
     end
 
     private def generate_signals(io : IO)

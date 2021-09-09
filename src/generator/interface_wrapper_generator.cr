@@ -22,6 +22,7 @@ module Generator
       doc_repo.doc(io, @iface_info)
       io << "module " << iface_name << LF
       MethodWrapperGenerator.generate(io, @iface_info.methods)
+      PropertyWrapperGenerator.generate(io, @iface_info.properties)
       io << "end\n"
       io << "class " << iface_name << "__Impl\n"
       io << "  include " << iface_name << "\n"

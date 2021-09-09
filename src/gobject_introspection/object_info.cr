@@ -1,10 +1,12 @@
 require "./field_info"
 require "./function_info"
+require "./property_info"
 
 module GObjectIntrospection
   class ObjectInfo < RegisteredTypeInfo
     include FieldInfoContainer
     include FunctionInfoContainer
+    include PropertyInfoContainer
 
     @interfaces : Array(InterfaceInfo)?
     @properties : Array(PropertyInfo)?
@@ -24,13 +26,7 @@ module GObjectIntrospection
     end
 
     def properties : Array(PropertyInfo)
-      @properties ||= begin
-        n = LibGIRepository.g_object_info_get_n_properties(self)
-        Array.new(n) do |i|
-          ptr = LibGIRepository.g_object_info_get_property(self, i)
-          PropertyInfo.new(ptr)
-        end
-      end
+      properties(->LibGIRepository.g_object_info_get_n_properties, ->LibGIRepository.g_object_info_get_property)
     end
 
     def interfaces : Array(InterfaceInfo)
