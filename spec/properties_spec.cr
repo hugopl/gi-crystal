@@ -9,6 +9,11 @@ describe "GObject properties" do
       subject.enum.should eq(Test::RegularEnum::Value2)
     end
 
+    it "can set interface properties" do
+      subject = Test::Subject.new(float64: 0.5)
+      subject.float64.should eq(0.5)
+    end
+
     it "works for null terminated strings" do
       subject = Test::Subject.new(str_list: %w(hey ho))
       subject.str_list.should eq(%w(hey ho))

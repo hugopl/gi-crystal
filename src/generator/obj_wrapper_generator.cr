@@ -82,7 +82,11 @@ module Generator
         props.concat(obj.properties)
         obj = obj.parent
       end
-      props.uniq!(&.name)
+      @obj_info.interfaces.each do |iface|
+        props.concat(iface.properties)
+      end
+
+      props.sort_by(&.name).uniq!(&.name)
     end
 
     private def generate_generic_constructor(io : IO)
