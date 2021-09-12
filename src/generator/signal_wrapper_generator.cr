@@ -14,7 +14,7 @@ module Generator
     end
 
     def subject : String
-      signal_type
+      "#{@obj.name}::#{signal_type}"
     end
 
     private def signal_type

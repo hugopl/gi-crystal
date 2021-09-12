@@ -23,7 +23,8 @@ module Generator
       io << "module " << iface_name << LF
       MethodWrapperGenerator.generate(io, @iface_info.methods)
       PropertyWrapperGenerator.generate(io, @iface_info.properties)
-      io << "end\n"
+      io << "end\n\n"
+      io << "# :nodoc:\n"
       io << "class " << iface_name << "__Impl\n"
       io << "  include " << iface_name << "\n"
       io << "  @pointer : Pointer(Void)\n" \
@@ -39,8 +40,11 @@ module Generator
             "\n" \
             "  def to_unsafe\n" \
             "    @pointer\n" \
-            "  end\n" \
-            "end\n" \
+            "  end\n"
+
+      generate_ref_count(io)
+
+      io << "end\n" \
             "end\n"
     end
   end

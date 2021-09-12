@@ -99,15 +99,6 @@ describe "GObject Binding" do
     end
   end
 
-  describe "interfaces" do
-    it "can be returned by methods" do
-      subject = Test::Subject.new
-      myself = subject.return_myself_as_interface
-      subject.string.should eq("test_subject_return_myself_as_interface")
-      subject.to_unsafe.should eq(myself.to_unsafe)
-    end
-  end
-
   describe "structs" do
     it "can be returned by transfer full (boxed structs)" do
       boxed = Test::BoxedStruct.return_boxed_struct("hell yeah!")
