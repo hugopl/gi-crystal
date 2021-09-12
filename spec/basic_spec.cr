@@ -214,16 +214,17 @@ describe "GObject Binding" do
 
     describe "of filenames" do
       it "can be received in arguments as Array(String)" do
-        Test::Subject.new.concat_filenames(%w(lets go)).should eq("letsgo")
+        Test::Subject.new.concat_filenames(%w(lets go)).should eq(Path.new("letsgo"))
       end
 
       it "have a overload using a tuple" do
-        Test::Subject.new.concat_filenames("hey", "ho", "lets", "go").should eq("heyholetsgo")
+        Test::Subject.new.concat_filenames("hey", "ho", "lets", "go").should eq(Path.new("heyholetsgo"))
       end
 
       it "can be received in arguments as Tuple(String)" do
-        Test::Subject.new.concat_filenames({"hey", "ho"}).should eq("heyho")
+        Test::Subject.new.concat_filenames({"hey", "ho"}).should eq(Path.new("heyho"))
       end
+
       pending "can be received as argument as Array(Path)"
       pending "can be received as argument as Tuple(Path)"
     end

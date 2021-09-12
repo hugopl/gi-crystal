@@ -201,11 +201,12 @@ module Generator::Helpers
     when .int8?, .u_int8?, .int16?, .u_int16?, .int32?, .u_int32?, .int64?, .u_int64?, .float?, .double?, .unichar?, .gtype?
       var
     when .utf8?, .filename?
-      if transfer.full?
-        "GICrystal.transfer_full(#{var})"
-      else
-        "::String.new(#{var})"
-      end
+      expr = if transfer.full?
+               "GICrystal.transfer_full(#{var})"
+             else
+               "::String.new(#{var})"
+             end
+      tag.filename? ? "::Path.new(#{expr})" : expr
     when .interface?
       iface = type.interface.not_nil!
       convert_to_crystal(var, iface, transfer)

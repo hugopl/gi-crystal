@@ -109,8 +109,9 @@ gchar* test_subject_concat_strings(TestSubject *self, int n, const gchar **strin
  * test_subject_concat_filenames:
  * @n: number of filenames to concat.
  * @filenames: (array length=n) (element-type filename): a buffer
+ * Returns: (type filename)
  *
- * Used to test filename arguments as C arrays and also non-nullable arrays
+ * Used to test filename arguments as C arrays, non-nullable arrays and filename return values.
  */
 gchar* test_subject_concat_filenames(TestSubject *self, int n, const gchar **filenames);
 

@@ -85,7 +85,11 @@ module Generator
         io << "# " << arg.name << ": " << tags.join(" ") << LF if tags.any?
         tags.clear
       end
-      io << "# Returns: (transfer " << @method_info.caller_owns.to_s.downcase << ")\n" unless @method_info.caller_owns.none?
+
+      io << "# Returns: (transfer " << @method_info.caller_owns.to_s.downcase
+      return_type = @method_info.return_type
+      io << " Filename" if return_type.tag.filename?
+      io << ")\n"
     end
 
     private def method_identifier : String
@@ -127,7 +131,11 @@ module Generator
                to_crystal_type(return_type.type_info)
              elsif return_type.is_a?(TypeInfo)
                nullable = @method_info.may_return_null?
-               to_crystal_type(return_type)
+               if return_type.tag.filename?
+                 "::Path"
+               else
+                 to_crystal_type(return_type)
+               end
              end
       io << " : " << type
       io << '?' if nullable
