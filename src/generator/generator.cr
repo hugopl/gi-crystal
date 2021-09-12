@@ -10,11 +10,13 @@ module Generator
   LF  = "\n"
   Log = ::Log.for("generator")
 
-  def generate(namespace : String, version : String?, output_dir : String)
-    gen = ModuleWrapperGenerator.load(namespace, version)
-    gen.generate(output_dir)
-    gen.dependencies.each(&.generate(output_dir))
-    format_files(output_dir)
+  def generate(options : NamedTuple)
+    DocRepo.disable! unless options[:doc_gen]
+
+    gen = ModuleWrapperGenerator.load(options[:namespace], options[:version])
+    gen.generate(options[:output_dir])
+    gen.dependencies.each(&.generate(options[:output_dir]))
+    format_files(options[:output_dir])
   end
 
   private def format_files(dir)

@@ -6,6 +6,7 @@ require "./generator"
 
 private def parse_options(argv)
   output_dir = "./build"
+  doc_gen = true
 
   OptionParser.parse(argv) do |parser|
     parser.banner = "Usage: generator [namespace] [version]"
@@ -19,6 +20,7 @@ private def parse_options(argv)
     parser.on("--config-paths=PATH", "\":\" separated list of paths to search for config files.") do |path|
       Generator::Config.search_paths = path.split(":").map { |e| Path.new(e) }
     end
+    parser.on("--no-doc", "Disable documentation generation on generated code") { doc_gen = false }
 
     parser.invalid_option do |flag|
       abort("#{flag} is not a valid option.\n\n#{parser}")
@@ -26,7 +28,7 @@ private def parse_options(argv)
     abort("Pass the library namespace, e.g. Gtk as argument\n\n#{parser}") if argv.empty?
   end
 
-  {namespace: ARGV[0], version: ARGV[1]?, output_dir: output_dir}
+  {namespace: ARGV[0], version: ARGV[1]?, output_dir: output_dir, doc_gen: doc_gen}
 end
 
 def setup_logger
@@ -54,7 +56,7 @@ def main(argv)
   setup_logger
 
   options = parse_options(argv)
-  Generator.generate(options[:namespace], options[:version], options[:output_dir])
+  Generator.generate(options)
 rescue e : Generator::Error | GObjectIntrospection::Error
   Log.fatal { e.message }
   exit(1)

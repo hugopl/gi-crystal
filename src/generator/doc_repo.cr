@@ -13,10 +13,18 @@ module Generator
 
     @doc : XML::Node?
 
+    @@disabled : DocRepo?
     @@repos = Hash(String, DocRepo).new
 
     def self.for(namespace : Namespace) : DocRepo
+      disabled = @@disabled
+      return disabled if disabled
+
       @@repos[namespace.name] ||= DocRepo.new(namespace.name, namespace.version)
+    end
+
+    def self.disable!
+      @@disabled = DummyDocRepo.new
     end
 
     def initialize(name, version)
@@ -82,6 +90,14 @@ module Generator
     private def fetch_doc(xpath : String) : String?
       doc = @doc
       doc.try &.xpath_string("string(#{xpath})")
+    end
+  end
+
+  class DummyDocRepo < DocRepo
+    def initialize
+    end
+
+    def doc(io, info) : Nil
     end
   end
 end
