@@ -1,0 +1,9 @@
+# Cast a `GObject::Object` to `<%= type_name %>`, throw `TypeCastError` if cast can't be made.
+def self.cast(obj : GObject::Object)
+  cast?(obj) || raise TypeCastError.new("can't cast #{typeof(obj).name} to <%= type_name %>")
+end
+
+# Cast a `GObject::Object` to `<%= type_name %>`, returns nil if cast can't be made.
+def self.cast?(obj : GObject::Object)
+  new(obj.to_unsafe, GICrystal::Transfer::None) unless LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
+end

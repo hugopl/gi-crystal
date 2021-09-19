@@ -1,0 +1,55 @@
+module <%= namespace_name %>
+  class <%= type_name %>
+    @pointer : Pointer(Void)
+
+    def initialize(pointer : Pointer(Void), transfer : GICrystal::Transfer)
+      raise ArgumentError.new if pointer.null?
+
+      <% if g_error? -%>
+        @pointer = if transfer.none?
+                     LibGLib.g_error_copy(pointer)
+                   else
+                     pointer
+                   end
+      <% elsif object.boxed? %>
+        @pointer = if transfer.none?
+                     LibGObject.g_boxed_copy(<%= to_crystal_type(object, false) %>.g_type, pointer)
+                   else
+                     pointer
+                   end
+      <% elsif object.copyable? %>
+        # Raw structs are always moved to Crystal memory.
+        @pointer = Pointer(Void).malloc(sizeof(<%= to_lib_type(object) %>))
+        @pointer.copy_from(pointer, sizeof(<%= to_lib_type(object) %>))
+        LibGLib.g_free(pointer) if transfer.full?
+      <% else %>
+        @pointer = pointer
+      <% end %>
+    end
+
+    <% if object.copyable? && !g_error? %>
+      <%= struct_new_method %>
+    <% end %>
+
+
+    def finalize
+      <% if g_error? -%>
+        # FIXME: calling g_error_free causes a double free here, but WTF is also freeing this!?
+        # LibGLib.g_error_free(self)
+      <% elsif object.boxed? %>
+        LibGObject.g_boxed_free(<%= type_name %>.g_type, self)
+      <% end %>
+    end
+
+    <% if object.copyable? %>
+      <%= struct_accessors %>
+    <% end %>
+
+    <% render "ecr/g_type_method.ecr" %>
+    <% render_methods %>
+
+    def to_unsafe
+      @pointer
+    end
+  end
+end

@@ -1,8 +1,7 @@
 require "option_parser"
 require "colorize"
 
-require "./config"
-require "./generator"
+require "./module_gen"
 
 private def parse_options(argv)
   output_dir = "./build"
@@ -31,7 +30,7 @@ private def parse_options(argv)
   {namespace: ARGV[0], version: ARGV[1]?, output_dir: output_dir, doc_gen: doc_gen}
 end
 
-def setup_logger
+private def setup_logger
   formatter = Log::Formatter.new do |entry, io|
     io << case entry.severity
     in .fatal?  then "fatal".colorize.red
@@ -42,21 +41,38 @@ def setup_logger
     in .trace?, .debug?, .none?
       entry.severity.to_s.downcase
     end
-    ctx = entry.context[:scope]?
+    ctx = Generator::Generator.log_scope
     io << " - " << ctx if ctx
     io << " - " << entry.message
   end
 
-  backend_with_formatter = Log::IOBackend.new(formatter: formatter)
-  log_level = ENV["LOG_LEVEL"]? ? Log::Severity.parse(ENV["LOG_LEVEL"]) : Log::Severity::Notice
+  backend_with_formatter = Log::IOBackend.new(formatter: formatter, dispatcher: :direct)
+  log_level = ENV["LOG_LEVEL"]? ? Log::Severity.parse(ENV["LOG_LEVEL"]) : Log::Severity::Info
   Log.setup(log_level, backend_with_formatter)
 end
 
-def main(argv)
+private def generate(namespace : String, version : String?, output_dir : String, enable_doc_gen : Bool)
+  Generator::DocRepo.disable! unless enable_doc_gen
+
+  Generator::Generator.output_dir = output_dir
+  gen = Generator::ModuleGen.load(namespace, version)
+
+  gen.generate
+  gen.dependencies.each(&.generate)
+  format_files(output_dir)
+end
+
+private def format_files(dir)
+  # We need to chdir into output dir since the formatter ignores everything under `lib` dir.
+  Dir.cd(dir) { `crystal tool format` }
+  raise Generator::Error.new("Error formating generated files at '#{dir}'.") unless $?.success?
+end
+
+private def main(argv)
   setup_logger
 
   options = parse_options(argv)
-  Generator.generate(options)
+  generate(*options.values)
 rescue e : Generator::Error | GObjectIntrospection::Error
   Log.fatal { e.message }
   exit(1)

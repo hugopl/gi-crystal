@@ -1,0 +1,6 @@
+<% if object.type_init -%>
+  # Returns the type id (GType) registered in GLib type system.
+  def self.g_type : UInt64
+    <%= to_lib_namespace(namespace) %>.<%= object.type_init %>
+  end
+<% end %>

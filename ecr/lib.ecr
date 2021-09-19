@@ -1,0 +1,113 @@
+<% libraries.each do |libname| -%>
+@[Link("<%= libname %>", pkg_config: "<%= libname %>")]
+<% end %>
+lib <%= to_lib_namespace(namespace) %>
+
+<% if g_lib? %>
+  # Functions not declared by GObj Introspection
+
+  # Memory related functions
+  fun g_malloc0(size : LibC::SizeT) : Void*
+  fun g_free(mem : Void*)
+
+  # GList
+  fun g_list_length(list : List*) : UInt32
+  fun g_list_free(list : List*)
+  fun g_list_free_full(list : List*, free_func : Proc(Void*, Nil))
+  fun g_list_first(list : List*) : List*
+  fun g_list_last(list : List*) : List*
+  fun g_list_nth(list : List*, n : UInt32) : List*
+
+  # GSList
+  fun g_slist_length(list : SList*) : UInt32
+  fun g_slist_nth(list : SList*, n : UInt32) : SList*
+  fun g_slist_free(list : SList*)
+  fun g_slist_free_full(list : SList*, free_func : Proc(Void*, Nil))
+<% elsif g_object? %>
+  # Functions not declared by GObj Introspection
+
+  # Property related functions
+  fun g_object_get(object : Pointer(Void), property_name : Pointer(LibC::Char), ...)
+  fun g_object_set(object : Pointer(Void), property_name : Pointer(LibC::Char), ...)
+  fun g_object_new_with_properties(object_type : UInt64, n_properties : UInt32,
+                                   names : LibC::Char**, values : Value*) : Void*
+
+  # Signal related functions
+  fun g_signal_connect_data(instance : Void*,
+                            detailed_signal : UInt8*,
+                            c_handler : Void*,
+                            data : Void*,
+                            destroy_data : Void* -> Nil,
+                            flags : UInt32) : UInt64
+  fun g_signal_emit_by_name(instance : Void*, detailed_signal : UInt8*, ...)
+
+  # Null terminated strings GType, used by GValue
+  fun g_strv_get_type : UInt64
+<% end %>
+
+# Flags
+<% namespace.flags.each do |flag| -%>
+  type <%= to_lib_type(flag, false) %> = <%= to_lib_type(flag.storage_type) %>
+<% end %>
+
+# Enums
+<% namespace.enums.each do |enum_| -%>
+  type <%= to_lib_type(enum_, false) %> = <%= to_lib_type(enum_.storage_type) %>
+<% end %>
+
+# Callbacks
+<% namespace.callbacks.each do |callback| -%>
+  alias <%= to_type_name(callback.name) %> = <%= callback_signature(callback) %>
+<% end %>
+
+# Interface types
+<% namespace.interfaces.each do |iface| -%>
+  type <%= to_type_name(iface.name) %> = Void
+<% end %>
+
+# Structs
+<% namespace.structs.each do |struct_info| -%>
+  <% if struct_info.g_type_struct? -%>
+  <% elsif struct_info.bytesize.zero? -%>
+    type <%= to_type_name(struct_info.name) %> = Void # Struct with zero bytes
+  <% else %>
+    struct <%= to_type_name(struct_info.name) %> # <%= struct_info.bytesize %> bytes long
+      <% struct_info.fields.each do |field| -%>
+        <% render("ecr/lib_field.ecr") -%>
+      <% end %>
+    end
+  <% end %>
+<% end %>
+
+# Unions
+<% namespace.unions.each do |union_info| -%>
+  <% if union_info.bytesize.zero? %>
+    type <%= to_type_name(union_info.name) %> = Void # Union with zero bytes
+  <% else %>
+    union <%= to_lib_type(union_info, false) %> # <%= union_info.bytesize %> bytes
+      <% union_info.fields.each do |field| -%>
+        <% render("ecr/lib_field.ecr") -%>
+      <% end %>
+    end
+  <% end %>
+<% end %>
+
+# Objects
+<% namespace.objects.each do |obj_info| -%>
+  <% if obj_info.fields.empty? -%>
+    type <%= to_type_name(obj_info.name) %> = Void # Object struct with no fields
+  <% else %>
+    struct <%= to_type_name(obj_info.name) %>
+      <% obj_info.fields.each do |field| -%>
+        <% render("ecr/lib_field.ecr") -%>
+      <% end %>
+    end
+  <% end %>
+<% end %>
+
+
+# All C Functions
+<% all_functions.each do |func| -%>
+  <%= func %>
+<% end %>
+end

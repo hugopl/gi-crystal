@@ -1,0 +1,58 @@
+struct <%= signal_type %>
+  @source : GObject::Object
+  @detail : String?
+
+  def initialize(@source, @detail = nil)
+  end
+
+  def [](detail : String) : self
+    raise ArgumentError.new("This signal already have a detail") if @detail
+    self.class.new(@source, detail)
+  end
+
+  def name
+    @detail ? "<%= signal.name %>::#{@detail}" : "<%= signal.name %>"
+  end
+
+  def connect(&block : Proc(<%= lean_proc_params %>))
+    connect(block)
+  end
+
+  def connect_after(&block : Proc(<%= lean_proc_params %>))
+    connect(block)
+  end
+
+  def connect(block : Proc(<%= lean_proc_params %>))
+    box = ::Box.box(block)
+    slot = <%= lean_slot %>
+    LibGObject.g_signal_connect_data(@source, name, slot.pointer,
+      GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 0)
+  end
+
+  def connect_after(block : Proc(<%= lean_proc_params %>))
+    box = ::Box.box(block)
+    slot = <%= lean_slot %>
+    LibGObject.g_signal_connect_data(@source, name, slot.pointer,
+      GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 1)
+  end
+
+  def connect(block : Proc(<%= full_proc_params %>))
+    box = ::Box.box(block)
+    slot = <%= full_slot %>
+    LibGObject.g_signal_connect_data(@source, name, slot.pointer,
+      GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 0)
+  end
+
+  def connect_after(block : Proc(<%= full_proc_params %>))
+    box = ::Box.box(block)
+    slot = <%= full_slot %>
+    LibGObject.g_signal_connect_data(@source, name, slot.pointer,
+      GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 1)
+  end
+
+  <%= signal_emit_method %>
+end
+
+def <%= to_method_name(signal.name) %>_signal
+  <%= signal_type %>.new(self)
+end

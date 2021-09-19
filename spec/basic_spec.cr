@@ -40,7 +40,7 @@ describe "GObject Binding" do
 
   describe "casts" do
     it "can downcast objects" do
-      child = Test::SubjectChild.new("hey")
+      child = Test::SubjectChild.new(string: "hey")
       gobj = child.me_as_gobject
       gobj.ref_count.should eq(2)
       gobj.class.should eq(GObject::Object)

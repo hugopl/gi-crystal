@@ -1,0 +1,47 @@
+# Dependencies
+<% immediate_dependencies.each do |dep| -%>
+require "../<%= dep.module_dir %>/<%= dep.filename%>"
+<% end %>
+
+# C lib declaration
+require "./<%= @lib.filename %>"
+
+# Wrappers
+<% wrapper_files.each do |inc| -%>
+require "./<%= inc %>"
+<% end %>
+
+module <%= namespace_name %>
+  <% constants.each do |const| -%>
+    <%= const.name %> = <%= const.literal %>
+  <% end %>
+
+  <% enums.each do |enum_| %>
+    enum <%= to_type_name(enum_.name) %> : <%= to_crystal_type(enum_.storage_type) %>
+      <% enum_.values.each do |value| -%>
+        <%= to_type_name(value.name) %> = <%= value.value %>
+      <% end %>
+    end
+  <% end %>
+
+  <% flags.each do |flag| -%>
+    <% if empty_flag?(flag) -%>
+      <%= to_type_name(flag.name) %> = 0
+    <% else -%>
+      @[Flags]
+      enum <%= to_type_name(flag.name) %> : <%= to_crystal_type(flag.storage_type) %>
+        <% flag.values.each do |value| -%>
+          <% next if skip_flag_value?(flag, value) %>
+          <%= to_type_name(value.name) %> = <%= value.value -%>
+        <% end %>
+        <% render "ecr/g_type_method.ecr", flag %>
+      end
+    <% end %>
+  <% end %>
+  extend self
+end
+
+# Extra includes
+<% config.includes.each do |inc| -%>
+require "./includes/<%= inc.basename %>"
+<% end %>

@@ -1,0 +1,21 @@
+<% if prop.flags.writable? -%>
+    def <%= to_method_name(prop.name) %>=(value : <%= prop_type_name %>) : <%= prop_type_name %>
+      <% if prop.type_info.array? -%>
+        # handle array
+      <% else -%>
+        unsafe_value = value
+      <% end %>
+      LibGObject.g_object_set(self, "<%= prop.name %>", unsafe_value, Pointer(Void).null)
+      value
+    end
+<% end %>
+
+<% if prop.flags.readable? -%>
+  def <%= prop_getter_method_name %> : <%= prop_type_name %>
+    # Returns: <%= prop.ownership_transfer %>
+
+    value = uninitialized <%= c_prop_type_name %>
+    LibGObject.g_object_get(self, "<%= prop.name %>", pointerof(value), Pointer(Void).null)
+    <%= convert_to_crystal("value", prop.type_info, prop.ownership_transfer) %><% if prop_is_object? -%> unless value.null?<% end %>
+  end
+<% end %>

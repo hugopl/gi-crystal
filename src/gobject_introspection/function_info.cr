@@ -34,6 +34,10 @@ module GObjectIntrospection
       @symbol ||= String.new(LibGIRepository.g_function_info_get_symbol(self))
     end
 
+    {% for item in Flags.constants %}
+    delegate {{ item.underscore.id }}?, to: flags
+    {% end %}
+
     def flags
       Flags.from_value(LibGIRepository.g_function_info_get_flags(self))
     end

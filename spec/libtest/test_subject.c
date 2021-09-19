@@ -179,7 +179,7 @@ static void test_subject_init(TestSubject *self) {
    * They are all automatically initialized to 0 to begin with. */
 }
 
-TestSubject *test_subject_new(void) {
+GObject* test_subject_new(void) {
   return g_object_new(TEST_TYPE_SUBJECT, "string", "", "int32", 0, NULL);
 }
 

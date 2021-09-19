@@ -213,7 +213,7 @@ module Generator::Helpers
     when .error?
       "GLib::Error.new(#{var}, GICrystal::Transfer::#{transfer})"
     when .void?
-      type.pointer? ? "Pointer(Void)" : "Void"
+      type.pointer? ? "Pointer(Void)" : ""
     when .g_list?
       param_type = to_crystal_type(type.param_type)
       "#{to_crystal_type(tag)}(#{param_type}).new(#{var}, GICrystal::Transfer::#{transfer})"

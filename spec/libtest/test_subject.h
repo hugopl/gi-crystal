@@ -63,7 +63,7 @@ typedef enum {
  * test_subject_new:
  * Returns: (transfer full): Obj instance
  */
-TestSubject *test_subject_new(void);
+GObject *test_subject_new(void);
 
 /**
  * test_subject_new_from_whatever:

@@ -27,6 +27,14 @@ module GObjectIntrospection
       load
     end
 
+    def g_lib?
+      @name == "GLib"
+    end
+
+    def g_object?
+      @name == "GObject"
+    end
+
     def shared_libraries : Array(String)
       ptr = LibGIRepository.g_irepository_get_shared_library(@pointer, @name)
       return [] of String if ptr.null?

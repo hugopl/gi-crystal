@@ -60,7 +60,7 @@ module Generator
         filename = "#{namespace.underscore}.yml"
         config = load_yaml(filename)
         if config.nil?
-          Log.notice do
+          Log.info do
             "No valid configuration found for #{namespace} (#{filename}), " \
             "looked at #{Config.search_paths.map(&.expand).join(", ")}."
           end
@@ -84,7 +84,7 @@ module Generator
       filepath = find_in_search_paths(filename)
       return if filepath.nil?
 
-      Log.notice { "Loading #{filepath}" }
+      Log.info { "Loading #{filepath}" }
       any_hash = YAML.parse(File.read(filepath)).as_h?
       if any_hash.nil?
         Log.warn { "#{filepath} is blank!" }

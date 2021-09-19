@@ -1,9 +1,9 @@
 module Generator
-  class SignalWrapperGenerator < Base
+  class SignalGen < Generator
     include WrapperUtil
 
     @obj : ObjectInfo
-    @signal : SignalInfo
+    getter signal : SignalInfo
     @signal_args : Array(ArgInfo)?
 
     def initialize(@obj : ObjectInfo, @signal : SignalInfo)
@@ -17,80 +17,12 @@ module Generator
       "#{@obj.name}::#{signal_type}"
     end
 
+    def scope
+      "#{@obj.namespace.name}::#{@obj.name} #{@signal.name} signal"
+    end
+
     private def signal_type
       "#{@signal.name.tr("-", "_").camelcase}Signal"
-    end
-
-    def do_generate(io : IO)
-      generate_signal_object(io)
-      generate_signal_method(io)
-    end
-
-    def generate_signal_method(io)
-      io << "def " << to_method_name(@signal.name) << "_signal" << LF
-      io << signal_type << ".new(self)\n"
-      io << "end\n"
-    end
-
-    def generate_signal_object(io : IO)
-      obj = <<-EOT
-      struct #{signal_type}
-        @source : GObject::Object
-        @detail : String?
-
-        def initialize(@source, @detail = nil)
-        end
-
-        def [](detail : String) : self
-          raise ArgumentError.new("This signal already have a detail") if @detail
-          self.class.new(@source, detail)
-        end
-
-        def name
-          @detail ? "#{@signal.name}::\#{@detail}" : "#{@signal.name}"
-        end
-
-        def connect(&block : Proc(#{lean_proc_params}))
-          connect(block)
-        end
-
-        def connect_after(&block : Proc(#{lean_proc_params}))
-          connect(block)
-        end
-
-        def connect(block : Proc(#{lean_proc_params}))
-          box = ::Box.box(block)
-          slot = #{lean_slot}
-          LibGObject.g_signal_connect_data(@source, name, slot.pointer,
-            GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 0)
-        end
-
-        def connect_after(block : Proc(#{lean_proc_params}))
-          box = ::Box.box(block)
-          slot = #{lean_slot}
-          LibGObject.g_signal_connect_data(@source, name, slot.pointer,
-            GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 1)
-        end
-
-        def connect(block : Proc(#{full_proc_params}))
-          box = ::Box.box(block)
-          slot = #{full_slot}
-          LibGObject.g_signal_connect_data(@source, name, slot.pointer,
-            GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 0)
-        end
-
-        def connect_after(block : Proc(#{full_proc_params}))
-          box = ::Box.box(block)
-          slot = #{full_slot}
-          LibGObject.g_signal_connect_data(@source, name, slot.pointer,
-            GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 1)
-        end
-
-      EOT
-      io << obj
-
-      generate_emit_method(io)
-      io << "\nend\n"
     end
 
     private def has_return_value?
@@ -181,25 +113,27 @@ module Generator
       end
     end
 
-    private def generate_emit_method(io : IO)
-      arg_vars = signal_args.map { |arg| to_identifier(arg.name) }
+    private def signal_emit_method : String
+      String.build do |s|
+        arg_vars = signal_args.map { |arg| to_identifier(arg.name) }
 
-      # Emit declaration
-      io << "def emit("
-      io << signal_args.map_with_index do |arg, i|
-        "#{arg_vars[i]} : #{to_crystal_type(arg.type_info, is_arg: true)}"
-      end.join(",")
-      io << ") : Nil\n"
+        # Emit declaration
+        s << "def emit("
+        s << signal_args.map_with_index do |arg, i|
+          "#{arg_vars[i]} : #{to_crystal_type(arg.type_info, is_arg: true)}"
+        end.join(",")
+        s << ") : Nil\n"
 
-      generate_handmade_types_param_conversion(io, signal_args)
+        generate_handmade_types_param_conversion(s, signal_args)
 
-      # Signal emission
-      io << "LibGObject.g_signal_emit_by_name(@source, \"" << @signal.name << "\""
-      arg_vars.each do |arg|
-        io << ", " << arg
+        # Signal emission
+        s << "LibGObject.g_signal_emit_by_name(@source, \"" << @signal.name << "\""
+        arg_vars.each do |arg|
+          s << ", " << arg
+        end
+        s << ")\n"
+        s << "end\n"
       end
-      io << ")\n"
-      io << "end\n"
     end
   end
 end

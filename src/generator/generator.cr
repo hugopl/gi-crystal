@@ -1,29 +1,116 @@
+require "ecr"
 require "log"
 
+require "./config"
 require "../gobject_introspection"
-require "./module_wrapper_generator"
+require "./helpers"
+require "./doc_repo"
 
 module Generator
+  include GObjectIntrospection
+
   class Error < RuntimeError
   end
 
   LF  = "\n"
   Log = ::Log.for("generator")
 
-  def generate(options : NamedTuple)
-    DocRepo.disable! unless options[:doc_gen]
+  abstract class Generator
+    include Helpers
 
-    gen = ModuleWrapperGenerator.load(options[:namespace], options[:version])
-    gen.generate(options[:output_dir])
-    gen.dependencies.each(&.generate(options[:output_dir]))
-    format_files(options[:output_dir])
+    @@log_scope = Deque{"main"}
+    @@output_dir = "./"
+
+    getter namespace : Namespace
+
+    def initialize(@namespace)
+    end
+
+    def namespace_name : String
+      to_type_name(@namespace.name)
+    end
+
+    def subject : String
+      ""
+    end
+
+    def self.push_log_scope(context : String)
+      @@log_scope.push(context)
+      # For some reason this call is *really* slow, probably a bug.
+      # So the log formatter uses @@log_scope directly.
+      # Log.context.set(scope: context)
+    end
+
+    def self.pop_log_scope
+      @@log_scope.pop
+    end
+
+    def self.log_scope
+      @@log_scope.last
+    end
+
+    def self.output_dir=(value : String)
+      @@output_dir = value
+    end
+
+    def self.output_dir
+      @@output_dir
+    end
+
+    def output_dir
+      Generator.output_dir
+    end
+
+    def config
+      Config.for(@namespace.name)
+    end
+
+    def doc_repo : DocRepo
+      DocRepo.for(@namespace)
+    end
+
+    def skip?(key : String = subject) : Bool
+      config.ignore?(key) || config.handmade?(key)
+    end
+
+    def module_dir(namespace : Namespace = @namespace)
+      "#{namespace.name.underscore}-#{namespace.version}"
+    end
+
+    def scope : String
+      self.class.name
+    end
+
+    def generate(filename : String)
+      output_dir = File.join(Generator.output_dir, module_dir)
+      FileUtils.mkdir_p(output_dir)
+
+      File.open(File.join(output_dir, filename), "w") do |io|
+        generate(io)
+      end
+    end
+
+    def with_log_scope(scope_name = scope)
+      Generator.push_log_scope(scope_name)
+      yield
+    ensure
+      Generator.pop_log_scope
+    end
+
+    def generate(io : IO)
+      with_log_scope do
+        # Generator::ModuleGen class needs `module.ecr` and so on.
+        ECR.embed({{ "ecr/" + @type.name[11..-4].underscore.stringify + ".ecr" }}, io)
+      end
+    end
+
+    macro render(filename, object = object)
+      begin
+        {% if object.id != "object" %}
+        object = {{ object.id }}
+        {% end %}
+        ECR.embed({{ filename }}, io)
+      end
+    end
   end
-
-  private def format_files(dir)
-    # We need to chdir into output dir since the formatter ignores everything under `lib` dir.
-    Dir.cd(dir) { `crystal tool format` }
-    raise Error.new("Error formating generated files at '#{dir}'.") unless $?.success?
-  end
-
-  extend self
 end

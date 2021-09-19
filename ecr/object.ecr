@@ -1,0 +1,44 @@
+<%= require_file(object.parent) -%>
+<% object.interfaces.each do |interface| -%>
+  <%= require_file(interface) %>
+<% end %>
+
+module <%= namespace_name %>
+  class <%= type_name %> <%= parent_class %>
+    <% object.interfaces.each do |interface| -%>
+    include <%= to_crystal_type(interface, namespace != interface.namespace) %>
+    <% end %>
+    @pointer : Pointer(Void)
+
+    # :nodoc:
+    def initialize(@pointer, transfer : GICrystal::Transfer)
+      <% if object.parent.nil? %>
+        LibGObject.g_object_ref(self)  unless transfer.full?
+      <% else %>
+        super
+      <% end %>
+    end
+
+    <% if all_properties.any? -%>
+      <% render "ecr/gobject_constructor.ecr" %>
+    <% end %>
+
+    <% if object.parent.nil? %>
+      def finalize
+        LibGObject.g_object_unref(self)
+      end
+
+      def to_unsafe
+        @pointer
+      end
+
+      <% render "ecr/cast_methods.ecr" %>
+      <% render "ecr/ref_count_method.ecr" %>
+    <% end %>
+
+    <% render "ecr/g_type_method.ecr" %>
+    <% render_properties %>
+    <% render_methods %>
+    <% render_signals %>
+  end
+end

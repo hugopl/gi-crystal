@@ -1,0 +1,29 @@
+module <%= namespace_name %>
+  module <%= type_name %>
+    <% render_properties %>
+    <% render_methods %>
+  end
+
+  # :nodoc:
+  class <%= type_name %>__Impl
+    include <%= type_name %>
+
+    @pointer : Pointer(Void)
+
+    def initialize(@pointer, transfer)
+      LibGObject.g_object_ref(self) unless transfer.full?
+    end
+
+    def finalize
+      LibGObject.g_object_unref(self)
+    end
+
+    def to_unsafe
+      @pointer
+    end
+
+    <% render "ecr/g_type_method.ecr" %>
+    <% render "ecr/cast_methods.ecr" %>
+    <% render "ecr/ref_count_method.ecr" %>
+  end
+end
