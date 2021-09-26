@@ -28,5 +28,19 @@ module Generator
     def type_name
       to_crystal_type(@iface, false)
     end
+
+    def each_object_method
+      @iface.methods.each do |method|
+        yield(method)
+      end
+      # GObjIntrospection move interface class methods to the Interface struct instead of the interface class, so we fix this
+      # here
+      iface_struct = @iface.iface_struct
+      if iface_struct
+        iface_struct.methods.each do |method|
+          yield(method) if method.flags.none?
+        end
+      end
+    end
   end
 end

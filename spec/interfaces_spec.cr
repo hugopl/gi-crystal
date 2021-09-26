@@ -17,4 +17,8 @@ describe "GObject interfaces" do
     subject.ref_count.should eq(2)
     iface.ref_count.should eq(2)
   end
+
+  it "have class methods" do
+    Test::Iface.class_method
+  end
 end

@@ -25,5 +25,10 @@ module GObjectIntrospection
         end
       end
     end
+
+    def iface_struct : StructInfo?
+      ptr = LibGIRepository.g_interface_info_get_iface_struct(self)
+      StructInfo.new(ptr) if ptr
+    end
   end
 end

@@ -21,4 +21,9 @@ struct _TestIfaceInterface
  */
 TestIface *test_iface_return_myself_as_interface(TestIface  *self);
 
+/**
+ * test_iface_interface_class_method:
+ */
+void test_iface_interface_class_method();
+
 G_END_DECLS

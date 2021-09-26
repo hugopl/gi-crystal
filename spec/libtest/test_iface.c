@@ -17,3 +17,7 @@ TestIface *test_iface_return_myself_as_interface(TestIface  *self) {
   TestIfaceInterface* iface = TEST_IFACE_GET_IFACE(self);
   return iface->return_myself_as_interface(self);
 }
+
+void test_iface_interface_class_method()
+{
+}

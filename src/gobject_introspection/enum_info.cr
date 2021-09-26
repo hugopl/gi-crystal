@@ -1,5 +1,6 @@
 module GObjectIntrospection
   class EnumInfo < RegisteredTypeInfo
+    include FunctionInfoContainer
     @values : Array(ValueInfo)?
 
     def storage_type : TypeTag
@@ -14,6 +15,10 @@ module GObjectIntrospection
           ValueInfo.new(ptr)
         end
       end
+    end
+
+    def methods : Array(FunctionInfo)
+      methods(->LibGIRepository.g_enum_info_get_n_methods, ->LibGIRepository.g_enum_info_get_method)
     end
   end
 end
