@@ -12,7 +12,7 @@ module Generator
       super(@method.namespace)
     end
 
-    def ignore?
+    def ignore? : Bool
       config.ignore?(@method.symbol)
     end
 
@@ -26,7 +26,8 @@ module Generator
       identifier = if method_flags.constructor?
                      @method.name == "new" ? "initialize" : "self.#{identifier}"
                    elsif identifier.starts_with?("get_") && identifier.size > 4
-                     identifier[4..]
+                     name = identifier[4..]
+                     boolean_getter? ? "#{name}?" : name
                    elsif @method.args.size == 1 && identifier.starts_with?("set_") && identifier.size > 4
                      "#{identifier[4..]}="
                    else
@@ -35,6 +36,15 @@ module Generator
       # No flags means static methods
       identifier = "self.#{identifier}" if method_flags.none?
       identifier
+    end
+
+    private def boolean_getter? : Bool
+      return false if @method.args.any?
+
+      return_type = method_return_type
+      return_type = return_type.type_info if return_type.is_a?(ArgInfo)
+
+      return_type.as(TypeInfo).tag.boolean?
     end
 
     private def method_args : Array(ArgInfo)

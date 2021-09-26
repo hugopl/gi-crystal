@@ -41,6 +41,12 @@ typedef struct _TestStruct {
 #define TEST_TYPE_SUBJECT test_subject_get_type()
 G_DECLARE_DERIVABLE_TYPE(TestSubject, test_subject, TEST, SUBJECT, GObject)
 
+/**
+ * TestSubject:str_list: (setter test_subject_set_str_list)
+ *
+ * A string list property.
+ */
+
 struct _TestSubjectClass {
   GObjectClass parent_class;
 
@@ -75,12 +81,21 @@ GObject *test_subject_new(void);
 TestSubject *test_subject_new_from_string(const gchar *string);
 
 /**
- * test_subject_set_str_list:
+ * test_subject_set_str_list: (set-property str-list)
  * @list: (array zero-terminated=1):
  *
  * Setter for str_list property.
+ * Used to test generation of properties with explicit settters
  */
 void test_subject_set_str_list(TestSubject* self, const char** list);
+
+/**
+ * test_subject_get_boolean:
+ *
+ * Getter for boolean property
+ * Used to test generation of properties with explicit gettters
+ */
+gboolean test_subject_get_boolean(TestSubject* self);
 
 /**
  * test_subject_may_return_null:

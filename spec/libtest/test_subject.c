@@ -194,6 +194,11 @@ void test_subject_set_str_list(TestSubject* self, const char** list) {
   priv->str_list = g_strdupv((char **)list);
 }
 
+gboolean test_subject_get_boolean(TestSubject* self) {
+  TestSubjectPrivate *priv = test_subject_get_instance_private(self);
+  return priv->boolean;
+}
+
 TestSubject* test_subject_may_return_null(TestSubject* self, gboolean return_nil) {
   return return_nil ? NULL : self;
 }
