@@ -56,6 +56,9 @@ module Generator
       XML.parse(File.read(filename), options).root || raise Error.new("Gir file with no XML root")
     end
 
+    def doc(io : IO, namespace : Namespace) : Nil
+    end
+
     def doc(io : IO, info : BaseInfo) : Nil
       return if @doc.nil?
 

@@ -4,6 +4,7 @@
 <% end %>
 
 module <%= namespace_name %>
+  <%= render_doc(object) -%>
   class <%= type_name %> <%= parent_class %>
     <% object.interfaces.each do |interface| -%>
     include <%= to_crystal_type(interface, namespace != interface.namespace) %>

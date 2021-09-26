@@ -4,7 +4,7 @@ require "log"
 require "./config"
 require "../gobject_introspection"
 require "./helpers"
-require "./doc_repo"
+require "./doc_helper"
 
 module Generator
   include GObjectIntrospection
@@ -17,6 +17,7 @@ module Generator
 
   abstract class Generator
     include Helpers
+    include DocHelper
 
     @@log_scope = Deque{"main"}
     @@output_dir = "./"
@@ -63,10 +64,6 @@ module Generator
 
     def config
       Config.for(@namespace.name)
-    end
-
-    def doc_repo : DocRepo
-      DocRepo.for(@namespace)
     end
 
     def skip?(key : String = subject) : Bool

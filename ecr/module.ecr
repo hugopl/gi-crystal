@@ -11,12 +11,14 @@ require "./<%= @lib.filename %>"
 require "./<%= inc %>"
 <% end %>
 
+<%= render_doc(namespace) -%>
 module <%= namespace_name %>
   <% constants.each do |const| -%>
     <%= const.name %> = <%= const.literal %>
   <% end %>
 
   <% enums.each do |enum_| %>
+    <%= render_doc(enum_) -%>
     enum <%= to_type_name(enum_.name) %> : <%= to_crystal_type(enum_.storage_type) %>
       <% enum_.values.each do |value| -%>
         <%= to_type_name(value.name) %> = <%= value.value %>
@@ -25,6 +27,7 @@ module <%= namespace_name %>
   <% end %>
 
   <% flags.each do |flag| -%>
+    <% render_doc(flag) -%>
     <% if empty_flag?(flag) -%>
       <%= to_type_name(flag.name) %> = 0
     <% else -%>
