@@ -29,13 +29,21 @@ module GObjectIntrospection
     end
 
     def has_getter? : Bool
-      ptr = LibGIRepository.g_property_info_get_getter(self)
-      !ptr.null?
+      {% if flag?(:old_libs) %}
+        false
+      {% else %}
+        ptr = LibGIRepository.g_property_info_get_getter(self)
+        !ptr.null?
+      {% end %}
     end
 
     def has_setter? : Bool
-      ptr = LibGIRepository.g_property_info_get_setter(self)
-      !ptr.null?
+      {% if flag?(:old_libs) %}
+        false
+      {% else %}
+        ptr = LibGIRepository.g_property_info_get_setter(self)
+        !ptr.null?
+      {% end %}
     end
   end
 end
