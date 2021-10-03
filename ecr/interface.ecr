@@ -4,7 +4,7 @@ module <%= namespace_name %>
     <% render_properties %>
     <% render_methods %>
 
-    extend self
+    abstract def to_unsafe
   end
 
   # :nodoc:

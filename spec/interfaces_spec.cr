@@ -1,5 +1,9 @@
 require "./spec_helper"
 
+def func_with_iface_param(iface : Test::Iface)
+  iface.return_myself_as_interface
+end
+
 describe "GObject interfaces" do
   it "can be returned by methods" do
     subject = Test::Subject.new
@@ -20,5 +24,9 @@ describe "GObject interfaces" do
 
   it "have class methods" do
     Test::Iface.class_method
+  end
+
+  it "have abstract to_unsafe method" do
+    typeof(->func_with_iface_param(Test::Iface))
   end
 end
