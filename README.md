@@ -112,6 +112,9 @@ widget.notify_signal["my_property"].connect do
   # ...
 end
 ```
+### Disconnecting signals
+
+- TBD
 
 ## GValue
 
@@ -125,6 +128,10 @@ GValue as parameter you can pass any supported value. I.e. you can pass e.g. a p
 ## Declaring GObject signals
 
 - TBD
+
+## GLib GError
+
+- Not implemented, but they will be converted to Crystal Exceptions.
 
 ## Contributing
 
