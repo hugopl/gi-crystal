@@ -27,23 +27,5 @@ module GObjectIntrospection
     def flags : ParamFlags
       ParamFlags.from_value(LibGIRepository.g_property_info_get_flags(self))
     end
-
-    def has_getter? : Bool
-      {% if flag?(:old_libs) %}
-        false
-      {% else %}
-        ptr = LibGIRepository.g_property_info_get_getter(self)
-        !ptr.null?
-      {% end %}
-    end
-
-    def has_setter? : Bool
-      {% if flag?(:old_libs) %}
-        false
-      {% else %}
-        ptr = LibGIRepository.g_property_info_get_setter(self)
-        !ptr.null?
-      {% end %}
-    end
   end
 end

@@ -30,7 +30,5 @@ jobs:
         run: ./bin/ameba
       - name: Linter
         run: crystal tool format --check
-      - name: Compile generator
-        run: shards build -Dold_libs
       - name: Run tests
-        run: make test_binding just-test
+        run: make test

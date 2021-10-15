@@ -172,8 +172,6 @@ lib LibGIRepository
   fun g_object_info_get_unref_function(info : BaseInfo*) : UInt8*
   fun g_object_info_get_vfunc(info : BaseInfo*, n : Int32) : BaseInfo*
   fun g_property_info_get_flags(info : BaseInfo*) : LibGObject::ParamFlags
-  fun g_property_info_get_getter(info : BaseInfo*) : BaseInfo*
-  fun g_property_info_get_setter(info : BaseInfo*) : BaseInfo*
   fun g_property_info_get_ownership_transfer(info : BaseInfo*) : Transfer
   fun g_property_info_get_type(info : BaseInfo*) : BaseInfo*
   fun g_registered_type_info_get_g_type(info : BaseInfo*) : UInt64

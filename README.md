@@ -15,9 +15,6 @@ but at some point I decided to take a different approach on how to generate the 
 You are probably looking for the [GTK4](https://github.com/hugopl/gtk4.cr) shard, not this one, since this shard is only
 useful if you are creating a binding to a GObject based library.
 
-NOTE: If your gobject-introspection lib version is < 1.70, you need to compile with  `-Dold_libs`, e.g.
-`shards build -Dold_libs`
-
 1. Add the dependency to your `shard.yml`:
 
    ```yaml
