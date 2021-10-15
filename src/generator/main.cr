@@ -1,7 +1,10 @@
 require "option_parser"
 require "colorize"
+require "version_from_shard"
 
 require "./module_gen"
+
+VersionFromShard.declare
 
 private def parse_options(argv)
   output_dir = "./build"
@@ -11,6 +14,10 @@ private def parse_options(argv)
     parser.banner = "Usage: generator [namespace] [version]"
     parser.on("-h", "--help", "Show this help") do
       puts parser
+      exit
+    end
+    parser.on("--version", "Show gi-crystal version") do
+      puts "Gi Crystal version #{VERSION} built with Crystal #{Crystal::VERSION}."
       exit
     end
     parser.on("-o=OUTPUT_DIRECTORY", "Output directory, default: \"./build\"") do |dir|
