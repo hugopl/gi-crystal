@@ -21,7 +21,7 @@ module Generator
 
     private def prop_type_name
       @prop_type_name ||= begin
-        name = to_crystal_type(@prop.type_info, prop.namespace != namespace)
+        name = to_crystal_type(@prop.type_info, true)
         prop_is_object? ? "#{name}?" : name
       end
     end

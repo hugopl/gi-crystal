@@ -65,6 +65,16 @@ describe "GObject properties" do
     subject.iface.not_nil!.to_unsafe.should eq(value.to_unsafe)
   end
 
+  it "can be GObjects" do
+    subject = Test::Subject.new
+    subject.gobj.should eq(nil)
+
+    value = Test::Subject.new
+    subject.gobj = value
+    value.ref_count.should eq(2)
+    subject.gobj.not_nil!.to_unsafe.should eq(value.to_unsafe)
+  end
+
   it "can be null terminated string lists" do
     subject = Test::Subject.new
     subject.str_list.empty?.should eq(true)

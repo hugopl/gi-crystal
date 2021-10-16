@@ -10,6 +10,7 @@ typedef struct {
   int int32;
   TestRegularEnum _enum;
   TestIface* iface;
+  GObject* gobj;
   char** str_list;
   gdouble float64;
 } TestSubjectPrivate;
@@ -29,6 +30,7 @@ typedef enum {
   PROP_BOOLEAN,
   PROP_INT32,
   PROP_IFACE,
+  PROP_GOBJ,
   PROP_ENUM,
   PROP_STR_LIST,
   N_PROPERTIES,
@@ -62,6 +64,7 @@ static void test_subject_finalize(GObject *gobject) {
 static void test_subject_set_property(GObject *gobject, guint property_id, const GValue *value, GParamSpec *pspec) {
   TestSubject* self = TEST_SUBJECT(gobject);
   TestSubjectPrivate *priv = test_subject_get_instance_private(self);
+  GObject* gobj = NULL; // Used on gobject properties
 
   switch ((TestSubjectProperty) property_id) {
   case PROP_STRING:
@@ -77,9 +80,16 @@ static void test_subject_set_property(GObject *gobject, guint property_id, const
   case PROP_IFACE:
     if (priv->iface)
       g_object_unref(G_OBJECT(priv->iface));
-    GObject* gobj = g_value_get_object(value);
+    gobj = g_value_get_object(value);
     g_object_ref(gobj);
     priv->iface = TEST_IFACE(gobj);
+    break;
+  case PROP_GOBJ:
+    if (priv->gobj)
+      g_object_unref(G_OBJECT(priv->gobj));
+    gobj = g_value_get_object(value);
+    g_object_ref(gobj);
+    priv->gobj = gobj;
     break;
   case PROP_ENUM:
     priv->_enum = g_value_get_enum(value);
@@ -111,6 +121,9 @@ static void test_subject_get_property(GObject *gobject, guint property_id, GValu
     break;
   case PROP_IFACE:
     g_value_set_object(value, G_OBJECT(priv->iface));
+    break;
+  case PROP_GOBJ:
+    g_value_set_object(value, G_OBJECT(priv->gobj));
     break;
   case PROP_ENUM:
     g_value_set_enum(value, priv->_enum);
@@ -144,6 +157,8 @@ static void test_subject_class_init(TestSubjectClass *klass) {
                                                 G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
   obj_properties[PROP_IFACE] = g_param_spec_object("iface", "IFace", "An IFace object.",
                                                    TEST_TYPE_IFACE, G_PARAM_STATIC_STRINGS | G_PARAM_READWRITE);
+  obj_properties[PROP_GOBJ] = g_param_spec_object("gobj", "GObject", "An GObject object.",
+                                                   G_TYPE_OBJECT, G_PARAM_STATIC_STRINGS | G_PARAM_READWRITE);
   obj_properties[PROP_ENUM] = g_param_spec_enum("enum", "Enum", "An enum.",
                                                    TEST_TYPE_REGULAR_ENUM, TEST_VALUE1,
                                                    G_PARAM_STATIC_STRINGS | G_PARAM_READWRITE);
