@@ -3,7 +3,7 @@ require "./spec_helper"
 describe "GObject Binding" do
   describe "reference counting" do
     it "accessible by ref_count method" do
-      subject = Test::Subject.new
+      subject = Test::Subject.new(boolean: true)
       subject.ref_count.should eq(1)
       iface = subject.return_myself_as_interface
       iface.to_unsafe.should eq(subject.to_unsafe)
@@ -11,9 +11,14 @@ describe "GObject Binding" do
     end
 
     it "increase object reference when passing it to a transfer full method" do
-      subject = Test::Subject.new
+      subject = Test::Subject.new(boolean: true)
       subject.ref_count.should eq(1)
       Test::Subject.transfer_full_param(subject)
+      subject.ref_count.should eq(2)
+    end
+
+    it "hold a reference even on transfer none constructors" do
+      subject = Test::Subject.new
       subject.ref_count.should eq(2)
     end
   end

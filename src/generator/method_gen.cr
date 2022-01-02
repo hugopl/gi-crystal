@@ -161,6 +161,7 @@ module Generator
 
         if initialize_method?
           s << "@pointer = _retval"
+          s << "\nLibGObject.g_object_ref(_retval)" if @method.caller_owns.none?
         elsif @method.constructor?
           s << convert_to_crystal("_retval", @method.container.not_nil!, :full)
         elsif return_type.is_a?(ArgInfo)

@@ -59,17 +59,17 @@ describe "GObject properties" do
     subject = Test::Subject.new
     subject.iface.should eq(nil)
 
-    value = Test::Subject.new
+    value = Test::Subject.new(boolean: true)
     subject.iface = value
     value.ref_count.should eq(2)
     subject.iface.not_nil!.to_unsafe.should eq(value.to_unsafe)
   end
 
   it "can be GObjects" do
-    subject = Test::Subject.new
+    subject = Test::Subject.new(boolean: true)
     subject.gobj.should eq(nil)
 
-    value = Test::Subject.new
+    value = Test::Subject.new(boolean: true)
     subject.gobj = value
     value.ref_count.should eq(2)
     subject.gobj.not_nil!.to_unsafe.should eq(value.to_unsafe)
