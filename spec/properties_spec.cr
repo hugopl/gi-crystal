@@ -85,4 +85,12 @@ describe "GObject properties" do
     subject.str_list = %w(let go)
     subject.str_list.should eq(%w(let go))
   end
+
+  context "when of boolean type" do
+    it "transform `is_prop` to `is_prop?`" do
+      subject = Test::Subject.new(boolean: true)
+      subject.is_bool?.should eq(true)
+      subject.boolean?.should eq(true)
+    end
+  end
 end

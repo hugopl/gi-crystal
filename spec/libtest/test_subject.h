@@ -169,6 +169,13 @@ int test_subject_receive_arguments_named_as_crystal_keywords(TestSubject *self_,
 const gchar* test_subject_get_getter_without_args(TestSubject *self);
 
 /**
+ * test_subject_is_bool: (get-property Boolean)
+ *
+ * Used to test boolean get properties, this must be mapped to `TestSubject#bool?`
+ */
+gboolean test_subject_is_bool(TestSubject* self);
+
+/**
  * test_subject_set_setter:
  *
  * Used to test transformation of this in `Subject#setter=`.

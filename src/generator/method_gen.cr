@@ -27,6 +27,8 @@ module Generator
                      @method.name == "new" ? "initialize" : "self.#{identifier}"
                    elsif identifier.starts_with?("get_") && identifier.size > 4
                      identifier[4..]
+                   elsif method_flags.getter? && identifier.starts_with?("is_") && identifier.size > 3
+                     "#{identifier}?"
                    elsif @method.args.size == 1 && identifier.starts_with?("set_") && identifier.size > 4
                      "#{identifier[4..]}="
                    else

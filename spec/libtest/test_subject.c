@@ -266,6 +266,12 @@ const gchar* test_subject_get_getter_without_args(TestSubject *self) {
   return "some string";
 }
 
+gboolean test_subject_is_bool(TestSubject* self) {
+  TestSubjectPrivate *priv = test_subject_get_instance_private(TEST_SUBJECT(self));
+
+  return priv->boolean;
+}
+
 void test_subject_set_setter(TestSubject *self, const gchar* data) {
   g_object_set(G_OBJECT(self), "string", data, NULL);
 }
