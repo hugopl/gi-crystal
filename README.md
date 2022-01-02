@@ -44,6 +44,11 @@ The basic rules are:
   wrapper always points to valid memory. On "transfer full" no copy is needed.
 - All GObjects have just a pointer to the C object (always allocated by GLib) and always hold a reference during their lifetime
 
+### Debugging
+
+To help debug memory issues you can compile your code with `-Ddebugmemory`, this will print the object address and reference
+counter to STDOUT when any wrapper object finalize method is called.
+
 ### Interfaces
 
 GObject interfaces are mapped to Crystal modules + a dummy class that only implements this module, used when there's some
