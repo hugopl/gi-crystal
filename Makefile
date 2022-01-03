@@ -2,6 +2,9 @@
 
 test: generator test_binding just-test
 
+oldlibs_test: generator test_binding
+	OLD_LIBS=1 ./bin/rspec
+
 just-test:
 	./bin/rspec
 
