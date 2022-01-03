@@ -20,7 +20,7 @@ useful if you are creating a binding to a GObject based library.
    ```yaml
    developer_dependencies:
      gtk:
-       github: hugopl/gobj-bind-gen
+       github: hugopl/gi-crystal
    ```
 
 2. Add the dependency to your `shard.yml`:
@@ -32,9 +32,9 @@ See https://github.com/hugopl/gtk4.cr/blob/master/shard.yml for an example of ho
 
 ## Memory Management ❤️‍🔥️
 
-Crystal is garbage collected, you create objects and have faith that the GC will free them at some point while GLib uses
-reference count, the clash of these two approaches of how to deal with memory management can't end up in something beautiful
-without corner cases, etc... but we try our best to reduce the mess.
+Crystal is a garbage collected language, you create objects and have faith that the GC will free them at some point in time,
+while on the other hand GLib uses reference count, the clash of these two approaches of how to deal with memory management
+can't end up in something beautiful without corner cases, etc... but we try our best to reduce the mess.
 
 The basic rules are:
 
@@ -42,7 +42,10 @@ The basic rules are:
 - Boxed structs (except GValue) are always allocated by GLib but owned by Crystal wrappers.
 - If the struct is passed from C to Crystal with "transfer none", the struct is copied anyway to ensure that every Crystal object
   wrapper always points to valid memory. On "transfer full" no copy is needed.
-- All GObjects have just a pointer to the C object (always allocated by GLib) and always hold a reference during their lifetime
+- All GObjects have just a pointer to the C object (always allocated by GLib) and always hold a reference during their lifetime.
+
+If you don't know what means `Transfer full`, `Transfer none` and few other terms about GOBject introspection, is worth to
+[read the docs](https://gi.readthedocs.io/en/latest/annotations/giannotations.html#memory-and-lifecycle-management).
 
 ### Debugging
 
