@@ -1,3 +1,5 @@
+require "./lib_gobject"
+
 @[Link("girepository-1.0", pkg_config: "gobject-introspection-1.0")]
 lib LibGIRepository
   union Argument
