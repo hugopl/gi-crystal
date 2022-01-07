@@ -17,6 +17,7 @@ describe "GValue" do
     it { Test::Subject.g_value_parameter("hey").should eq("gchararray:hey;") }
     it { Test::Subject.g_value_parameter(Test::Subject.new).should eq("GObject:?;") }
     it { Test::Subject.g_value_parameter(GLib::Variant.new(42)).should eq("GVariant:?;") }
+    it { Test::Subject.g_value_parameter(Test::Subject.new.return_myself_as_interface).should eq("GObject:?;") }
   end
 
   context "respond to as_* and as_*?" do
