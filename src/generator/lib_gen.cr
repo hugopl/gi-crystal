@@ -8,9 +8,6 @@ module Generator
       generate(filename)
     end
 
-    delegate g_lib?, to: namespace
-    delegate g_object?, to: namespace
-
     private def libraries : Array(String)
       namespace.shared_libraries.map do |library|
         library[/lib([^\/]+)\.(?:so|.+?\.dylib).*/, 1]

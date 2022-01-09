@@ -14,20 +14,16 @@ module Generator
     @objects : Array(ObjectGen)
     @structs : Array(StructGen)
     @interfaces : Array(InterfaceGen)
+    getter? already_generated = false
 
     @@loaded_modules = Hash(String, ModuleGen).new
 
-    def self.load(namespace : String, version : String? = nil) : ModuleGen
-      @@loaded_modules[namespace] ||= begin
-        ModuleGen.new(namespace, version).tap do |gen|
-          raise Error.new("A module with a different version was already loaded") if version && version != gen.version
-        end
-      end
+    def self.load(info : BindingConfig) : ModuleGen
+      @@loaded_modules[info.namespace] ||= ModuleGen.new(info)
     end
 
-    protected def initialize(namespace : String, version : String?)
-      @namespace = GObjectIntrospection::Repository.require(namespace, version)
-      with_log_scope(&->config) # load binding config
+    protected def initialize(@config : BindingConfig)
+      @namespace = GObjectIntrospection::Repository.require(@config.namespace, @config.version)
 
       @objects = @namespace.objects.map { |info| ObjectGen.new(info) }.reject(&.skip?)
       @structs = @namespace.structs.map { |info| StructGen.new(info) }.reject(&.skip?)
@@ -50,13 +46,17 @@ module Generator
     delegate flags, to: @namespace
 
     def generate
+      return if already_generated?
+
+      @already_generated = true
       super
 
-      copy_extra_includes
       @lib.generate
       @objects.each(&.generate)
       @structs.each(&.generate)
       @interfaces.each(&.generate)
+
+      immediate_dependencies.each(&.generate)
     end
 
     # Files of all generated wrappers
@@ -70,32 +70,10 @@ module Generator
       requires.sort!
     end
 
-    # Copy include files added by binding YAML configuration into `outputdir/module_dir/includes/` directory.
-    private def copy_extra_includes
-      includes = config.includes
-      return if includes.empty?
-
-      Dir.mkdir_p(File.join(output_dir, module_dir, "includes"))
-      config.includes.each do |file|
-        dest = File.join(output_dir, module_dir, "includes", file.basename)
-        Log.debug { "Copying '#{file}' to '#{dest}'" }
-        File.copy(file, dest)
-      end
-    rescue e : File::NotFoundError
-      raise Error.new(e.message)
-    end
-
     private def immediate_dependencies : Array(ModuleGen)
       @namespace.immediate_dependencies.map do |dep|
         namespace, version = dep.split('-', 2)
-        ModuleGen.load(namespace, version)
-      end
-    end
-
-    def dependencies : Array(ModuleGen)
-      @namespace.dependencies.map do |dep|
-        namespace, version = dep.split('-', 2)
-        ModuleGen.load(namespace, version)
+        ModuleGen.load(BindingConfig.for(namespace, version))
       end
     end
 

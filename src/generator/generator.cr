@@ -1,16 +1,12 @@
 require "ecr"
 require "log"
 
-require "./config"
 require "../gobject_introspection"
 require "./helpers"
 require "./doc_helper"
 
 module Generator
   include GObjectIntrospection
-
-  class Error < RuntimeError
-  end
 
   LF  = "\n"
   Log = ::Log.for("generator")
@@ -19,12 +15,17 @@ module Generator
     include Helpers
     include DocHelper
 
-    @@log_scope = Deque{"main"}
+    @@log_scope = Deque(String).new
     @@output_dir = "./"
 
+    getter config : BindingConfig
     getter namespace : Namespace
 
+    delegate g_lib?, to: namespace
+    delegate g_object?, to: namespace
+
     def initialize(@namespace)
+      @config = BindingConfig.for(@namespace.name, @namespace.version)
     end
 
     def namespace_name : String
@@ -47,7 +48,7 @@ module Generator
     end
 
     def self.log_scope
-      @@log_scope.last
+      @@log_scope.last?
     end
 
     def self.output_dir=(value : String)
@@ -60,10 +61,6 @@ module Generator
 
     def output_dir
       Generator.output_dir
-    end
-
-    def config
-      Config.for(@namespace.name)
     end
 
     def skip?(key : String = subject) : Bool

@@ -1,10 +1,10 @@
+namespace: GLib
+version: "2.0"
 include:
- - src/gi_crystal/closure_data_manager.cr
- - src/gi_crystal/list.cr
- - src/gi_crystal/slist.cr
- - src/gi_crystal/timeout.cr
- - src/gi_crystal/util.cr
- - src/gi_crystal/variant.cr
+ - list.cr
+ - slist.cr
+ - timeout.cr
+ - variant.cr
 
 handmade:
  - Variant

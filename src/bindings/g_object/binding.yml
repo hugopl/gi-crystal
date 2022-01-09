@@ -1,6 +1,8 @@
+namespace: GObject
+version: "2.0"
 include:
- - src/gi_crystal/type.cr
- - src/gi_crystal/value.cr
+ - type.cr
+ - value.cr
 
 handmade:
  - Value

@@ -46,7 +46,7 @@ module Generator
         args.each do |arg|
           type_info = arg.type_info
           iface = type_info.interface
-          if iface && Config.for(arg.namespace.name).ignore?(iface.name)
+          if iface && BindingConfig.for(arg.namespace).ignore?(iface.name)
             Log.warn { "method using ignored type #{to_crystal_type(iface, true)} on arguments" }
           end
 

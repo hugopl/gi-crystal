@@ -31,7 +31,7 @@ module Generator
 
     private def signal_args
       @signal_args ||= @signal.args.reject do |arg|
-        Config.for(arg.namespace.name).ignore?(to_crystal_type(arg.type_info, false))
+        BindingConfig.for(arg.namespace).ignore?(to_crystal_type(arg.type_info, false))
       end
     end
 
