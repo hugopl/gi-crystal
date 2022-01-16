@@ -104,21 +104,6 @@ describe "GObject Binding" do
     end
   end
 
-  describe "structs" do
-    it "can be returned by transfer full (boxed structs)" do
-      boxed = Test::BoxedStruct.return_boxed_struct("hell yeah!")
-      boxed.data.should eq("hell yeah!")
-    end
-
-    it "are always copyed, even on transfer none" do
-      boxed = Test::BoxedStruct.return_boxed_struct("boxed")
-
-      ret = boxed.return_transfer_none
-      ret.data.should eq("boxed")
-      ret.to_unsafe.should_not eq(boxed.to_unsafe)
-    end
-  end
-
   describe "GList" do
     it "works on transfer full" do
       subject = Test::Subject.new

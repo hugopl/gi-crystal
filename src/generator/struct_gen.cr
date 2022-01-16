@@ -81,8 +81,8 @@ module Generator
       field_name = field.name
       io << "def " << field_name << " : " << to_crystal_type(field.type_info) << LF
       io << "# Property getter\n"
-      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field.type_info) << "))\n"
-      io << convert_to_crystal("_var.value", field.type_info, :full) << LF
+      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field.type_info, structs_as_void: true) << "))\n"
+      io << convert_to_crystal("_var.value", field.type_info, :none) << LF
       io << "\nend\n"
     end
 
@@ -90,8 +90,8 @@ module Generator
       field_name = field.name
       io << "def " << field_name << "=(value : " << to_crystal_type(field.type_info) << ")\n"
       io << "# Property setter\n"
-      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field.type_info) << ")).value = "
-      io << convert_to_lib("value", field.type_info, :full) << LF
+      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field.type_info, structs_as_void: true) << ")).value = "
+      io << convert_to_lib("value", field.type_info, :none) << LF
       io << "value\n"
       io << "end\n"
     end

@@ -22,15 +22,29 @@ G_BEGIN_DECLS
 #define TEST_CONSTANT 123
 
 /**
+ * TestPoint:
+ * @x: X
+ * @y: Y
+ *
+ * Used to test simple structs
+ */
+typedef struct _TestPoint {
+  int x;
+  int y;
+} TestPoint;
+
+/**
  * TestStruct:
  * @in: A attribute using a invalid Crystal keyword.
  * @begin: Another attribute using a invalid Crystal keyword.
+ * @other_struct: Another struct member of this struct.
  *
  * A plain struct to test stuff
  */
 typedef struct _TestStruct {
   gint16 in;
   gint16 begin;
+  TestPoint* point;
 } TestStruct;
 
 /**
