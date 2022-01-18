@@ -1,4 +1,5 @@
 module GICrystal
+  # :nodoc:
   # Code kindly stolen from crystal-gobject shard
   class ClosureDataManager
     def self.instance
