@@ -139,7 +139,31 @@ GValue as parameter you can pass any supported value. I.e. you can pass e.g. a p
 
 ## GLib GError
 
-- Not implemented, but they will be converted to Crystal Exceptions.
+GI-Crystal translates all GLib errors to different exceptions.
+
+Example: `G_FILE_ERROR_EXIST` is a GLib error from domain `FILE_ERROR` with the code name `EXIST`, GICrystal translates this
+in these the following exception classes:
+
+```Crystal
+module GLib
+  class GLibError < RuntimeError
+  end
+
+  class FileError < GLibError
+    class Exist < FileError
+      def code : Int32
+        # ...
+      end
+    end
+    # ...
+  end
+end
+```
+
+So if you want to rescue from this specific error you must `rescue e : GLib::FileError::Exist`, if you want to rescue from any
+error in this domain you must `rescue e : GLib::FileError`, and finally if you want to rescue from any GLib errors you do
+`rescue e : GLib::GLibError`.
+
 
 ## Contributing
 

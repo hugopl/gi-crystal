@@ -77,6 +77,29 @@ module Generator
       end
     end
 
+    private def raise_module_exceptions : String
+      return "" if enums.none?(&.error_domain)
+
+      String.build do |s|
+        s << "error_domain = error.value.domain\n" \
+             "error_code = error.value.code\n\n"
+
+        enums.each do |enum_|
+          domain = enum_.error_domain
+          next if domain.nil?
+
+          error_domain_type = to_type_name(enum_.name)
+
+          s << "if error_domain == LibGLib.g_quark_try_string(\"" << domain << "\")\n"
+          enum_.values.each do |value|
+            s << "raise " << error_domain_type << "::" << to_type_name(value.name) <<
+              ".new(error) if error_code == " << value.value << LF
+          end
+          s << "end\n\n"
+        end
+      end
+    end
+
     # Crystal auto-generate All and None flag entries, so we check if the C flag also defines that, if so
     # we check if the value is corretc, otherwise we warn ⚠️
     private def check_about_invalid_flag_all_value(flag : EnumInfo, int_value : Int64) : Nil

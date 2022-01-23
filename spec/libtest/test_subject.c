@@ -409,5 +409,9 @@ gchar* test_subject_g_variant_parameter(GVariant* variant) {
 }
 
 GError* test_subject_return_g_error() {
-  return g_error_new(TEST_SUBJECT_ERROR, TEST_SUBJECT_ERROR_WHATEVER, "whatever message");
+  return g_error_new(G_FILE_ERROR, G_FILE_ERROR_FAILED, "whatever message");
+}
+
+void test_subject_raise_file_error(TestSubject* self, GError** error) {
+  g_set_error(error, G_FILE_ERROR, G_FILE_ERROR_FAILED, "An error with ♥️");
 }

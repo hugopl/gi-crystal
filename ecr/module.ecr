@@ -17,7 +17,19 @@ module <%= namespace_name %>
     <%= const.name %> = <%= const.literal %>
   <% end %>
 
+  # Base class for all errors in this module.
+  class <%= namespace_name %>Error < RuntimeError
+    # :nodoc:
+    def initialize(error : Pointer(LibGLib::Error))
+      message_ptr = error.value.message
+      super(String.new(message_ptr)) unless message_ptr.null?
+      LibGLib.g_error_free(error)
+    end
+  end
+
+  # Enums
   <% enums.each do |enum_| %>
+    <%= next if enum_.error_domain %>
     <%= render_doc(enum_) -%>
     enum <%= to_type_name(enum_.name) %> : <%= to_crystal_type(enum_.storage_type) %>
       <% enum_.values.each do |value| -%>
@@ -26,6 +38,7 @@ module <%= namespace_name %>
     end
   <% end %>
 
+  # Flags
   <% flags.each do |flag| -%>
     <% render_doc(flag) -%>
     <% if empty_flag?(flag) -%>
@@ -41,6 +54,32 @@ module <%= namespace_name %>
       end
     <% end %>
   <% end %>
+
+  # Errors
+  <% enums.each do |enum_| %>
+    <%= next unless enum_.error_domain %>
+
+    <%= render_doc(enum_) -%>
+    class <%= to_type_name(enum_.name) -%> < <%= namespace_name %>Error
+      <% enum_.values.each do |value| -%>
+        class <%= to_type_name(value.name) %> < <%= to_type_name(enum_.name) %>
+          def code : Int32
+            <%= value.value %>
+          end
+        end
+      <% end %>
+    end
+  <% end %>
+
+  # :nodoc:
+  def raise_exception(error : Pointer(LibGLib::Error))
+    <%= raise_module_exceptions %>
+
+    <% immediate_dependencies.each do |namespace| -%>
+      <%= namespace.namespace_name %>.raise_exception(error)
+    <% end -%>
+  end
+
   extend self
 end
 

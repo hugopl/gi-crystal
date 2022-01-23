@@ -5,4 +5,11 @@ describe "GError" do
     error = Test::Subject.return_g_error
     error.message.should eq("whatever message")
   end
+
+  it "are translated to exceptions" do
+    obj = Test::Subject.new
+    expect_raises(GLib::FileError::Failed, "An error with ♥️") do
+      obj.raise_file_error
+    end
+  end
 end

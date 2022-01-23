@@ -20,6 +20,10 @@ module Generator
       @method.symbol
     end
 
+    def throws? : Bool
+      @method.flags.throws?
+    end
+
     private def method_identifier : String
       identifier = to_identifier(@method.name)
       method_flags = @method.flags
@@ -144,23 +148,34 @@ module Generator
     end
 
     private def method_c_call_args : String
+      is_method = @method.method?
       String.build do |s|
-        s << "self, " if @method.method?
+        s << "self, " if is_method
         @method.args.each_with_index do |arg, i|
           s << ',' unless i.zero?
           s << to_identifier(arg.name)
+        end
+
+        if throws?
+          s << ", " unless is_method
+          s << "pointerof(_error)"
         end
       end
     end
 
     def method_c_call : String
-      return_type = method_return_type
       c_return_type_info = @method.return_type
 
       String.build do |s|
         s << "_retval = " if !c_return_type_info.tag.void? || c_return_type_info.pointer?
         s << to_lib_type(method, true) << '(' << method_c_call_args << ")\n"
+      end
+    end
 
+    def method_return : String
+      return_type = method_return_type
+
+      String.build do |s|
         if initialize_method?
           s << "@pointer = _retval"
           s << "\nLibGObject.g_object_ref(_retval)" if @method.caller_owns.none?

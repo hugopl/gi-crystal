@@ -51,11 +51,6 @@ module Generator
       func_namespace = func_info.namespace.name
       flags = func_info.flags
 
-      if func_info.args.empty?
-        io << "(this : Void*)" if flags.method?
-        return
-      end
-
       lib_args = [] of String
       lib_args << "this : Void*" if flags.method?
       func_info.args.each do |arg|
@@ -64,6 +59,7 @@ module Generator
         arg_type = "Pointer(#{arg_type})" unless arg.direction.in?
         lib_args << "#{to_identifier(arg.name)} : #{arg_type}"
       end
+      lib_args << "error : LibGLib::Error**" if flags.throws?
 
       io << "(" << lib_args.join(", ") << ")"
     end

@@ -2,6 +2,7 @@ module GObjectIntrospection
   class EnumInfo < RegisteredTypeInfo
     include FunctionInfoContainer
     @values : Array(ValueInfo)?
+    @error_domain : String?
 
     def storage_type : TypeTag
       TypeTag.from_value(LibGIRepository.g_enum_info_get_storage_type(self))
@@ -15,6 +16,11 @@ module GObjectIntrospection
           ValueInfo.new(ptr)
         end
       end
+    end
+
+    def error_domain : String?
+      ptr = LibGIRepository.g_enum_info_get_error_domain(self)
+      @error_domain = String.new(ptr) if ptr
     end
 
     def methods : Array(FunctionInfo)

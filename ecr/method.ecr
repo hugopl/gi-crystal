@@ -1,10 +1,21 @@
 <%= render_doc(method) %>
 def <%= method_identifier %>(<%= method_args_declaration %>) <%= method_return_type_declaration %>
   <%= method_gi_annotations %>
+  <% if throws? -%>
+    _error = Pointer(LibGLib::Error).null
+  <% end -%>
 
+  # Handle parameters
   <%= handle_method_parameters %>
-
+  # C call
   <%= method_c_call %>
+
+  <% if throws? -%>
+    # Error check
+    <%= namespace_name %>.raise_exception(_error) unless _error.null?
+  <% end -%>
+  # Return value handling
+  <%= method_return %>
 end
 
 <%= method_splat_overload %>

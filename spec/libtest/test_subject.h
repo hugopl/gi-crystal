@@ -61,17 +61,6 @@ struct _TestSubjectClass {
   /* Class virtual function fields. */
 };
 
-#define TEST_SUBJECT_ERROR test_subject_error_quark ()
-
-/**
- * TestSubjectError:
- * @TEST_SUBJECT_ERROR_WHATEVER: Whatever happened
- *
- * Error codes for TEST_SUBJECT_ERROR
- */
-typedef enum {
-  TEST_SUBJECT_ERROR_WHATEVER
-} TestSubjectError;
 
 /**
  * test_subject_new:
@@ -310,6 +299,13 @@ gchar* test_subject_g_variant_parameter(GVariant* variant);
  * Used to test GError as return value
  */
 GError* test_subject_return_g_error();
+
+/**
+ * test_subject_raise_file_error:
+ *
+ * Used to test GError translation into exceptions.
+ */
+void test_subject_raise_file_error(TestSubject* self, GError** error);
 
 /**
  * test_subject_return_myself_as_interface:
