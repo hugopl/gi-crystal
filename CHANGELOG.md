@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Need to run bin/gi-crystal manually before compile any project usign gi-crystal.
 - Binding extra files are no longer copied into to generated output dir, but included directly.
 - All generated files are now created under `lib/gi-crystal/src/auto/<module_dir>` by default.
+- GLib/GObject bindings are required when `gi-crystal` is required.
 
 ## [0.2.0] - 2022-01-09
 ### Fixed
