@@ -28,7 +28,12 @@ useful if you are creating a binding to a GObject based library.
 
 ## Usage
 
-See https://github.com/hugopl/gtk4.cr/blob/master/shard.yml for an example of how to use it.
+Bindings are specified in [binding.yml](BINDING_YML.md) files. When you run the generator it will scan all `binding.yml`
+files found and generate the bindings at `lib/gi-crystal/src/auto/`.
+
+The generator is compiled in a _post-install_ task and can be found at `bin/gi-crystal` after you run `shards install`.
+
+See https://github.com/hugopl/gtk4.cr for an example of how to use it.
 
 ## Memory Management ❤️‍🔥️
 
