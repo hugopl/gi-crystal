@@ -4,8 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+- Revert auto require of GObject module on gi-crystal since it makes the compiles require the file twice.
+
 ## [0.3.0] - 2022-01-23
-## Changed
+### Changed
 - Binding configuration now must be in binding.yml files.
 - Command line no more need config paths, etc. gi-crystal can detect all bindings in the project and generate them.
 - Need to run bin/gi-crystal manually before compile any project usign gi-crystal.

@@ -1,6 +1,5 @@
 require "./gi_crystal/closure_data_manager"
 require "./gi_crystal/util"
-require "./auto/g_object-2.0/g_object"
 
 module GICrystal
   # A macro to check if a binding was generated and require it
