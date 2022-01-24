@@ -34,7 +34,10 @@ module Generator
         next unless File.exists?(xml_filename)
 
         @doc = load_xml(xml_filename)
-        return if @doc
+        if @doc
+          Log.info { "Documentation for #{name}-#{version} from: #{xml_filename}" }
+          return
+        end
       end
 
       Log.error { "#{gir_filename} not found, skipping documentation generation for #{name}, search path: #{search_paths}." }
@@ -62,13 +65,8 @@ module Generator
     def doc(io : IO, info : BaseInfo) : Nil
       return if @doc.nil?
 
-      case info
-      when ObjectInfo, InterfaceInfo, StructInfo
-        xpath = xpath_for(info)
-        print_type_doc(io, xpath) if xpath
-      else
-        return
-      end
+      xpath = xpath_for(info)
+      print_type_doc(io, xpath) if xpath
     end
 
     private def xpath_for(info : BaseInfo) : String?
@@ -76,6 +74,8 @@ module Generator
       when ObjectInfo    then "/xmlns:repository/xmlns:namespace/xmlns:class[@name=\"#{info.name}\"]/xmlns:doc[1]"
       when StructInfo    then "/xmlns:repository/xmlns:namespace/xmlns:record[@name=\"#{info.name}\"]/xmlns:doc[1]"
       when InterfaceInfo then "/xmlns:repository/xmlns:namespace/xmlns:interface[@name=\"#{info.name}\"]/xmlns:doc[1]"
+      when ConstantInfo  then "/xmlns:repository/xmlns:namespace/xmlns:constant[@name=\"#{info.name}\"]/xmlns:doc[1]"
+      when EnumInfo      then "/xmlns:repository/xmlns:namespace/xmlns:enumeration[@name=\"#{info.name}\"]/xmlns:doc[1]"
       end
     end
 

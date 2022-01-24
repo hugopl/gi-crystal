@@ -6,9 +6,11 @@ G_BEGIN_DECLS
 
 /**
  * TestRegularEnum:
- * @TEST_VALUE1:
- * @TEST_VALUE2:
- * @TEST_VALUE3:
+ * @TEST_VALUE1: First value.
+ * @TEST_VALUE2: Second value.
+ * @TEST_VALUE3: Third value.
+ *
+ * Used to test regular enums.
  */
 typedef enum {
   TEST_VALUE1,

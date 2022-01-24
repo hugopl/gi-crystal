@@ -18,4 +18,4 @@ libtest:
 	make --quiet -C ./spec/libtest
 
 doc: test_binding
-	crystal doc src/gi-crystal.cr src/auto/g_lib-2.0/g_lib.cr src/auto/g_object-2.0/g_object.cr
+	crystal doc src/gi-crystal.cr src/auto/test-1.0/test.cr
