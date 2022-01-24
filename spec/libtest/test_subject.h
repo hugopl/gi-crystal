@@ -308,6 +308,13 @@ GError* test_subject_return_g_error();
 void test_subject_raise_file_error(TestSubject* self, GError** error);
 
 /**
+ * test_subject_raise_file_error2:
+ *
+ * Used to test GError translation into exceptions, this time with more arguments.
+ */
+void test_subject_raise_file_error2(TestSubject* self, int foo, GError** error);
+
+/**
  * test_subject_return_myself_as_interface:
  * Returns: (transfer none):
  */

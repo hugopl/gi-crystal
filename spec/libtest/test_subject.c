@@ -415,3 +415,7 @@ GError* test_subject_return_g_error() {
 void test_subject_raise_file_error(TestSubject* self, GError** error) {
   g_set_error(error, G_FILE_ERROR, G_FILE_ERROR_FAILED, "An error with ♥️");
 }
+
+void test_subject_raise_file_error2(TestSubject* self, int foo, GError** error) {
+  test_subject_raise_file_error(self, error);
+}

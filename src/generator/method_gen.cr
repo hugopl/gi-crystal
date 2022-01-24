@@ -148,19 +148,13 @@ module Generator
     end
 
     private def method_c_call_args : String
-      is_method = @method.method?
-      String.build do |s|
-        s << "self, " if is_method
-        @method.args.each_with_index do |arg, i|
-          s << ',' unless i.zero?
-          s << to_identifier(arg.name)
-        end
-
-        if throws?
-          s << ", " unless is_method
-          s << "pointerof(_error)"
-        end
+      args = Array(String).new(@method.args.size + 2) # +2, just in case we need space for `self` and `error`.
+      args << "self" if @method.method?
+      @method.args.each do |arg|
+        args << to_identifier(arg.name)
       end
+      args << "pointerof(_error)" if throws?
+      args.join(", ")
     end
 
     def method_c_call : String

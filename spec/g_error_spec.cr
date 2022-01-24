@@ -12,4 +12,11 @@ describe "GError" do
       obj.raise_file_error
     end
   end
+
+  it "are translated to exceptions (2)" do
+    obj = Test::Subject.new
+    expect_raises(GLib::FileError::Failed, "An error with ♥️") do
+      obj.raise_file_error2(2)
+    end
+  end
 end
