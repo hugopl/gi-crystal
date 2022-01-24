@@ -34,6 +34,7 @@ module <%= namespace_name %>
     <%= render_doc(enum_) -%>
     enum <%= to_type_name(enum_.name) %> : <%= to_crystal_type(enum_.storage_type) %>
       <% enum_.values.each do |value| -%>
+        <%= render_doc(enum_, value) -%>
         <%= to_type_name(value.name) %> = <%= value.value %>
       <% end %>
     end

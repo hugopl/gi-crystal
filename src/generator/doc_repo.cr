@@ -62,6 +62,12 @@ module Generator
     def doc(io : IO, namespace : Namespace) : Nil
     end
 
+    def doc(io : IO, enum_ : EnumInfo, value : ValueInfo) : Nil
+      xpath = "/xmlns:repository/xmlns:namespace/xmlns:enumeration[@name=\"#{enum_.name}\"]/" \
+              "xmlns:member[@name=\"#{value.name}\"]/xmlns:doc[1]"
+      print_type_doc(io, xpath)
+    end
+
     def doc(io : IO, info : BaseInfo) : Nil
       return if @doc.nil?
 
@@ -101,6 +107,9 @@ module Generator
     end
 
     def doc(io, info) : Nil
+    end
+
+    def doc(io, obj1, obj2) : Nil
     end
   end
 end

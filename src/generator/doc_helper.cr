@@ -8,6 +8,10 @@ module Generator
       doc_repo.doc(io, {{ obj.id }})
     end
 
+    macro render_doc(obj1, obj2)
+      doc_repo.doc(io, {{ obj1.id }}, {{ obj2.id }})
+    end
+
     def doc_repo : DocRepo
       @doc_repo ||= DocRepo.for(@namespace)
     end
