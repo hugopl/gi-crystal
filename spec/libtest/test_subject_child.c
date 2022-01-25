@@ -41,11 +41,15 @@ static void test_subject_child_init(TestSubjectChild *self) {
 }
 
 
-TestSubjectChild *test_subject_child_new(const gchar *string) {
-  return g_object_new(TEST_TYPE_SUBJECT_CHILD, "string", string, NULL);
+TestSubject* test_subject_child_new(const gchar* string) {
+  return TEST_SUBJECT(g_object_new(TEST_TYPE_SUBJECT_CHILD, "string", string, NULL));
 }
 
-TestSubjectChild *test_subject_child_new_renamed(const gchar *string) {
+TestSubject* test_subject_child_new_renamed(const gchar* string) {
+  return test_subject_child_new(string);
+}
+
+TestSubject* test_subject_child_new_constructor(const gchar* string) {
   return test_subject_child_new(string);
 }
 

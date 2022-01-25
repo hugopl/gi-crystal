@@ -1,5 +1,13 @@
 require "./spec_helper"
 
+class SubjectChildStore
+  getter subject
+
+  def initialize
+    @subject = Test::SubjectChild.new_constructor("hello")
+  end
+end
+
 describe "GObject Binding" do
   describe "reference counting" do
     it "accessible by ref_count method" do
@@ -39,7 +47,14 @@ describe "GObject Binding" do
 
     it "generate renamed constructors" do
       subject = Test::SubjectChild.new("hello")
+      subject.class.should eq(Test::SubjectChild)
       subject.string.should eq("hello")
+    end
+
+    it "returns the right type instead of any base type" do
+      store = SubjectChildStore.new
+      typeof(store.subject).should eq(Test::SubjectChild)
+      store.subject.string.should eq("hello")
     end
   end
 

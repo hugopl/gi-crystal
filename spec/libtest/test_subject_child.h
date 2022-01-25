@@ -13,7 +13,7 @@ struct _TestSubjectChildClass {
   /* Class virtual function fields. */
 };
 
-TestSubjectChild *test_subject_child_new(const gchar *string);
+TestSubject* test_subject_child_new(const gchar* string);
 
 /**
  * test_subject_child_new_renamed: (rename-to test_subject_child_new)
@@ -22,7 +22,15 @@ TestSubjectChild *test_subject_child_new(const gchar *string);
  *
  * Used to test constructor genaration of renamed functions
  */
-TestSubjectChild *test_subject_child_new_renamed(const gchar *string);
+TestSubject* test_subject_child_new_renamed(const gchar* string);
+
+/**
+ * test_subject_child_new_constructor:
+ * @string: value for the string property
+ *
+ * Used to test constructors that returns the base class in C signature.
+ */
+TestSubject* test_subject_child_new_constructor(const gchar* string);
 
 /**
  * test_subject_child_me_as_gobject:
