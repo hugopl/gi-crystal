@@ -125,17 +125,7 @@ module Generator
           tags << "(nullable)" if arg.nullable?
           tags << "(caller-allocates)" if arg.caller_allocates?
           tags << "(optional)" if arg.optional?
-          arg_type = arg.type_info
-          if arg_type.tag.array?
-            tags << String.build do |s|
-              s << "(array"
-              s << " length=" << args[arg_type.array_length].name if arg_type.array_length >= 0
-              s << " fixed-size=" << arg_type.array_fixed_size if arg_type.array_fixed_size > 0
-              s << " zero-terminated=1" if arg_type.array_zero_terminated?
-              s << " element-type #{arg_type.param_type.tag}"
-              s << ")"
-            end
-          end
+          tags << type_info_gi_annotations(args, arg.type_info)
 
           io << "# @" << arg.name << ": " << tags.join(" ") << LF if tags.any?
           tags.clear
@@ -144,7 +134,20 @@ module Generator
         io << "# Returns: (transfer " << @method.caller_owns.to_s.downcase
         return_type = @method.return_type
         io << " Filename" if return_type.tag.filename?
-        io << ")\n"
+        io << ") " << type_info_gi_annotations(args, @method.return_type) << LF
+      end
+    end
+
+    private def type_info_gi_annotations(args : Array(ArgInfo), type_info : TypeInfo) : String
+      return "" unless type_info.tag.array?
+
+      String.build do |s|
+        s << "(array"
+        s << " length=" << args[type_info.array_length].name if type_info.array_length >= 0
+        s << " fixed-size=" << type_info.array_fixed_size if type_info.array_fixed_size > 0
+        s << " zero-terminated=1" if type_info.array_zero_terminated?
+        s << " element-type #{type_info.param_type.tag}"
+        s << ")"
       end
     end
 
