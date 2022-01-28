@@ -13,7 +13,7 @@ but at some point I decided to take a different approach on how to generate the 
 ## Installation
 
 You are probably looking for the [GTK4](https://github.com/hugopl/gtk4.cr) shard, not this one, since this shard is only
-useful if you are creating a binding to a GObject based library.
+useful if you are creating a binding for a GObject based library.
 
 1. Add the dependency to your `shard.yml`:
 
@@ -23,13 +23,12 @@ useful if you are creating a binding to a GObject based library.
        github: hugopl/gi-crystal
    ```
 
-2. Add the dependency to your `shard.yml`:
 2. Run `shards install`
 
 ## Usage
 
 Bindings are specified in [binding.yml](BINDING_YML.md) files. When you run the generator it will scan all `binding.yml`
-files found and generate the bindings at `lib/gi-crystal/src/auto/`.
+files under the project directory and generate the bindings at `lib/gi-crystal/src/auto/`.
 
 The generator is compiled in a _post-install_ task and can be found at `bin/gi-crystal` after you run `shards install`.
 
@@ -47,7 +46,7 @@ The basic rules are:
 - Boxed structs (except GValue) are always allocated by GLib but owned by Crystal wrappers.
 - If the struct is passed from C to Crystal with "transfer none", the struct is copied anyway to ensure that every Crystal object
   wrapper always points to valid memory. On "transfer full" no copy is needed.
-- All GObjects have just a pointer to the C object (always allocated by GLib) and always hold a reference during their lifetime.
+- All Crystal GObject wrappers have just a pointer to the C object (always allocated by GLib) and always hold a reference during their lifetime.
 
 If you don't know what means `Transfer full`, `Transfer none` and few other terms about GOBject introspection, is worth to
 [read the docs](https://gi.readthedocs.io/en/latest/annotations/giannotations.html#memory-and-lifecycle-management).
@@ -56,6 +55,15 @@ If you don't know what means `Transfer full`, `Transfer none` and few other term
 
 To help debug memory issues you can compile your code with `-Ddebugmemory`, this will print the object address and reference
 counter to STDOUT when any wrapper object finalize method is called.
+
+## How GObject is mapped to Crystal world
+
+Despite of being written in a language that doesn't have object oriented features, GObject is an object oriented library by design so many things maps easily to OO languages. However each language has its way of doing things and some adaptation is always needed to have a better blending and let the bindings feels more native to the language.
+
+### Class names
+
+Class names do not have the module prefix, i.e. `GFile` from `GLib` module is mapped to `GLib::File`, `GtkLabel` is be mapped to `Gtk::Label`,
+where `GLib` and `Gtk` are modules.
 
 ### Interfaces
 
