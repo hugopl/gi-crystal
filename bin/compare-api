@@ -1,39 +1,98 @@
 #!/usr/bin/env ruby
 # !!! Change the shebang above to `crystal i` when crystal interpreter gets compiled by default on distributions.
 
+require "optparse"
+
 OUTPUT_DIR = "/tmp/gi-crystal/"
 
-def run!(cmd)
-  system(cmd) or raise "Error 😭️"
+class String
+  def colorize(color_code)
+    "\e[#{color_code}m#{self}\e[0m"
+  end
+
+  def red
+    colorize(31)
+  end
+
+  def green
+    colorize(32)
+  end
+
+  def yellow
+    colorize(33)
+  end
 end
 
-def generate_bindings(version)
+def run!(cmd)
+  run(cmd) or raise "Error 😭️"
+end
+
+def run(cmd)
+  print "=> ".green
+  puts cmd.yellow
+  system(cmd)
+end
+
+def generate_bindings(version, out_dir, options)
+  run!("git clean -dfx")
   checkout(version)
-  run!("git clean -dfx && shards build --without-development && ./bin/gi-crystal -o #{OUTPUT_DIR}#{version}")
-  checkout("-")
+  run!(options[:before_build]) if options.key?(:before_build)
+  run!("./bin/gi-crystal -o #{OUTPUT_DIR}#{out_dir} #{options[:ymls]&.join(' ')}")
 end
 
 def checkout(branch)
   run!("git checkout #{branch}")
 end
 
+def current_git_branch
+  `git branch --show-current`.strip
+end
+
+def parse_options
+  options = {
+    before_build: 'shards install',
+  }
+  OptionParser.new do |opts|
+    opts.banner = "Usage: ./bin/compare-api [options] [old_version] [new_version]"
+
+    opts.on("--binding=BINDING_YML", "Call gi-crystal with an extra YAML file.") do |yml|
+      options[:ymls] ||= []
+      options[:ymls] << yml
+    end
+    opts.on("--before-build=CMD", "Command to execute before call gi-crystal, default to `shards install`.") do |cmd|
+      options[:before_build] = cmd
+    end
+    opts.on("-h", "--help", "Prints this help") do
+      puts opts
+      exit
+    end
+  end.parse!
+  options[:old_version] = ARGV[0] || `git tag | tail -n1`.strip
+  options[:new_version] = ARGV[1] || current_git_branch
+  options
+end
+
 def main
-  abort("Use ./bin/compare-api OLD_VERSION [NEW_VERSION]\n\nIf NEW_VERSION isn't specified, HEAD will be used.") if ARGV.size != 1
-  old_version = ARGV[0]
-  new_version = ARGV[1] || 'HEAD'
+  options = parse_options
 
-  generate_bindings(old_version)
-  generate_bindings(new_version)
+  yml = ARGV[0]
 
-  if system("meld --version")
-    system("meld #{OUTPUT_DIR}/#{old_version} #{OUTPUT_DIR}/#{new_version}")
-  else
-    system("diff -qr #{OUTPUT_DIR}/#{old_version} #{OUTPUT_DIR}/#{new_version}")
-  end
-rescue e
+  save_point = current_git_branch
+  run!("mkdir -p #{OUTPUT_DIR}")
+  run!("rm -rf #{OUTPUT_DIR}old #{OUTPUT_DIR}new")
+  generate_bindings(options[:old_version], 'old', options)
+  checkout(save_point)
+  generate_bindings(options[:new_version], 'new', options)
+
+  run("meld --version >/dev/null && " \
+         "meld #{OUTPUT_DIR}old #{OUTPUT_DIR}new &2>/dev/null &")
+
+  puts "\nBindings created at:"
+  puts "#{options[:old_version].red}: #{OUTPUT_DIR}old"
+  puts "#{options[:new_version].green}: #{OUTPUT_DIR}new"
+rescue => e
+  checkout(save_point)
   abort(e.message)
-ensure
-  system("git checkout -")
 end
 
 main
