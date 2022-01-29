@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+# !!! Change the shebang above to `crystal i` when crystal interpreter gets compiled by default on distributions.
+
+OUTPUT_DIR = "/tmp/gi-crystal/"
+
+def run!(cmd)
+  system(cmd) or raise "Error 😭️"
+end
+
+def generate_bindings(version)
+  checkout(version)
+  run!("git clean -dfx && shards build --without-development && ./bin/gi-crystal -o #{OUTPUT_DIR}#{version}")
+  checkout("-")
+end
+
+def checkout(branch)
+  run!("git checkout #{branch}")
+end
+
+def main
+  abort("Use ./bin/compare-api OLD_VERSION [NEW_VERSION]\n\nIf NEW_VERSION isn't specified, HEAD will be used.") if ARGV.size != 1
+  old_version = ARGV[0]
+  new_version = ARGV[1] || 'HEAD'
+
+  generate_bindings(old_version)
+  generate_bindings(new_version)
+
+  if system("meld --version")
+    system("meld #{OUTPUT_DIR}/#{old_version} #{OUTPUT_DIR}/#{new_version}")
+  else
+    system("diff -qr #{OUTPUT_DIR}/#{old_version} #{OUTPUT_DIR}/#{new_version}")
+  end
+rescue e
+  abort(e.message)
+ensure
+  system("git checkout -")
+end
+
+main

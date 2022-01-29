@@ -26,6 +26,7 @@ scripts:
 
 executables:
   - gi-crystal
+  - compare-api
 
 crystal: ">= 1.1.0"
 
