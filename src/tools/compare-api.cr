@@ -1,0 +1,124 @@
+require "option_parser"
+require "colorize"
+
+OUTPUT_DIR = "/tmp/gi-crystal/"
+
+class BadCommand < RuntimeError
+end
+
+class Options
+  class_property before_build = "shards install"
+  class_property ymls = [] of String
+  class_property? skip_old = false
+  class_property? skip_new = false
+  class_property? verbose = false
+  class_property old_version = ""
+  class_property new_version = ""
+end
+
+def run!(cmd : String) : Bool
+  run(cmd) || raise BadCommand.new
+end
+
+def run(cmd : String) : Bool
+  print "➤ ".colorize(:green)
+  print cmd.colorize(:yellow)
+  if Options.verbose?
+    puts
+    system(cmd)
+  else
+    error = IO::Memory.new
+    output = IO::Memory.new
+    if Process.run(cmd, shell: true, error: error, output: output).success?
+      puts " 🗸".colorize(:green)
+      true
+    else
+      puts " 𐄂".colorize(:red)
+      puts "STDOUT:".colorize(:blue)
+      output.rewind
+      puts output.gets_to_end
+      puts "STDERR:".colorize(:blue)
+      error.rewind
+      puts error.gets_to_end
+      false
+    end
+  end
+end
+
+def generate_bindings(version, out_dir)
+  checkout(version)
+  run!("git clean -dfx")
+  run!("rm -rf #{out_dir}")
+  run!(Options.before_build)
+  run!("./bin/gi-crystal -o #{out_dir} #{Options.ymls.join(' ')}")
+end
+
+def checkout(branch)
+  run!("git checkout #{branch}")
+end
+
+def current_git_branch
+  `git branch --show-current`.strip
+end
+
+def parse_options : Nil
+  OptionParser.parse do |parser|
+    parser.banner = "Usage: ./bin/compare-api [options] [old_version] [new_version]"
+
+    parser.on("--binding=BINDING_YML", "Call gi-crystal with an extra YAML file.") do |yml|
+      Options.ymls << yml
+    end
+    parser.on("--before-build=CMD", "Command to execute before call gi-crystal, default to `shards install`.") do |cmd|
+      Options.before_build = cmd
+    end
+    parser.on("-v", "--verbose", "Verbose output") { Options.verbose = true }
+    parser.on("--skip-old", "Skip generation of old version") { Options.skip_old = true }
+    parser.on("--skip-new", "Skip generation of new version") { Options.skip_new = true }
+    parser.on("-h", "--help", "Prints this help") do
+      puts parser
+      exit
+    end
+  end
+
+  Options.old_version = ARGV[0]? || `git tag | tail -n1`.strip
+  Options.new_version = ARGV[1]? || current_git_branch
+end
+
+def show_diff
+  if Process.fork
+    Process.exec("meld --version >/dev/null && " \
+                 "meld #{OUTPUT_DIR}old #{OUTPUT_DIR}new &2>/dev/null &", shell: true)
+  end
+end
+
+def main
+  parse_options
+
+  old_dir = "#{OUTPUT_DIR}old"
+  new_dir = "#{OUTPUT_DIR}new"
+
+  save_point = current_git_branch
+  run!("mkdir -p #{OUTPUT_DIR}")
+  if Options.skip_old?
+    raise "Old data doesn't exists." unless Dir.exists?(old_dir)
+  else
+    generate_bindings(Options.old_version, old_dir)
+    checkout(save_point)
+  end
+
+  if Options.skip_new?
+    raise "New data doesn't exists." unless Dir.exists?(new_dir)
+  else
+    generate_bindings(Options.new_version, new_dir)
+  end
+
+  show_diff
+
+  puts "\nBindings created at:"
+  puts "#{Options.old_version.colorize(:red)}: #{old_dir}"
+  puts "#{Options.new_version.colorize(:green)}: #{new_dir}"
+rescue e : BadCommand
+  checkout(save_point)
+end
+
+main
