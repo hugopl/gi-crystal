@@ -93,9 +93,9 @@ module Generator
       @method.constructor? && @method.name == "new"
     end
 
-    private def method_return_type_declaration : String?
-      return if initialize_method?
-      return "self" if @method.flags.constructor?
+    private def method_return_type_declaration : String
+      return "" if initialize_method?
+      return ": self" if @method.flags.constructor?
 
       return_type = method_return_type
       nullable = false
@@ -125,7 +125,8 @@ module Generator
           tags << "(nullable)" if arg.nullable?
           tags << "(caller-allocates)" if arg.caller_allocates?
           tags << "(optional)" if arg.optional?
-          tags << type_info_gi_annotations(args, arg.type_info)
+          type_info_tag = type_info_gi_annotations(args, arg.type_info)
+          tags << type_info_tag if type_info_tag
 
           io << "# @" << arg.name << ": " << tags.join(" ") << LF if tags.any?
           tags.clear
@@ -138,8 +139,8 @@ module Generator
       end
     end
 
-    private def type_info_gi_annotations(args : Array(ArgInfo), type_info : TypeInfo) : String
-      return "" unless type_info.tag.array?
+    private def type_info_gi_annotations(args : Array(ArgInfo), type_info : TypeInfo) : String?
+      return unless type_info.tag.array?
 
       String.build do |s|
         s << "(array"
