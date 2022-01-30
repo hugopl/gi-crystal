@@ -4,8 +4,6 @@ require "log"
 module Generator
   # TODO: This still very incomplete, but at least isn't slow as hell and can enable very good docs in the future.
   # TODO: Write method/param docs
-  # TODO: Write enum/flags docs
-  # TODO: Write constants docs
   # TODO: Write module docs
   # TODO: How gtk-doc sections would fit here?
   class DocRepo
@@ -35,7 +33,7 @@ module Generator
 
         @doc = load_xml(xml_filename)
         if @doc
-          Log.info { "Documentation for #{name}-#{version} from: #{xml_filename}" }
+          Log.debug { "Documentation for #{name}-#{version} from: #{xml_filename}" }
           return
         end
       end
