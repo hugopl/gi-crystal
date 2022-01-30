@@ -227,6 +227,7 @@ ignore:
  - HookList
  - IOChannel
  - IOFuncs
+ - KeyFile
  - List
  - LogField
  - MatchInfo

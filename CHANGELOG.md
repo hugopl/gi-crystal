@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Changed
 - Convert compare-api tool to Crystal and improve it a lot, it will be a good tool to detect patches that break the API 😎️.
+- Remove bindings for GLib `KeyFile` class, INI module in Crystal stdlib can replace it.
 
 ## [0.4.0] 2022-01-29
 ### Added
