@@ -193,7 +193,7 @@ module Generator::Helpers
   # @var: Variable name in lib format.
   # @type: Type info
   # @transfer: Transfer mode
-  def convert_to_crystal(var : String, type : TypeInfo, transfer : GICrystal::Transfer) : String
+  def convert_to_crystal(var : String, type : TypeInfo, args : Indexable, transfer : GICrystal::Transfer) : String
     tag = type.tag
     case tag
     when .boolean?
@@ -209,7 +209,7 @@ module Generator::Helpers
       tag.filename? ? "::Path.new(#{expr})" : expr
     when .interface?
       iface = type.interface.not_nil!
-      convert_to_crystal(var, iface, transfer)
+      convert_to_crystal(var, iface, args, transfer)
     when .error?
       "GLib::Error.new(#{var}, GICrystal::Transfer::#{transfer})"
     when .void?
@@ -223,8 +223,12 @@ module Generator::Helpers
     when .array?
       if type.array_zero_terminated?
         "GICrystal.transfer_null_ended_array(#{var}, GICrystal::Transfer::#{transfer})"
+      elsif type.array_fixed_size >= 0
+        Log.warn { "Unknown conversion to crystal for fixed size array." }
+        var
+      elsif type.array_length >= 0
+        "GICrystal.transfer_array(#{var}, #{args[type.array_length].name},GICrystal::Transfer::#{transfer})"
       else
-        Log.warn { "Unknown conversion to crystal for non null terminated array" }
         var
       end
     else
@@ -233,10 +237,10 @@ module Generator::Helpers
     end
   end
 
-  def convert_to_crystal(var : String, info : BaseInfo, transfer : GICrystal::Transfer) : String
+  def convert_to_crystal(var : String, info : BaseInfo, args : Indexable, transfer : GICrystal::Transfer) : String
     case info
     when TypeInfo
-      convert_to_crystal(var, info, transfer)
+      convert_to_crystal(var, info, args, transfer)
     when EnumInfo
       "#{to_crystal_type(info, true)}.from_value(#{var})"
     else

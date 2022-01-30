@@ -81,7 +81,7 @@ module Generator
     private def full_slot
       String.build do |s|
         s << "->(" << slot_c_args << ") {\n"
-        s << "sender = " << convert_to_crystal("lib_sender", @obj, :none) << LF
+        s << "sender = " << convert_to_crystal("lib_sender", @obj, @signal.args, :none) << LF
         generate_signal_args_conversion(s)
         s << "::Box(Proc(" << to_crystal_type(@obj) << "," << slot_crystal_proc_params << ")).unbox(box).call(sender, "
         s << crystal_box_args << ")"
@@ -108,7 +108,7 @@ module Generator
       @signal.args.each_with_index do |arg, i|
         next unless signal_args.includes?(arg)
 
-        io << "arg" << j << " = " << convert_to_crystal("lib_arg#{i}", arg.type_info, :none) << LF
+        io << "arg" << j << " = " << convert_to_crystal("lib_arg#{i}", arg.type_info, @signal.args, :none) << LF
         j += 1
       end
     end

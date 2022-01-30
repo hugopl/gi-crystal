@@ -22,6 +22,23 @@ describe "Raw C arrays" do
     subject.return_null_terminated_array_transfer_full.should eq(%w(Hello World))
   end
 
+  context "can be non-zero-terminated in return values" do
+    it "transfer full" do
+      data = Test::Subject.new.return_array_transfer_full
+      data.should eq(%w(Hello World))
+    end
+
+    it "transfer none" do
+      data = Test::Subject.new.return_array_transfer_none
+      data.should eq(%w(Hello World))
+    end
+
+    it "transfer container" do
+      data = Test::Subject.new.return_array_transfer_container
+      data.should eq(%w(Hello World))
+    end
+  end
+
   describe "of filenames" do
     it "can be received in arguments as Array(String)" do
       Test::Subject.new.concat_filenames(%w(lets go)).should eq(Path.new("letsgo"))

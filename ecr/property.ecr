@@ -16,6 +16,6 @@
 
     value = uninitialized <%= c_prop_type_name %>
     LibGObject.g_object_get(self, "<%= prop.name %>", pointerof(value), Pointer(Void).null)
-    <%= convert_to_crystal("value", prop.type_info, prop.ownership_transfer) %><% if prop_is_object? -%> unless value.null?<% end %>
+    <%= convert_to_crystal("value", prop.type_info, [] of ArgInfo, prop.ownership_transfer) %><% if prop_is_object? -%> unless value.null?<% end %>
   end
 <% end %>

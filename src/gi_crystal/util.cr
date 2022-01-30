@@ -38,6 +38,21 @@ module GICrystal
     res
   end
 
+  # :nodoc
+  def transfer_array(ptr : Pointer(Pointer(UInt8)), length : Int32, transfer : Transfer) : Array(String)
+    res = Array(String).new(length)
+    length.times do |i|
+      res << String.new((ptr + i).value)
+    end
+    # FIXME: Lib gen if generating g_str_free as `g_str_free(char*) when it must be `g_str_free(char**)`
+    if transfer.full?
+      LibGLib.g_strfreev(ptr.as(Pointer(UInt8)))
+    elsif transfer.container?
+      LibGLib.g_free(ptr.as(Pointer(Void)))
+    end
+    res
+  end
+
   # :nodoc:
   def transfer_full(str : Pointer(UInt8)) : String
     String.new(str).tap do

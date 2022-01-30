@@ -56,7 +56,9 @@ module Generator
 
           if type_info.array_length >= 0
             args_to_remove << args[type_info.array_length]
-          elsif arg.optional? || (arg.direction.out? && arg.caller_allocates? && !arg.type_info.array?)
+          elsif arg.optional? || arg_used_by_return_type?(arg)
+            args_to_remove << arg
+          elsif arg.direction.out? && arg.caller_allocates? && !arg.type_info.array?
             args_to_remove << arg
           end
         end
@@ -156,7 +158,11 @@ module Generator
       args = Array(String).new(@method.args.size + 2) # +2, just in case we need space for `self` and `error`.
       args << "self" if @method.method?
       @method.args.each do |arg|
-        args << to_identifier(arg.name)
+        if arg.direction.out? && arg_used_by_return_type?(arg)
+          args << "pointerof(#{to_identifier(arg.name)})"
+        else
+          args << to_identifier(arg.name)
+        end
       end
       args << "pointerof(_error)" if throws?
       args.join(", ")
@@ -179,11 +185,11 @@ module Generator
           s << "@pointer = _retval"
           s << "\nLibGObject.g_object_ref(_retval)" if @method.caller_owns.none?
         elsif @method.constructor?
-          s << convert_to_crystal("_retval", @method.container.not_nil!, :full)
+          s << convert_to_crystal("_retval", @method.container.not_nil!, @method.args, :full)
         elsif return_type.is_a?(ArgInfo)
           s << to_identifier(return_type.name)
         elsif return_type.is_a?(TypeInfo)
-          s << convert_to_crystal("_retval", return_type, @method.caller_owns)
+          s << convert_to_crystal("_retval", return_type, @method.args, @method.caller_owns)
         end
         s << " unless _retval.null?" if @method.may_return_null?
         s << LF
@@ -204,7 +210,8 @@ module Generator
       end
     end
 
-    # TODO: REFACTOR ALL CODE BELLOW
+    # If the function receives a collection plus a parameter to inform the collection size, the size parameter is removed
+    # and declared inside the method as `size = collection.size`
     def generate_lenght_param_impl(io : IO)
       args = @method.args
       args.each do |arg|
@@ -216,12 +223,57 @@ module Generator
       end
     end
 
+    # If the arg is optional or `out` and used by the function return type, we need to declare it
     def generate_optional_param_impl(io : IO)
       @method.args.each do |arg|
-        next unless arg.optional?
+        used_by_return_type = arg_used_by_return_type?(arg)
+        next if !arg.optional? && !used_by_return_type
 
-        type_name = to_lib_type(arg.type_info, structs_as_void: true)
-        io << to_identifier(arg.name) << " = " << "Pointer(" << type_name << ").null\n"
+        type = arg.type_info
+        type_name = to_lib_type(type, structs_as_void: true)
+
+        io << to_identifier(arg.name) << " = "
+        # FIXME: This is a wrong assumption that works most of the time, need refactor.
+        if used_by_return_type
+          io << type_info_default_value(arg.type_info)
+        else
+          io << "Pointer(" << type_name << ").null"
+        end
+        io << LF
+      end
+    end
+
+    def arg_used_by_other_arg?(arg : ArgInfo) : Bool
+      arg_index = @method.args.index(arg)
+      return false unless arg_index
+
+      @method.args.each do |method_arg|
+        type_info = method_arg.type_info
+        return true if type_info.tag.array? && type_info.array_length == arg_index
+      end
+
+      arg_used_by_return_type?(arg)
+    end
+
+    def arg_used_by_return_type?(arg : ArgInfo) : Bool
+      arg_index = @method.args.index(arg)
+      return false unless arg_index
+
+      type_info = @method.return_type
+      type_info.tag.array? && type_info.array_length == arg_index
+    end
+
+    def type_info_default_value(type_info : TypeInfo)
+      case type_info.tag
+      when .boolean?, .int32? then "0"
+      when .u_int32?          then "0_u32"
+      when .int16?            then "0_i16"
+      when .u_int16?          then "0_u16"
+      when .int64?            then "0_i64"
+      when .u_int64?          then "0_u64"
+      else
+        Log.warn { "Don't know what would be a default value for type #{type_info.tag}." }
+        "0" # just to make compiler happy
       end
     end
 

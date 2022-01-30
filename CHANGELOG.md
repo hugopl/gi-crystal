@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+Changes that change the generated API have a ⚠️.
+
 ## Unreleased
+### Added
+- ⚠️ Implement functions that return non-null terminated array of strings.
+
 ### Changed
 - Convert compare-api tool to Crystal and improve it a lot, it will be a good tool to detect patches that break the API 😎️.
 - Remove bindings for GLib `KeyFile` class, INI module in Crystal stdlib can replace it.
@@ -19,8 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Revert auto require of GObject module on gi-crystal since it makes the compiles require the file twice.
 
 ### Fixed
-- Fix binding of functions with GError and more than one parameter.
-- Constructor methods always return their own type despite the C function returns the parent type or not.
+- ⚠️ Fix binding of functions with GError and more than one parameter.
+- ⚠️ Constructor methods always return their own type despite the C function returns the parent type or not.
 
 ## [0.3.0] - 2022-01-23
 ### Changed

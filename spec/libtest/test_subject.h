@@ -218,6 +218,27 @@ const gchar** test_subject_return_null_terminated_array_transfer_none(TestSubjec
 gchar** test_subject_return_null_terminated_array_transfer_full(TestSubject* self);
 
 /**
+ * test_subject_return_array_transfer_full:
+ * @length: (out) (transfer full):
+ * Returns: (transfer full) (array length=length)
+ */
+gchar** test_subject_return_array_transfer_full(TestSubject* self, int* length);
+
+/**
+ * test_subject_return_array_transfer_none:
+ * @length: (out) (transfer full):
+ * Returns: (transfer none) (array length=length)
+ */
+gchar** test_subject_return_array_transfer_none(TestSubject* self, int* length);
+
+/**
+ * test_subject_return_array_transfer_container:
+ * @length: (out) (transfer full):
+ * Returns: (transfer container) (array length=length)
+ */
+gchar** test_subject_return_array_transfer_container(TestSubject* self, int* length);
+
+/**
  * test_subject_return_list_of_strings_transfer_full:
  * Returns: (transfer full) (element-type utf8): `["one", "two"]`
  *

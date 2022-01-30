@@ -297,6 +297,29 @@ gchar** test_subject_return_null_terminated_array_transfer_full(TestSubject* sel
   return ret;
 }
 
+gchar** test_subject_return_array_transfer_full(TestSubject* self, int* length) {
+  *length = 2;
+  gchar** ret = g_malloc_n(3, sizeof(gchar*));
+  ret[0] = g_strdup("Hello");
+  ret[1] = g_strdup("World");
+  return ret;
+}
+
+gchar** test_subject_return_array_transfer_none(TestSubject* self, int* length) {
+  *length = 2;
+  static const char* ret[2] = { "Hello", "World" };
+  return (char**) ret;
+}
+
+gchar** test_subject_return_array_transfer_container(TestSubject* self, int* length) {
+  *length = 2;
+  gchar** ret = g_malloc_n(3, sizeof(gchar*));
+  ret[0] = (gchar*) "Hello";
+  ret[1] = (gchar*) "World";
+  return ret;
+}
+
+
 TestIface *test_subject_return_myself_as_interface(TestIface *self) {
   TestSubject* subject = TEST_SUBJECT(self);
   g_object_set(subject, "string", __FUNCTION__, NULL);
