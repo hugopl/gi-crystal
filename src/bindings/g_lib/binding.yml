@@ -40,6 +40,9 @@ ignore:
  - g_byte_array_new_take
  - g_byte_array_steal
  - g_byte_array_unref
+ - g_bytes_unref
+ - g_bytes_unref_to_array
+ - g_bytes_unref_to_data
  - g_canonicalize_filename
  - g_chdir
  - g_checksum_type_get_length
@@ -209,7 +212,6 @@ ignore:
  - g_uuid_string_random
  - Array
  - AsyncQueue
- - Bytes
  - ByteArray
  - BookmarkFile
  - Checksum

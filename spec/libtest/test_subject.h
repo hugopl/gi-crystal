@@ -314,6 +314,24 @@ void test_subject_g_value_by_out_parameter(GValue* value);
 gchar* test_subject_g_variant_parameter(GVariant* variant);
 
 /**
+ * test_subject_string_to_bytes_transfer_full:
+ * @data:
+ * Returns: (transfer full)
+ *
+ * Used to test GLib::GBytes
+ */
+GBytes* test_subject_string_to_bytes_transfer_full(const gchar* data);
+
+/**
+ * test_subject_string_to_bytes_transfer_none:
+ * @data:
+ * Returns: (transfer none)
+ *
+ * Used to test GLib::GBytes
+ */
+GBytes* test_subject_string_to_bytes_transfer_none(const gchar* data);
+
+/**
  * test_subject_return_g_error:
  * Returns: (transfer full): A GError
  *

@@ -39,7 +39,7 @@ module GICrystal
   end
 
   # :nodoc
-  def transfer_array(ptr : Pointer(Pointer(UInt8)), length : Int32, transfer : Transfer) : Array(String)
+  def transfer_array(ptr : Pointer(Pointer(UInt8)), length : Int, transfer : Transfer) : Array(String)
     res = Array(String).new(length)
     length.times do |i|
       res << String.new((ptr + i).value)
@@ -51,6 +51,15 @@ module GICrystal
       LibGLib.g_free(ptr.as(Pointer(Void)))
     end
     res
+  end
+
+  def transfer_array(ptr : Pointer(UInt8), length : Int, transfer : Transfer) : Slice(UInt8)
+    slice = Slice(UInt8).new(ptr, length, read_only: true)
+    if transfer.full?
+      slice = slice.clone
+      LibGLib.g_free(ptr)
+    end
+    slice
   end
 
   # :nodoc:

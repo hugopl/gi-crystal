@@ -431,6 +431,20 @@ gchar* test_subject_g_variant_parameter(GVariant* variant) {
   return g_variant_print(variant, TRUE);
 }
 
+GBytes* test_subject_string_to_bytes_transfer_full(const gchar* data) {
+  int size = strlen(data);
+
+  return g_bytes_new(data, size);
+}
+
+GBytes* test_subject_string_to_bytes_transfer_none(const gchar* data) {
+  int size = strlen(data);
+  gchar* copy = g_strdup(data);
+
+  return g_bytes_new_take(copy, size);
+}
+
+
 GError* test_subject_return_g_error() {
   return g_error_new(G_FILE_ERROR, G_FILE_ERROR_FAILED, "whatever message");
 }
