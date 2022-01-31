@@ -14,11 +14,13 @@ describe GLib::Bytes do
     bytes.size.should eq(data.bytesize)
   end
 
-  it "can fetch a region of memory" do
-    data = "Hey ho!"
-    bytes = Test::Subject.string_to_bytes_transfer_none(data)
-    region = bytes.region(3, 4, 1)
-    region.should_not eq(nil)
-    String.new(region.not_nil!.as(Pointer(UInt8)), 3).should eq("ho!")
-  end
+  {% if compare_versions("#{GLib::MAJOR_VERSION}.#{GLib::MINOR_VERSION}.#{GLib::MICRO_VERSION}", "2.70.0") >= 0 %}
+    it "can fetch a region of memory" do
+      data = "Hey ho!"
+      bytes = Test::Subject.string_to_bytes_transfer_none(data)
+      region = bytes.region(3, 4, 1)
+      region.should_not eq(nil)
+      String.new(region.not_nil!.as(Pointer(UInt8)), 3).should eq("ho!")
+    end
+  {% end %}
 end
