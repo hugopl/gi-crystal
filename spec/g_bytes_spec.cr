@@ -13,4 +13,12 @@ describe GLib::Bytes do
     bytes = Test::Subject.string_to_bytes_transfer_full(data)
     bytes.size.should eq(data.bytesize)
   end
+
+  it "can fetch a region of memory" do
+    data = "Hey ho!"
+    bytes = Test::Subject.string_to_bytes_transfer_none(data)
+    region = bytes.region(3, 4, 1)
+    region.should_not eq(nil)
+    String.new(region.not_nil!.as(Pointer(UInt8)), 3).should eq("ho!")
+  end
 end

@@ -170,7 +170,9 @@ module Generator::Helpers
       to_crystal_type(tag)
     else
       tag_str = to_crystal_type(tag)
-      if type.pointer? && !tag.utf8? && !tag.g_list? && !tag.gs_list?
+      if type.pointer? && tag.void?
+        "Pointer(Void)"
+      elsif type.pointer? && !tag.utf8? && !tag.g_list? && !tag.gs_list?
         "Pointer(#{tag_str})"
       else
         tag_str
@@ -213,7 +215,7 @@ module Generator::Helpers
     when .error?
       "GLib::Error.new(#{var}, GICrystal::Transfer::#{transfer})"
     when .void?
-      type.pointer? ? "Pointer(Void)" : ""
+      type.pointer? ? var : ""
     when .g_list?
       param_type = to_crystal_type(type.param_type)
       "#{to_crystal_type(tag)}(#{param_type}).new(#{var}, GICrystal::Transfer::#{transfer})"
