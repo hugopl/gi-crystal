@@ -56,6 +56,12 @@ describe "GObject Binding" do
       typeof(store.subject).should eq(Test::SubjectChild)
       store.subject.string.should eq("hello")
     end
+
+    it "may return nil" do
+      subject = Test::SubjectChild.new_constructor_returning_null("hello")
+      typeof(subject).should eq(Test::SubjectChild | Nil)
+      subject.should eq(nil)
+    end
   end
 
   describe "casts" do

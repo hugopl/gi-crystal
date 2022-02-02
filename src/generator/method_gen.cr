@@ -97,7 +97,10 @@ module Generator
 
     private def method_return_type_declaration : String
       return "" if initialize_method?
-      return ": self" if @method.flags.constructor?
+
+      if @method.flags.constructor?
+        return @method.may_return_null? ? ": self?" : ": self"
+      end
 
       return_type = method_return_type
       nullable = false
