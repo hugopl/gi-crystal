@@ -43,18 +43,14 @@ module <%= namespace_name %>
   # Flags
   <% flags.each do |flag| -%>
     <% render_doc(flag) -%>
-    <% if empty_flag?(flag) -%>
-      <%= to_type_name(flag.name) %> = 0
-    <% else -%>
-      @[Flags]
-      enum <%= to_type_name(flag.name) %> : <%= to_crystal_type(flag.storage_type) %>
-        <% flag.values.each do |value| -%>
-          <% next if skip_flag_value?(flag, value) %>
-          <%= to_type_name(value.name) %> = <%= value.value -%>
-        <% end %>
-        <% render "ecr/g_type_method.ecr", flag %>
-      end
-    <% end %>
+    <%= "@[Flags]\n" unless empty_flag?(flag) -%>
+    enum <%= to_type_name(flag.name) %> : <%= to_crystal_type(flag.storage_type) %>
+      <% flag.values.each do |value| -%>
+        <% next if skip_flag_value?(flag, value) %>
+        <%= to_type_name(value.name) %> = <%= value.value -%>
+      <% end %>
+      <% render "ecr/g_type_method.ecr", flag %>
+    end
   <% end %>
 
   # Errors

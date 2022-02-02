@@ -444,6 +444,9 @@ GBytes* test_subject_string_to_bytes_transfer_none(const gchar* data) {
   return g_bytes_new_take(copy, size);
 }
 
+TestEmptyFlags test_subject_receive_empty_flags(TestEmptyFlags flags) {
+  return flags;
+}
 
 GError* test_subject_return_g_error() {
   return g_error_new(G_FILE_ERROR, G_FILE_ERROR_FAILED, "whatever message");

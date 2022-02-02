@@ -332,6 +332,13 @@ GBytes* test_subject_string_to_bytes_transfer_full(const gchar* data);
 GBytes* test_subject_string_to_bytes_transfer_none(const gchar* data);
 
 /**
+ * test_subject_receive_empty_flags:
+ *
+ * Used to test if empty flags are generated as basic enum with a None entry.
+ */
+TestEmptyFlags test_subject_receive_empty_flags(TestEmptyFlags flags);
+
+/**
  * test_subject_return_g_error:
  * Returns: (transfer full): A GError
  *
