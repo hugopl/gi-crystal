@@ -1,3 +1,5 @@
+#!/usr/bin/env crystal
+
 require "option_parser"
 require "colorize"
 
