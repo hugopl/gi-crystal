@@ -6,13 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
-## Unreleased
+## [0.5.0] 2022-02-18
 ### Added
 - ⚠️ Implement functions that return non-null terminated array of strings.
+- Added bindings for GLib::Bytes.
 
 ### Changed
 - Convert compare-api tool to Crystal and improve it a lot, it will be a good tool to detect patches that break the API 😎️.
 - Remove bindings for GLib `KeyFile` class, INI module in Crystal stdlib can replace it.
+
+### Fixed
+- `void*` return values in C are translated to `Pointer(Void)` instead of `Pointer(Nil)`.
+- Constructors that may return `nil` now have the correct return type restriction.
+- GObjetct flags with no elements are generated as a enum instead of a constant.
 
 ## [0.4.0] 2022-01-29
 ### Added
