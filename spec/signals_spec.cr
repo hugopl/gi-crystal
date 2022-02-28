@@ -48,5 +48,18 @@ describe "GObject signals" do
                               "lean_notify_slot called")
   end
 
+  it "can have signals with nullable parameters" do
+    subject = Test::Subject.new
+    str = ""
+    number = 0
+    subject.nullable_args_signal.connect do |signal_str, signal_number|
+      str = signal_str
+      number = signal_number
+    end
+    subject.nullable_args_signal.emit(nil, 42)
+    str.should eq(nil)
+    number.should eq(42)
+  end
+
   pending "test emit signals with return values"
 end

@@ -245,6 +245,12 @@ module Generator::Helpers
       convert_to_crystal(var, info, args, transfer)
     when EnumInfo
       "#{to_crystal_type(info, true)}.from_value(#{var})"
+    when ArgInfo
+      if info.nullable?
+        "(#{var}.null? ? nil : #{convert_to_crystal(var, info.type_info, args, transfer)})"
+      else
+        convert_to_crystal(var, info.type_info, args, transfer)
+      end
     else
       crystal_type = to_crystal_type(info, true)
       crystal_type = "#{crystal_type}__Impl" if info.is_a?(InterfaceInfo)

@@ -35,23 +35,18 @@ module Generator
       end
     end
 
-    private def lean_proc_params
+    private def lean_proc_params : String
       String.build do |s|
         signal_args.each do |arg|
-          s << to_crystal_type(arg.type_info) << ","
+          nullmark = '?' if arg.nullable?
+          s << to_crystal_type(arg.type_info) << nullmark << ','
         end
         s << to_crystal_type(@signal.return_type)
       end
     end
 
-    private def full_proc_params
-      String.build do |s|
-        s << to_crystal_type(@obj, true) << ","
-        signal_args.each do |arg|
-          s << to_crystal_type(arg.type_info, true) << ","
-        end
-        s << to_crystal_type(@signal.return_type, true)
-      end
+    private def full_proc_params : String
+      "#{to_crystal_type(@obj)},#{lean_proc_params}"
     end
 
     private def slot_c_args
@@ -72,7 +67,7 @@ module Generator
       String.build do |s|
         s << "->(" << slot_c_args << ") {\n"
         generate_signal_args_conversion(s)
-        s << "::Box(Proc(" << slot_crystal_proc_params << ")).unbox(box).call(" << crystal_box_args << ")"
+        s << "::Box(Proc(" << lean_proc_params << ")).unbox(box).call(" << crystal_box_args << ")"
         s << ".to_unsafe" if has_return_value?
         s << "\n}\n"
       end
@@ -83,19 +78,10 @@ module Generator
         s << "->(" << slot_c_args << ") {\n"
         s << "sender = " << convert_to_crystal("lib_sender", @obj, @signal.args, :none) << LF
         generate_signal_args_conversion(s)
-        s << "::Box(Proc(" << to_crystal_type(@obj) << "," << slot_crystal_proc_params << ")).unbox(box).call(sender, "
+        s << "::Box(Proc(" << to_crystal_type(@obj) << "," << lean_proc_params << ")).unbox(box).call(sender, "
         s << crystal_box_args << ")"
         s << ".to_unsafe" if has_return_value?
         s << "\n}\n"
-      end
-    end
-
-    private def slot_crystal_proc_params
-      String.build do |s|
-        signal_args.each do |arg|
-          s << to_crystal_type(arg.type_info) << ", "
-        end
-        s << to_crystal_type(@signal.return_type)
       end
     end
 
@@ -108,7 +94,7 @@ module Generator
       @signal.args.each_with_index do |arg, i|
         next unless signal_args.includes?(arg)
 
-        io << "arg" << j << " = " << convert_to_crystal("lib_arg#{i}", arg.type_info, @signal.args, :none) << LF
+        io << "arg" << j << " = " << convert_to_crystal("lib_arg#{i}", arg, @signal.args, arg.ownership_transfer) << LF
         j += 1
       end
     end
@@ -120,7 +106,8 @@ module Generator
         # Emit declaration
         s << "def emit("
         s << signal_args.map_with_index do |arg, i|
-          "#{arg_vars[i]} : #{to_crystal_type(arg.type_info, is_arg: true)}"
+          null_mark = "?" if arg.nullable?
+          "#{arg_vars[i]} : #{to_crystal_type(arg.type_info, is_arg: true)}#{null_mark}"
         end.join(",")
         s << ") : Nil\n"
 

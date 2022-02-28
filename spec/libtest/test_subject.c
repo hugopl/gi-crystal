@@ -40,6 +40,7 @@ typedef enum {
 
 typedef enum {
   VARIANT_SIGNAL = 1,
+  NULLABLE_ARGS_SIGNAL,
   N_SIGNALS
 } TestSubjectSignals;
 
@@ -184,6 +185,24 @@ static void test_subject_class_init(TestSubjectClass *klass) {
                                              G_TYPE_NONE, // return_type
                                              1,     // n_params
                                              G_TYPE_VARIANT,
+                                             NULL);
+  /**
+   * TestSubject::nullable-args:
+   * @self: the subject who sent the signal.
+   * @string: (nullable): a string or NULL.
+   * @number: a number or NULL.
+   */
+  obj_signals[NULLABLE_ARGS_SIGNAL] = g_signal_new("nullable-args",
+                                             G_TYPE_FROM_CLASS(klass),
+                                             G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                                             0,    // class_offset
+                                             NULL, // accumulator
+                                             NULL, // accumulator data
+                                             NULL, // C marshaller
+                                             G_TYPE_NONE, // return_type
+                                             2,     // n_params
+                                             G_TYPE_STRING,
+                                             G_TYPE_INT,
                                              NULL);
 }
 
