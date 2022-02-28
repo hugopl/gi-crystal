@@ -195,7 +195,7 @@ module Generator::Helpers
   # @var: Variable name in lib format.
   # @type: Type info
   # @transfer: Transfer mode
-  def convert_to_crystal(var : String, type : TypeInfo, args : Indexable, transfer : GICrystal::Transfer) : String
+  def convert_to_crystal(var : String, type : TypeInfo, args : Indexable, transfer : Transfer) : String
     tag = type.tag
     case tag
     when .boolean?
@@ -239,7 +239,7 @@ module Generator::Helpers
     end
   end
 
-  def convert_to_crystal(var : String, info : BaseInfo, args : Indexable, transfer : GICrystal::Transfer) : String
+  def convert_to_crystal(var : String, info : BaseInfo, args : Indexable, transfer : Transfer) : String
     case info
     when TypeInfo
       convert_to_crystal(var, info, args, transfer)

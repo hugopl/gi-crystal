@@ -25,7 +25,7 @@ module GObjectIntrospection
     end
 
     def caller_owns
-      GICrystal::Transfer.from_value(LibGIRepository.g_callable_info_get_caller_owns(self))
+      Transfer.from_value(LibGIRepository.g_callable_info_get_caller_owns(self))
     end
   end
 end

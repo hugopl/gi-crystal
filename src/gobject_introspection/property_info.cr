@@ -21,7 +21,7 @@ module GObjectIntrospection
     end
 
     def ownership_transfer
-      GICrystal::Transfer.from_value(LibGIRepository.g_property_info_get_ownership_transfer(self))
+      Transfer.from_value(LibGIRepository.g_property_info_get_ownership_transfer(self))
     end
 
     def flags : ParamFlags
