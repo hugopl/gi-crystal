@@ -1,5 +1,3 @@
-# This file is included automatically on glib binding, so all bindings have it.
-
 module GICrystal
   # How the memory ownership is transfered (or not) from C to Crystal and vice-versa.
   enum Transfer
@@ -38,7 +36,7 @@ module GICrystal
     res
   end
 
-  # :nodoc
+  # :nodoc:
   def transfer_array(ptr : Pointer(Pointer(UInt8)), length : Int, transfer : Transfer) : Array(String)
     res = Array(String).new(length)
     length.times do |i|
@@ -53,6 +51,7 @@ module GICrystal
     res
   end
 
+  # :nodoc:
   def transfer_array(ptr : Pointer(UInt8), length : Int, transfer : Transfer) : Slice(UInt8)
     slice = Slice(UInt8).new(ptr, length, read_only: true)
     if transfer.full?
@@ -60,6 +59,16 @@ module GICrystal
       LibGLib.g_free(ptr)
     end
     slice
+  end
+
+  # :nodoc:
+  def transfer_array(ptr : Pointer(T), length : Int, transfer : Transfer) : Array(T) forall T
+    Array(T).build(length) do |buffer|
+      ptr.copy_to(buffer, length)
+      length
+    end
+  ensure
+    LibGLib.g_free(ptr) if transfer.full?
   end
 
   # :nodoc:

@@ -22,20 +22,25 @@ describe "Raw C arrays" do
     subject.return_null_terminated_array_transfer_full.should eq(%w(Hello World))
   end
 
-  context "can be non-zero-terminated in return values" do
-    it "transfer full" do
+  context "when non-zero-terminated in return values" do
+    it "can be transfer full" do
       data = Test::Subject.new.return_array_transfer_full
       data.should eq(%w(Hello World))
     end
 
-    it "transfer none" do
+    it "cam be transfer none" do
       data = Test::Subject.new.return_array_transfer_none
       data.should eq(%w(Hello World))
     end
 
-    it "transfer container" do
+    it "can be transfer container" do
       data = Test::Subject.new.return_array_transfer_container
       data.should eq(%w(Hello World))
+    end
+
+    it "can be any pointer type" do
+      data = Test::Subject.new.return_int32_array_transfer_full
+      data.should eq([42, 43])
     end
   end
 

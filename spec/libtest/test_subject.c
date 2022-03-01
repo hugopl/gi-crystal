@@ -338,6 +338,13 @@ gchar** test_subject_return_array_transfer_container(TestSubject* self, int* len
   return ret;
 }
 
+int* test_subject_return_int32_array_transfer_full(TestSubject* self, int* length) {
+  *length = 2;
+  int* ret = g_malloc_n(2, sizeof(int));
+  ret[0] = 42;
+  ret[1] = 43;
+  return ret;
+}
 
 TestIface *test_subject_return_myself_as_interface(TestIface *self) {
   TestSubject* subject = TEST_SUBJECT(self);
