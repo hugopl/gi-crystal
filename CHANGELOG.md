@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.6.0] 2022-03-02
+### Changed
+- Bump required Crystal version to 1.3.2 since I'm only testing with this version 🤷️.
+
+### Fixed
+- Fix signals with nullable parameters.
+- Fix methods returning arrays of primitive types of any kind.
+
 ## [0.5.0] 2022-02-18
 ### Added
 - ⚠️ Implement functions that return non-null terminated array of strings.
