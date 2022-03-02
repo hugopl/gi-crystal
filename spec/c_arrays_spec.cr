@@ -28,7 +28,7 @@ describe "Raw C arrays" do
       data.should eq(%w(Hello World))
     end
 
-    it "cam be transfer none" do
+    it "can be transfer none" do
       data = Test::Subject.new.return_array_transfer_none
       data.should eq(%w(Hello World))
     end
