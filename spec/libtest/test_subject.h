@@ -51,6 +51,26 @@ typedef struct _TestStruct {
  * TestSubject:
  *
  * Main class used to test all sort of things directly related or not to GObject.
+ *
+ * Example docs for testing:
+ *
+ * getter: [method@Test.Subject.get_out_param]
+ *
+ * setter: [method@Test.Subject.set_str_list]
+ *
+ * is: [method@Test.Subject.is_bool]
+ *
+ * initializer: [ctor@Test.Subject.new]
+ *
+ * code block:
+ * ```c
+ * #include <stdio.h>
+ * int main() {
+ *    printf("Hello, World!");
+ *    return 0;
+ * }
+ * ```
+ *
  */
 #define TEST_TYPE_SUBJECT test_subject_get_type()
 G_DECLARE_DERIVABLE_TYPE(TestSubject, test_subject, TEST, SUBJECT, GObject)
