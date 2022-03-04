@@ -117,11 +117,34 @@ module Generator
     private def xpath(namespace : Namespace)
     end
 
+    def crystallize_doc(doc : String) : String
+      crystallized_doc = doc
+      crystallized_doc = crystallized_doc.gsub(/```([a-zA-Z]+)\n/, "\n\nWARNING: **⚠️ The following code is in \\1 ⚠️**\n```\\1\n")
+      crystallized_doc = crystallized_doc.gsub(/\[([a-zA-Z]+)@([a-zA-Z\.:_]+)\]/) do |_, match|
+        split_reference = match[-1].split(/\.|:/)
+        identifier = split_reference[-1]
+        identifier = if match[0] == "ctor" || identifier == "new"
+                       ".#{identifier}"
+                     elsif identifier.starts_with?("get_") && identifier.size > 4
+                       "##{identifier[4..]}"
+                     elsif identifier.starts_with?("is_") && identifier.size > 3
+                       "##{identifier}?"
+                     elsif identifier.starts_with?("set_") && identifier.size > 4
+                       "##{identifier[4..]}="
+                     else
+                       "##{identifier}"
+                     end
+
+        "`#{split_reference[0..-2].join("::")}#{identifier}`"
+      end
+      crystallized_doc
+    end
+
     private def print_doc(io : IO, xpath : String)
       doc = fetch_doc(xpath)
       return if doc.nil?
 
-      doc.each_line do |line|
+      crystallize_doc(doc).each_line do |line|
         io << "# "
         io.puts(line)
       end
