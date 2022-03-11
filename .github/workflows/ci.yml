@@ -13,7 +13,8 @@ jobs:
       matrix:
         include:
           - {os: ubuntu-latest, crystal: latest}
-          - {os: ubuntu-latest, crystal: nightly}
+# Ameba is broken on nightly builds
+#          - {os: ubuntu-latest, crystal: nightly}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install dependencies
