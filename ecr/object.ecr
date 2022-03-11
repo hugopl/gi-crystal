@@ -32,7 +32,7 @@ module <%= namespace_name %>
         {% if flag?(:debugmemory) %}
         LibC.printf("~%s at %p - ref count: %d\n", self.class.name.to_unsafe, self, ref_count)
         {% end %}
-        LibGObject.g_object_unref(self)
+        LibGObject.<%= object.unref_function %>(self)
       end
 
       # Returns a pointer to the C object.
