@@ -11,7 +11,6 @@ require "./<%= @lib.filename %>"
 require "./<%= inc %>"
 <% end %>
 
-<% render_doc(namespace) -%>
 module <%= namespace_name %>
   <% constants.each do |const| -%>
     <% render_doc(const) -%>
