@@ -108,7 +108,6 @@ module Generator
              when .constructor? then "constructor"
              when .none?        then "function"
              else
-               Log.error { "Missing implementation for doc gen of #{func.symbol} type #{func.flags}" }
                return
              end
       "/xmlns:repository/xmlns:namespace/xmlns:class[@name=\"#{obj.name}\"]" \
