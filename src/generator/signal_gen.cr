@@ -2,7 +2,7 @@ module Generator
   class SignalGen < Generator
     include WrapperUtil
 
-    @obj : ObjectInfo
+    getter obj : ObjectInfo
     getter signal : SignalInfo
     @signal_args : Array(ArgInfo)?
 

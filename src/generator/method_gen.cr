@@ -5,10 +5,11 @@ module Generator
     alias MethodReturnType = TypeInfo | ArgInfo
 
     private getter method : FunctionInfo
+    getter object : RegisteredTypeInfo
     @method_args : Array(ArgInfo)?
     @method_return_type : MethodReturnType?
 
-    def initialize(@method)
+    def initialize(@object, @method)
       super(@method.namespace)
     end
 

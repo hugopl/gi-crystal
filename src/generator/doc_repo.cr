@@ -57,40 +57,74 @@ module Generator
       XML.parse(File.read(filename), options).root || raise Error.new("Gir file with no XML root")
     end
 
-    def doc(io : IO, namespace : Namespace) : Nil
-    end
-
-    def doc(io : IO, enum_ : EnumInfo, value : ValueInfo) : Nil
-      xpath = "/xmlns:repository/xmlns:namespace/xmlns:enumeration[@name=\"#{enum_.name}\"]/" \
-              "xmlns:member[@name=\"#{value.name}\"]/xmlns:doc[1]"
-      print_type_doc(io, xpath)
-    end
-
-    def doc(io : IO, info : BaseInfo) : Nil
+    def doc(io : IO, info, subinfo) : Nil
       return if @doc.nil?
 
-      xpath = xpath_for(info)
-      print_type_doc(io, xpath) if xpath
+      xpath = xpath(info, subinfo)
+      print_doc(io, xpath) if xpath
     end
 
-    private def xpath_for(info : BaseInfo) : String?
-      case info
-      when ObjectInfo    then "/xmlns:repository/xmlns:namespace/xmlns:class[@name=\"#{info.name}\"]/xmlns:doc[1]"
-      when StructInfo    then "/xmlns:repository/xmlns:namespace/xmlns:record[@name=\"#{info.name}\"]/xmlns:doc[1]"
-      when InterfaceInfo then "/xmlns:repository/xmlns:namespace/xmlns:interface[@name=\"#{info.name}\"]/xmlns:doc[1]"
-      when ConstantInfo  then "/xmlns:repository/xmlns:namespace/xmlns:constant[@name=\"#{info.name}\"]/xmlns:doc[1]"
-      when EnumInfo      then "/xmlns:repository/xmlns:namespace/xmlns:enumeration[@name=\"#{info.name}\"]/xmlns:doc[1]"
-      end
+    def doc(io : IO, info) : Nil
+      return if @doc.nil?
+
+      xpath = xpath(info)
+      print_doc(io, xpath) if xpath
     end
 
-    def print_type_doc(io : IO, xpath : String)
+    def xpath(obj : ObjectInfo, signal : SignalInfo)
+      "/xmlns:repository/xmlns:namespace/xmlns:class[@name=\"#{obj.name}\"]" \
+      "/glib:signal[@name=\"#{signal.name}\"]/xmlns:doc[1]"
+    end
+
+    private def xpath(enum_info : EnumInfo, value : ValueInfo)
+      "/xmlns:repository/xmlns:namespace/xmlns:enumeration[@name=\"#{enum_info.name}\"]/" \
+      "xmlns:member[@name=\"#{value.name}\"]/xmlns:doc[1]"
+    end
+
+    private def xpath(obj : ObjectInfo)
+      "/xmlns:repository/xmlns:namespace/xmlns:class[@name=\"#{obj.name}\"]/xmlns:doc[1]"
+    end
+
+    private def xpath(obj : StructInfo)
+      "/xmlns:repository/xmlns:namespace/xmlns:record[@name=\"#{obj.name}\"]/xmlns:doc[1]"
+    end
+
+    private def xpath(interface : InterfaceInfo)
+      "/xmlns:repository/xmlns:namespace/xmlns:interface[@name=\"#{interface.name}\"]/xmlns:doc[1]"
+    end
+
+    private def xpath(const : ConstantInfo)
+      "/xmlns:repository/xmlns:namespace/xmlns:constant[@name=\"#{const.name}\"]/xmlns:doc[1]"
+    end
+
+    private def xpath(enum_ : EnumInfo)
+      "/xmlns:repository/xmlns:namespace/xmlns:enumeration[@name=\"#{enum_.name}\"]/xmlns:doc[1]"
+    end
+
+    private def xpath(obj : RegisteredTypeInfo, func : FunctionInfo)
+      func_flags = func.flags
+      type = case func_flags
+             when .method?      then "method"
+             when .constructor? then "constructor"
+             when .none?        then "function"
+             else
+               Log.error { "Missing implementation for doc gen of #{func.symbol} type #{func.flags}" }
+               return
+             end
+      "/xmlns:repository/xmlns:namespace/xmlns:class[@name=\"#{obj.name}\"]" \
+      "/xmlns:#{type}[@name=\"#{func.name}\"]/xmlns:doc[1]"
+    end
+
+    private def xpath(namespace : Namespace)
+    end
+
+    private def print_doc(io : IO, xpath : String)
       doc = fetch_doc(xpath)
-      print_doc(io, doc) if doc
-    end
+      return if doc.nil?
 
-    private def print_doc(io : IO, doc : String)
       doc.each_line do |line|
-        io << "# " << line << LF
+        io << "# "
+        io.puts(line)
       end
     end
 

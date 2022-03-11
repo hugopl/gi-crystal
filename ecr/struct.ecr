@@ -1,5 +1,5 @@
 module <%= namespace_name %>
-  <%= render_doc(object) -%>
+  <% render_doc(object) -%>
   class <%= type_name %>
     @pointer : Pointer(Void)
 
@@ -31,7 +31,6 @@ module <%= namespace_name %>
     <% if object.copyable? && !g_error? %>
       <%= struct_new_method %>
     <% end %>
-
 
     def finalize
       <% if g_error? -%>
