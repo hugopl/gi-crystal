@@ -13,6 +13,10 @@ typedef struct {
   GObject* gobj;
   char** str_list;
   gdouble float64;
+
+  TestSubjectSimpleFunc simple_func;
+  gpointer simple_func_target;
+  GDestroyNotify simple_func_target_destroy_notify;
 } TestSubjectPrivate;
 
 static void test_subject_iface_interface_init(TestIfaceInterface* iface) {
@@ -49,8 +53,18 @@ static guint obj_signals[N_SIGNALS] = {
   0,
 };
 
-static void test_subject_dispose(GObject* gobject) {
-  G_OBJECT_CLASS(test_subject_parent_class)->dispose(gobject);
+static void test_subject_dispose(GObject* object) {
+  TestSubject* self = TEST_SUBJECT(object);
+  TestSubjectPrivate* priv = test_subject_get_instance_private(self);
+
+  if (priv->simple_func_target_destroy_notify)
+    priv->simple_func_target_destroy_notify(priv->simple_func_target);
+
+  priv->simple_func = NULL;
+  priv->simple_func_target = NULL;
+  priv->simple_func_target_destroy_notify = NULL;
+
+  G_OBJECT_CLASS(test_subject_parent_class)->dispose(object);
 }
 
 static void test_subject_finalize(GObject* gobject) {
@@ -220,6 +234,27 @@ static void test_subject_init(TestSubject* self) {
 
 TestSubject* test_subject_new_from_string(const gchar* string) {
   return g_object_new(TEST_TYPE_SUBJECT, "string", string, "int32", 0, NULL);
+}
+
+void test_subject_set_simple_func(TestSubject* self, TestSubjectSimpleFunc func, gpointer user_data,
+                                  GDestroyNotify destroy) {
+  TestSubjectPrivate* priv = test_subject_get_instance_private(self);
+
+  if (priv->simple_func_target_destroy_notify)
+    priv->simple_func_target_destroy_notify(priv->simple_func_target);
+
+  priv->simple_func = func;
+  priv->simple_func_target = user_data;
+  priv->simple_func_target_destroy_notify = destroy;
+}
+
+gboolean test_subject_call_simple_func(TestSubject* self, int number) {
+  TestSubjectPrivate* priv = test_subject_get_instance_private(self);
+  if (!priv->simple_func)
+    return FALSE;
+
+  priv->simple_func(self, number, priv->simple_func_target);
+  return TRUE;
 }
 
 void test_subject_set_str_list(TestSubject* self, const char** list) {

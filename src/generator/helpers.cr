@@ -16,6 +16,7 @@ module Generator::Helpers
   end
 
   def to_type_name(name : String) : String
+    name = name.tr("-", "_") if name.index("-")
     name = name.camelcase
     if name.starts_with?(/[_0-9]/)
       "G#{name}"
@@ -82,12 +83,7 @@ module Generator::Helpers
 
               case iface
               when CallbackInfo
-                name = to_type_name(iface.name)
-                if iface.namespace.has_declared_callback?(name)
-                  include_namespace ? "#{to_lib_namespace(iface.namespace)}::#{name}" : name
-                else
-                  "-> Void"
-                end
+                "Void*"
               when EnumInfo
                 to_lib_type(iface.storage_type)
               when UnionInfo
@@ -141,6 +137,27 @@ module Generator::Helpers
     else
       to_identifier(name)
     end
+  end
+
+  def callable_to_crystal_proc(info : CallableInfo) : String
+    String.build do |s|
+      s << "Proc("
+      callable_to_crystal_types(s, info)
+      s << ')'
+    end
+  end
+
+  def callable_to_crystal_types(io : IO, info : CallableInfo) : Nil
+    # He must hide the user_data arg from CallbackInfo
+    stop_at = info.is_a?(CallbackInfo) ? info.args.size - 1 : -1
+    info.args.each_with_index do |arg, i|
+      break if i == stop_at
+
+      arg_type_info = arg.type_info
+      nullmark = '?' if arg.nullable?
+      io << to_crystal_type(arg_type_info, include_namespace: true) << nullmark << ','
+    end
+    io << to_crystal_type(info.return_type, include_namespace: true)
   end
 
   def to_crystal_type(tag : TypeTag) : String
@@ -197,21 +214,24 @@ module Generator::Helpers
   end
 
   def to_crystal_type(info : BaseInfo, include_namespace : Bool = true) : String
-    if info.as?(TypeInfo)
-      return to_crystal_type(info, include_namespace)
-    elsif info.as?(CallableInfo)
-      return "Pointer(Void)" # TODO
+    case info
+    when TypeInfo
+      to_crystal_type(info, include_namespace)
+    when SignalInfo
+      name = to_type_name(info.name)
+      name = "#{to_type_name(info.namespace.name)}::#{name}" if include_namespace
+      "#{name}Signal"
+    else
+      name = to_type_name(info.name)
+      name = "#{to_type_name(info.namespace.name)}::#{name}" if include_namespace
+      name
     end
-
-    name = to_type_name(info.name)
-    name = "#{to_type_name(info.namespace.name)}::#{name}" if include_namespace
-    name
   end
 
   # @var: Variable name in lib format.
   # @type: Type info
   # @transfer: Transfer mode
-  def convert_to_crystal(var : String, type : TypeInfo, args : Indexable, transfer : Transfer) : String
+  def convert_to_crystal(var : String, type : TypeInfo, args : Indexable?, transfer : Transfer) : String
     tag = type.tag
     case tag
     when .boolean?
@@ -245,6 +265,8 @@ module Generator::Helpers
         Log.warn { "Unknown conversion to crystal for fixed size array." }
         var
       elsif type.array_length >= 0
+        raise ArgumentError.new("Full args missing to convert array to Crystal") if args.nil?
+
         "GICrystal.transfer_array(#{var}, #{args[type.array_length].name},GICrystal::Transfer::#{transfer})"
       else
         var
@@ -255,7 +277,7 @@ module Generator::Helpers
     end
   end
 
-  def convert_to_crystal(var : String, info : BaseInfo, args : Indexable, transfer : Transfer) : String
+  def convert_to_crystal(var : String, info : BaseInfo, args : Indexable?, transfer : Transfer) : String
     case info
     when TypeInfo
       convert_to_crystal(var, info, args, transfer)

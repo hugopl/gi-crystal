@@ -1,6 +1,9 @@
+require "./box_helper"
+
 module Generator
   class SignalGen < Generator
     include WrapperUtil
+    include BoxHelper
 
     getter obj : RegisteredTypeInfo
     getter signal : SignalInfo
@@ -37,11 +40,7 @@ module Generator
 
     private def lean_proc_params : String
       String.build do |s|
-        signal_args.each do |arg|
-          nullmark = '?' if arg.nullable?
-          s << to_crystal_type(arg.type_info) << nullmark << ','
-        end
-        s << to_crystal_type(@signal.return_type)
+        callable_to_crystal_types(s, @signal)
       end
     end
 
@@ -49,58 +48,16 @@ module Generator
       "#{to_crystal_type(@obj)},#{lean_proc_params}"
     end
 
-    private def slot_c_args
-      String.build do |s|
-        s << "lib_sender : Pointer(Void)"
-        @signal.args.each_with_index do |arg, i|
-          arg_type = to_lib_type(arg.type_info, structs_as_void: true)
-          # If arg_type is Void, it's probably a struct, GObjIntrospection doesn't inform that signal args are pointer when
-          # they are structs
-          arg_type = "Pointer(#{arg_type})" if arg_type == "Void"
-          s << ", lib_arg" << i << " : " << arg_type
-        end
-        s << ", box : Pointer(Void)"
-      end
+    macro render_box(box_type)
+      render_box(io, {{ box_type }})
     end
 
-    private def lean_slot
-      String.build do |s|
-        s << "->(" << slot_c_args << ") {\n"
-        generate_signal_args_conversion(s)
-        s << "_retval = " if has_return_value?
-        s << "::Box(Proc(" << lean_proc_params << ")).unbox(box).call(" << crystal_box_args << ")\n"
-        s << convert_to_lib("_retval", @signal.return_type, @signal.caller_owns) if has_return_value?
-        s << "\n}\n"
-      end
-    end
-
-    private def full_slot
-      String.build do |s|
-        s << "->(" << slot_c_args << ") {\n"
-        s << "sender = " << convert_to_crystal("lib_sender", @obj, @signal.args, :none) << LF
-        generate_signal_args_conversion(s)
-        s << "::Box(Proc(" << to_crystal_type(@obj) << "," << lean_proc_params << ")).unbox(box).call(sender, "
-        s << crystal_box_args << ")"
-        s << ".to_unsafe" if has_return_value?
-        s << "\n}\n"
-      end
-    end
-
-    private def crystal_box_args
-      signal_args.size.times.map { |i| "arg#{i}" }.join(",")
-    end
-
-    private def generate_signal_args_conversion(io : IO)
-      j = 0
-      @signal.args.each_with_index do |arg, i|
-        next unless signal_args.includes?(arg)
-
-        io << "arg" << j << " = " << convert_to_crystal("lib_arg#{i}", arg, @signal.args, arg.ownership_transfer) << LF
-        j += 1
-      end
+    def render_box(io : IO, box_type : BoxType)
+      generate_box(io, "handler", @signal, box_type)
     end
 
     private def signal_emit_method : String
+      # FIXME: Use ArgStrategy classe to handle arguments here.
       String.build do |s|
         arg_vars = signal_args.map { |arg| to_identifier(arg.name) }
 

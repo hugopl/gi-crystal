@@ -1,49 +1,73 @@
+require "./box_helper"
+
 module Generator
   abstract struct ArgPlan
     include Helpers
+    include BoxHelper
 
     getter strategies : Array(ArgStrategy)
 
     def initialize(@strategies : Array(ArgStrategy))
     end
 
-    abstract def plan_for(strategy : ArgStrategy) : Nil
-
-    macro add_implementation(&block)
-      strategy.add_implementation({{ @type.name.stringify }}) {{ block }}
-    end
+    abstract def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
+    abstract def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    abstract def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
   end
 
   class ArgStrategy
     include Helpers
 
+    enum Direction
+      CToCrystal
+      CrystalToC
+    end
+
     property? remove_from_declaration : Bool
-    getter method : FunctionInfo
+    getter method : CallableInfo
     getter arg : ArgInfo
 
     @implementation : IO::Memory?
 
-    def self.find_strategies(method : FunctionInfo)
+    def self.find_strategies(method : CallableInfo, direction : Direction) : Array(ArgStrategy)
       strategies = method.args.map { |arg| ArgStrategy.new(method, arg) }
-      {% for plan_class in %w(ArrayLengthArgPlan
+      {% for plan_class in %w(CallbackArgPlan
+                             ArrayLengthArgPlan
                              OutArgUsedInReturnPlan
                              NullableArrayPlan
                              ArrayArgPlan
                              CallerAllocatesPlan
                              HandmadeArgPlan
                              TransferFullArgPlan
-                             CallbackArgPlan) %}
+                             GObjectArgPlan) %}
       plan = {{ plan_class.id }}.new(strategies)
       strategies.each do |strategy|
-        plan.plan_for(strategy)
+        if plan.match?(strategy, direction)
+          strategy.add_implementation(plan, direction)
+        end
       end
       {% end %}
+
+      # Last argument of callbacks is user_data, i.e. must always be removed.
+      if method.is_a?(CallbackInfo) && !strategies.empty?
+        last_strategy = strategies.last
+        last_strategy.remove_from_declaration = true
+        last_strategy.clear_implementation
+      end
 
       strategies
     end
 
-    def initialize(@method : FunctionInfo, @arg : ArgInfo)
+    def initialize(@method : CallableInfo, @arg : ArgInfo)
       @remove_from_declaration = false
+    end
+
+    def has_implementation? : Bool
+      !@implementation.nil?
+    end
+
+    def clear_implementation
+      @implementation = nil
     end
 
     def arg_type : TypeInfo
@@ -60,15 +84,13 @@ module Generator
       io << name << " : " << type << null_mark
     end
 
-    def render_implementation(io : IO)
-    end
-
-    # Use ArgPlan macro `add_implementation` instead, to auto-fill the arg_plan parameter
-    def add_implementation(arg_plan : String)
+    def add_implementation(arg_plan : ArgPlan, direction : Direction) : Nil
       io = @implementation ||= IO::Memory.new
-      io << "# " << arg_plan << LF
-      yield(io)
-      io << LF
+      io << "# " << arg_plan.class.name << LF
+      case direction
+      in .c_to_crystal? then arg_plan.generate_lib_implementation(io, self)
+      in .crystal_to_c? then arg_plan.generate_crystal_implementation(io, self)
+      end
     end
 
     def write_implementation(dest : IO) : Nil
@@ -81,17 +103,22 @@ module Generator
   end
 
   struct ArrayLengthArgPlan < ArgPlan
-    def plan_for(strategy : ArgStrategy) : Nil
+    def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
       arg_type = strategy.arg_type
-      return if arg_type.array_length < 0
+      return false if arg_type.array_length < 0
 
       strategies[arg_type.array_length].remove_from_declaration = true
+      true
+    end
 
+    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
-      add_implementation do |io|
-        io << to_identifier(strategies[arg_type.array_length].arg.name) << " = " << to_identifier(arg.name)
-        io << (arg.nullable? ? ".try(&.size) || 0" : ".size")
-      end
+      arg_type = strategy.arg_type
+      io << to_identifier(strategies[arg_type.array_length].arg.name) << " = " << to_identifier(arg.name)
+      io << (arg.nullable? ? ".try(&.size) || 0" : ".size")
+    end
+
+    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
     end
   end
 
@@ -99,16 +126,22 @@ module Generator
     # FIXME: Remove/refactor the mess in this wrapper util
     include WrapperUtil
 
-    def plan_for(strategy : ArgStrategy) : Nil
+    def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
       arg = strategy.arg
-      return if arg.nullable?
-      return unless arg.type_info.array?
+      return false if arg.nullable?
+      return false unless arg.type_info.array?
 
+      true
+    end
+
+    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
       arg_name = to_identifier(arg.name)
-      add_implementation do |io|
-        io << arg_name << " = "
-        generate_array_to_unsafe(io, arg_name, arg.type_info)
-      end
+      io << arg_name << " = "
+      generate_array_to_unsafe(io, arg_name, arg.type_info)
+    end
+
+    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
     end
   end
 
@@ -116,44 +149,68 @@ module Generator
     # FIXME: Remove/refactor the mess in this wrapper util
     include WrapperUtil
 
-    def plan_for(strategy : ArgStrategy) : Nil
+    def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
+      return false if strategy.remove_from_declaration?
+
       arg = strategy.arg
-      return if arg.optional?
-      return unless arg.nullable?
+      return false if arg.optional?
+      return false if arg.type_info.interface.is_a?(CallbackInfo)
+      return false unless arg.nullable?
 
       arg_type = arg.type_info
-      return if BindingConfig.handmade?(arg_type)
+      return false if BindingConfig.handmade?(arg_type)
 
+      true
+    end
+
+    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      arg_type = arg.type_info
       arg_name = to_identifier(arg.name)
-      add_implementation do |io|
-        generate_null_guard(io, arg_name, arg_type, nullable: arg.nullable?) do
-          if arg_type.array?
-            generate_array_to_unsafe(io, arg_name, arg_type)
-          else
-            io << arg_name << ".to_unsafe"
-          end
+
+      generate_null_guard(io, arg_name, arg_type, nullable: arg.nullable?) do
+        if arg_type.array?
+          generate_array_to_unsafe(io, arg_name, arg_type)
+        else
+          io << arg_name << ".to_unsafe"
         end
       end
+    end
+
+    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      arg_name = arg.name
+      var = "lib_#{to_identifier(arg_name)}"
+      io << to_identifier(arg_name) << '=' << convert_to_crystal(var, arg, strategies.map(&.arg), :none) << LF
     end
   end
 
   struct OutArgUsedInReturnPlan < ArgPlan
-    def plan_for(strategy : ArgStrategy) : Nil
+    @used_in_return = false
+
+    def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
       arg = strategy.arg
-      used_in_return = arg_used_in_return_type?(strategy.method, arg)
-      return if !(arg.optional? || used_in_return)
+      @used_in_return = arg_used_in_return_type?(strategy.method, arg)
+      return false if !(arg.optional? || @used_in_return)
 
       strategy.remove_from_declaration = true
-      add_implementation do |io|
-        io << to_identifier(arg.name) << " = "
-        if used_in_return
-          io << type_info_default_value(arg.type_info)
-        else
-          # FIXME: Move this use case into `type_info_default_value`
-          type_name = to_lib_type(arg.type_info, structs_as_void: true)
-          io << "Pointer(" << type_name << ").null"
-        end
+      true
+    end
+
+    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+
+      io << to_identifier(arg.name) << " = "
+      if @used_in_return
+        io << type_info_default_value(arg.type_info)
+      else
+        # FIXME: Move this use case into `type_info_default_value`
+        type_name = to_lib_type(arg.type_info, structs_as_void: true)
+        io << "Pointer(" << type_name << ").null"
       end
+    end
+
+    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
     end
 
     private def arg_used_in_return_type?(method, arg) : Bool
@@ -164,63 +221,149 @@ module Generator
   end
 
   struct CallerAllocatesPlan < ArgPlan
-    def plan_for(strategy : ArgStrategy) : Nil
+    def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
       arg = strategy.arg
-      return if !(arg.direction.out? && arg.caller_allocates? && !arg.type_info.array?)
+      return false if !(arg.direction.out? && arg.caller_allocates? && !arg.type_info.array?)
 
       strategy.remove_from_declaration = true
-      add_implementation do |io|
-        io << to_identifier(arg.name) << "=" << to_crystal_type(arg.type_info) << ".new"
-      end
+      true
+    end
+
+    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      io << to_identifier(arg.name) << "=" << to_crystal_type(arg.type_info) << ".new"
+    end
+
+    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
     end
   end
 
   struct HandmadeArgPlan < ArgPlan
-    def plan_for(strategy : ArgStrategy) : Nil
-      return if strategy.remove_from_declaration?
+    def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
+      return false if strategy.remove_from_declaration?
 
       arg_type = strategy.arg_type
-      return unless BindingConfig.handmade?(arg_type)
+      return false unless BindingConfig.handmade?(arg_type)
 
-      add_implementation do |io|
-        arg = strategy.arg
-        type = to_crystal_type(arg_type)
-        var = to_identifier(arg.name)
+      true
+    end
 
-        io << var << '='
-        if arg.nullable?
-          io << "if " << var << ".nil?\n"
-          io << "Pointer(Void).null\n" \
-                "els" # If arg can be null the next if will turn into a elsif, ugly but works.
-        end
-        io << "if !" << var << ".is_a?(" << type << ")\n"
-        io << type << ".new(" << var << ").to_unsafe\n"
-        io << "else\n"
-        io << var << ".to_unsafe\n"
-        io << "end\n"
+    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      arg_type = strategy.arg_type
+      type = to_crystal_type(arg_type)
+      var = to_identifier(arg.name)
+
+      io << var << '='
+      if arg.nullable?
+        io << "if " << var << ".nil?\n"
+        io << "Pointer(Void).null\n" \
+              "els" # If arg can be null the next if will turn into a elsif, ugly but works.
       end
+      io << "if !" << var << ".is_a?(" << type << ")\n"
+      io << type << ".new(" << var << ").to_unsafe\n"
+      io << "else\n"
+      io << var << ".to_unsafe\n"
+      io << "end\n"
+    end
+
+    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      arg_type = strategy.arg_type
+      type = to_crystal_type(arg_type)
+      var = to_identifier(arg.name)
+
+      io << var << '=' << type << ".new(lib_" << var << ", :none)\n"
     end
   end
 
   struct TransferFullArgPlan < ArgPlan
-    def plan_for(strategy : ArgStrategy) : Nil
-      return if strategy.remove_from_declaration?
+    def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
+      return false if strategy.remove_from_declaration?
 
       arg = strategy.arg
-      return if !arg.ownership_transfer.full?
+      return false if !arg.ownership_transfer.full?
 
       obj = arg.type_info.interface.as?(ObjectInfo)
-      return if obj.nil?
+      return false if obj.nil?
 
-      add_implementation do |io|
-        io << "LibGObject." << obj.ref_function << '(' << to_identifier(arg.name) << ")"
-      end
+      true
+    end
+
+    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      obj = arg.type_info.interface.as(ObjectInfo)
+
+      io << "LibGObject." << obj.ref_function << '(' << to_identifier(arg.name) << ")"
+    end
+
+    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    end
+  end
+
+  struct GObjectArgPlan < ArgPlan
+    def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
+      type_info = strategy.arg.type_info
+      direction.c_to_crystal? && type_info.tag.interface?
+    end
+
+    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    end
+
+    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      arg_name = to_identifier(arg.name)
+      type_info = arg.type_info
+
+      io << arg_name << '=' << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", :none)\n"
     end
   end
 
   struct CallbackArgPlan < ArgPlan
-    def plan_for(strategy : ArgStrategy) : Nil
-      # TODO: Remove user_data and destroy args
+    def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
+      arg = strategy.arg
+      type_info = arg.type_info
+      callback = type_info.interface
+      return false unless callback.is_a?(CallbackInfo)
+
+      idx = strategies.index(strategy)
+      return false if idx.nil? || idx != strategies.size - 3
+
+      user_data_arg = strategies[idx + 1].arg
+      return false unless user_data_arg.type_info.tag.void?
+
+      destroy_notify_arg = strategies[idx + 2].arg
+      destroy_notify_arg_cb = destroy_notify_arg.type_info.interface
+      return false if !destroy_notify_arg_cb.is_a?(CallbackInfo) || destroy_notify_arg_cb.name != "DestroyNotify"
+
+      strategies[idx + 1].remove_from_declaration = true
+      strategies[idx + 2].remove_from_declaration = true
+      true
+    end
+
+    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      type_info = arg.type_info
+      callback = type_info.interface.as(CallbackInfo)
+      idx = strategies.index(strategy).not_nil!
+      user_data_arg = strategies[idx + 1].arg
+      destroy_notify_arg = strategies[idx + 2].arg
+
+      callback_var = to_identifier(arg.name)
+      userdata_var = to_identifier(user_data_arg.name)
+      destroy_notify_var = to_identifier(destroy_notify_arg.name)
+      io << "if " << callback_var << LF
+
+      generate_box(io, callback_var, callback, :callback)
+
+      io << userdata_var << " = GICrystal::ClosureDataManager.register(_box)\n"
+      io << destroy_notify_var << " = ->GICrystal::ClosureDataManager.deregister(Pointer(Void)).pointer\n"
+      io << "else\n"
+      io << callback_var << '=' << userdata_var << '=' << destroy_notify_var << "= Pointer(Void).null\n"
+      io << "end\n"
+    end
+
+    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
     end
   end
 end

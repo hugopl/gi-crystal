@@ -10,10 +10,16 @@ module Generator
     getter object : RegisteredTypeInfo | Namespace
     @method_return_type : MethodReturnType?
     @args_strategies : Array(ArgStrategy)
+    @crystal_arg_count = 0
 
     def initialize(@object, @method)
       super(@method.namespace)
-      @args_strategies = ArgStrategy.find_strategies(@method)
+      args_strategies = nil
+      with_log_scope(@method.symbol) do
+        args_strategies = ArgStrategy.find_strategies(@method, :crystal_to_c)
+      end
+      @args_strategies = args_strategies.not_nil!
+      @crystal_arg_count = @args_strategies.size - @args_strategies.count(&.remove_from_declaration?)
     end
 
     def ignore?
@@ -37,7 +43,7 @@ module Generator
                      identifier[4..]
                    elsif method_flags.getter? && identifier.starts_with?("is_") && identifier.size > 3
                      "#{identifier}?"
-                   elsif @method.args.size == 1 && identifier.starts_with?("set_") && identifier.size > 4
+                   elsif @crystal_arg_count == 1 && identifier.starts_with?("set_") && identifier.size > 4
                      "#{identifier[4..]}="
                    else
                      identifier
@@ -203,18 +209,11 @@ module Generator
     # If the method only receive a array as argument, create a splat overload, so if
     # `def foo(bar : Enumerable(String))` exists, `def foo(*bar : String)` will also be generated.
     def method_splat_overload : String?
-      return if method_identifier.ends_with?("=")
+      return if @crystal_arg_count != 1 || method_identifier.ends_with?("=")
 
       # Check if the method receives onlyl one array parameter
-      arg = nil
-      @args_strategies.each do |strategy|
-        next if strategy.remove_from_declaration?
-        return unless arg.nil?                     # Two args found
-        return unless strategy.arg_type.tag.array? # SOme arg isn't an array
-
-        arg = strategy.arg
-      end
-      return if arg.nil?
+      arg = @args_strategies.find { |strategy| !strategy.remove_from_declaration? }.try(&.arg)
+      return if arg.nil? || !arg.type_info.tag.array?
 
       param_type = to_crystal_type(arg.type_info.param_type, is_arg: true)
       String.build do |s|

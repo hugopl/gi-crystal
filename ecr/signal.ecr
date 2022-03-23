@@ -23,32 +23,28 @@ struct <%= signal_type %>
     connect(block)
   end
 
-  def connect(block : Proc(<%= lean_proc_params %>))
-    box = ::Box.box(block)
-    slot = <%= lean_slot %>
-    LibGObject.g_signal_connect_data(@source, name, slot.pointer,
-      GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 0)
+  def connect(handler : Proc(<%= lean_proc_params %>))
+    <% render_box(:lean_signal) %>
+    LibGObject.g_signal_connect_data(@source, name, handler,
+      GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, 0)
   end
 
-  def connect_after(block : Proc(<%= lean_proc_params %>))
-    box = ::Box.box(block)
-    slot = <%= lean_slot %>
-    LibGObject.g_signal_connect_data(@source, name, slot.pointer,
-      GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 1)
+  def connect_after(handler : Proc(<%= lean_proc_params %>))
+    <% render_box(:lean_signal) %>
+    LibGObject.g_signal_connect_data(@source, name, handler,
+      GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, 1)
   end
 
-  def connect(block : Proc(<%= full_proc_params %>))
-    box = ::Box.box(block)
-    slot = <%= full_slot %>
-    LibGObject.g_signal_connect_data(@source, name, slot.pointer,
-      GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 0)
+  def connect(handler : Proc(<%= full_proc_params %>))
+    <% render_box(:full_signal) %>
+    LibGObject.g_signal_connect_data(@source, name, handler,
+      GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, 0)
   end
 
-  def connect_after(block : Proc(<%= full_proc_params %>))
-    box = ::Box.box(block)
-    slot = <%= full_slot %>
-    LibGObject.g_signal_connect_data(@source, name, slot.pointer,
-      GICrystal::ClosureDataManager.register(box), ->GICrystal::ClosureDataManager.deregister, 1)
+  def connect_after(handler : Proc(<%= full_proc_params %>))
+    <% render_box(:full_signal) %>
+    LibGObject.g_signal_connect_data(@source, name, handler,
+      GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, 1)
   end
 
   <%= signal_emit_method %>

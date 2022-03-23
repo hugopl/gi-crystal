@@ -593,6 +593,24 @@ ignore:
  - TreeNode
  - Uri
  - UriParamsIter
+ - HookCheckMarshaller
+ - HookCompareFunc
+ - HookFinalizeFunc
+ - HookFindFunc
+ - HookMarshaller
+ - IOFunc
+ - LogFunc
+ - LogWriterFunc
+ - NodeForeachFunc
+ - OptionErrorFunc
+ - RegexEvalCallback
+ - ScannerMsgFunc
+ - SequenceIterCompareFunc
+ - OptionParseFunc
+ - PollFunc
+ - TraverseNodeFunc
+ - NodeTraverseFunc
+ - HookFunc
 
 execute_callback:
  - g_main_loop_run

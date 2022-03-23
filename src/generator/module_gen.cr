@@ -50,6 +50,12 @@ module Generator
     delegate enums, to: @namespace
     delegate flags, to: @namespace
 
+    def each_callback
+      @namespace.callbacks.each do |callback|
+        yield(callback) unless config.ignore?(callback.name)
+      end
+    end
+
     def generate
       return if already_generated?
 

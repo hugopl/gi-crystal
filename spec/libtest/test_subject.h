@@ -85,6 +85,16 @@ struct _TestSubjectClass {
 };
 
 /**
+ * TestSubjectSimpleFunc:
+ * @subject: The subject
+ * @number: A number
+ * @user_data: (closure): user data
+ *
+ * Used to test callback code generation
+ */
+typedef void (*TestSubjectSimpleFunc)(TestSubject* subject, int number, gpointer user_data);
+
+/**
  * test_subject_new_from_whatever:
  * @value:
  * Returns: (transfer full): Obj instance with value set on string property
@@ -92,6 +102,21 @@ struct _TestSubjectClass {
  * Used to test transformation of this into `Subject.from_string(...)`.
  */
 TestSubject* test_subject_new_from_string(const gchar* string);
+
+/**
+ * test_subject_set_simple_func:
+ * @func: (nullable): a callback, called by [method@Test.Subject.call_simple_func].
+ * @user_data: (closure): user data passed to @draw_func
+ * @destroy: destroy notifier for @user_data
+ */
+void test_subject_set_simple_func(TestSubject* self, TestSubjectSimpleFunc func, gpointer user_data, GDestroyNotify destroy);
+
+/**
+ * test_subject_call_simple_func:
+ * @number: Number passed as parameter to callback set by [method@Test.Subject.set_simple_func].
+ * Returns: True if the callback exists and was called, false otherwise.
+ */
+gboolean test_subject_call_simple_func(TestSubject* self, int number);
 
 /**
  * test_subject_set_str_list:

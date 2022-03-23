@@ -101,6 +101,10 @@ module Generator
       "/xmlns:repository/xmlns:namespace/xmlns:enumeration[@name=\"#{enum_.name}\"]/xmlns:doc[1]"
     end
 
+    private def xpath(callback : CallbackInfo)
+      "/xmlns:repository/xmlns:namespace/xmlns:callback[@name=\"#{callback.name}\"]/xmlns:doc[1]"
+    end
+
     private def xpath(obj : RegisteredTypeInfo, func : FunctionInfo)
       func_flags = func.flags
       type = case func_flags
