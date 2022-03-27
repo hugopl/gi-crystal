@@ -30,6 +30,20 @@ module Generator::Helpers
     name.tr("-", "_")
   end
 
+  def type_info_default_value(type_info : TypeInfo)
+    case type_info.tag
+    when .boolean?, .int32? then "0"
+    when .u_int32?          then "0_u32"
+    when .int16?            then "0_i16"
+    when .u_int16?          then "0_u16"
+    when .int64?            then "0_i64"
+    when .u_int64?          then "0_u64"
+    else
+      Log.warn { "Don't know what would be a default value for type #{type_info.tag}." }
+      "0" # just to make compiler happy
+    end
+  end
+
   def to_lib_type(tag : TypeTag) : String
     case tag
     when .void?             then "Void"

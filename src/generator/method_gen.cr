@@ -1,3 +1,5 @@
+require "./arg_strategy"
+
 module Generator
   class MethodGen < Generator
     include WrapperUtil
@@ -6,11 +8,12 @@ module Generator
 
     private getter method : FunctionInfo
     getter object : RegisteredTypeInfo
-    @method_args : Array(ArgInfo)?
     @method_return_type : MethodReturnType?
+    @args_strategies : Array(ArgStrategy)
 
     def initialize(@object, @method)
       super(@method.namespace)
+      @args_strategies = ArgStrategy.find_strategies(@method)
     end
 
     def ignore?
@@ -44,37 +47,27 @@ module Generator
       identifier
     end
 
-    private def method_args : Array(ArgInfo)
-      @method_args ||= begin
-        args = @method.args.dup
-        args_to_remove = [] of ArgInfo
-        args.each do |arg|
-          type_info = arg.type_info
-          iface = type_info.interface
-          if iface && BindingConfig.for(arg.namespace).ignore?(iface.name)
-            Log.warn { "method using ignored type #{to_crystal_type(iface, true)} on arguments" }
-          end
+    macro render_args_declaration
+      render_args_declaration(io)
+    end
 
-          if type_info.array_length >= 0
-            args_to_remove << args[type_info.array_length]
-          elsif arg.optional? || arg_used_by_return_type?(arg)
-            args_to_remove << arg
-          elsif arg.direction.out? && arg.caller_allocates? && !arg.type_info.array?
-            args_to_remove << arg
-          end
-        end
-        args -= args_to_remove
+    def render_args_declaration(io : IO)
+      print_comma = false
+      @args_strategies.each do |arg_strategy|
+        next if arg_strategy.remove_from_declaration?
+
+        io << ',' if print_comma
+        arg_strategy.render_declaration(io)
+        print_comma = true
       end
     end
 
-    private def method_args_declaration : String
-      String.build do |s|
-        s << method_args.map do |arg|
-          null_mark = "?" if arg.nullable?
-          type = to_crystal_type(arg.type_info, is_arg: true)
-          "#{to_crystal_arg_decl(arg.name)} : #{type}#{null_mark}"
-        end.join(", ")
-      end
+    macro render_args_preparation
+      render_args_preparation(io)
+    end
+
+    def render_args_preparation(io : IO)
+      @args_strategies.each(&.write_implementation(io))
     end
 
     private def method_return_type : MethodReturnType
@@ -200,63 +193,6 @@ module Generator
       end
     end
 
-    def handle_method_parameters : String
-      return "" if @method.args.empty?
-
-      String.build do |s|
-        generate_lenght_param_impl(s)
-        generate_optional_param_impl(s)
-        generate_nullable_and_arrays_params(s)
-        generate_array_param_impl(s)
-        generate_caller_allocates_param_impl(s)
-        generate_handmade_types_param_conversion(s, method_args)
-        generate_g_ref_on_transfer_full_param(s)
-      end
-    end
-
-    # If the function receives a collection plus a parameter to inform the collection size, the size parameter is removed
-    # and declared inside the method as `size = collection.size`
-    def generate_lenght_param_impl(io : IO)
-      args = @method.args
-      args.each do |arg|
-        arg_type = arg.type_info
-        if arg_type.array_length >= 0
-          io << to_identifier(args[arg_type.array_length].name) << " = " << to_identifier(arg.name)
-          io << (arg.nullable? ? ".try(&.size) || 0" : ".size") << LF
-        end
-      end
-    end
-
-    # If the arg is optional or `out` and used by the function return type, we need to declare it
-    def generate_optional_param_impl(io : IO)
-      @method.args.each do |arg|
-        used_by_return_type = arg_used_by_return_type?(arg)
-        next if !arg.optional? && !used_by_return_type
-
-        io << to_identifier(arg.name) << " = "
-        # FIXME: This is a wrong assumption that works most of the time, need refactor.
-        if used_by_return_type
-          io << type_info_default_value(arg.type_info)
-        else
-          type_name = to_lib_type(arg.type_info, structs_as_void: true)
-          io << "Pointer(" << type_name << ").null"
-        end
-        io << LF
-      end
-    end
-
-    def arg_used_by_other_arg?(arg : ArgInfo) : Bool
-      arg_index = @method.args.index(arg)
-      return false unless arg_index
-
-      @method.args.each do |method_arg|
-        type_info = method_arg.type_info
-        return true if type_info.tag.array? && type_info.array_length == arg_index
-      end
-
-      arg_used_by_return_type?(arg)
-    end
-
     def arg_used_by_return_type?(arg : ArgInfo) : Bool
       arg_index = @method.args.index(arg)
       return false unless arg_index
@@ -265,80 +201,27 @@ module Generator
       type_info.tag.array? && type_info.array_length == arg_index
     end
 
-    def type_info_default_value(type_info : TypeInfo)
-      case type_info.tag
-      when .boolean?, .int32? then "0"
-      when .u_int32?          then "0_u32"
-      when .int16?            then "0_i16"
-      when .u_int16?          then "0_u16"
-      when .int64?            then "0_i64"
-      when .u_int64?          then "0_u64"
-      else
-        Log.warn { "Don't know what would be a default value for type #{type_info.tag}." }
-        "0" # just to make compiler happy
-      end
-    end
-
-    def generate_nullable_and_arrays_params(io : IO)
-      args = @method.args
-      args.each do |arg|
-        next if arg.optional?
-        next unless arg.nullable?
-
-        arg_name = to_identifier(arg.name)
-        generate_null_guard(io, arg_name, arg.type_info, nullable: arg.nullable?) do
-          if arg.type_info.array?
-            generate_array_to_unsafe(io, arg_name, arg.type_info)
-          else
-            io << arg_name << ".to_unsafe"
-          end
-        end
-      end
-    end
-
-    private def generate_array_param_impl(io : IO)
-      @method.args.each do |arg|
-        next if arg.nullable?
-
-        if arg.type_info.array?
-          arg_name = to_identifier(arg.name)
-          io << arg_name << " = "
-          generate_array_to_unsafe(io, arg_name, arg.type_info)
-          io << LF
-        end
-      end
-    end
-
-    private def generate_caller_allocates_param_impl(io : IO)
-      return_type = method_return_type
-      if return_type.is_a?(ArgInfo)
-        io << to_identifier(return_type.name) << "=" << to_crystal_type(return_type.type_info) << ".new\n"
-      end
-    end
-
     # If the method only receive a array as argument, create a splat overload, so if
     # `def foo(bar : Enumerable(String))` exists, `def foo(*bar : String)` will also be generated.
     def method_splat_overload : String?
-      return if method_args.size != 1
-
-      arg = method_args.first
-
-      return unless arg.type_info.tag.array?
       return if method_identifier.ends_with?("=")
+
+      # Check if the method receives onlyl one array parameter
+      arg = nil
+      @args_strategies.each do |strategy|
+        next if strategy.remove_from_declaration?
+        return unless arg.nil?                     # Two args found
+        return unless strategy.arg_type.tag.array? # SOme arg isn't an array
+
+        arg = strategy.arg
+      end
+      return if arg.nil?
 
       param_type = to_crystal_type(arg.type_info.param_type, is_arg: true)
       String.build do |s|
         s << "def " << method_identifier << "(*" << to_identifier(arg.name) << " : " << param_type << ")\n"
         s << method_identifier << "(" << to_identifier(arg.name) << ")\n"
         s << "end\n"
-      end
-    end
-
-    def generate_g_ref_on_transfer_full_param(io : IO)
-      method_args.each do |arg|
-        next if !arg.ownership_transfer.full? || !arg.type_info.tag.interface?
-
-        io << "LibGObject.g_object_ref(" << to_identifier(arg.name) << ")\n"
       end
     end
   end

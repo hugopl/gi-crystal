@@ -1,12 +1,11 @@
 <% render_doc(object, method) -%>
-def <%= method_identifier %>(<%= method_args_declaration %>) <%= method_return_type_declaration %>
+def <%= method_identifier %>(<% render_args_declaration -%>) <%= method_return_type_declaration %>
   <%= method_gi_annotations %>
   <% if throws? -%>
     _error = Pointer(LibGLib::Error).null
   <% end -%>
 
-  # Handle parameters
-  <%= handle_method_parameters %>
+  <% render_args_preparation %>
   # C call
   <%= method_c_call %>
 
