@@ -366,6 +366,12 @@ GBytes* test_subject_string_to_bytes_transfer_none(const gchar* data);
 TestEmptyFlags test_subject_receive_empty_flags(TestEmptyFlags flags);
 
 /**
+ * test_subject_nullable_optimal_parameter:
+ * @param: (out) (transfer full) (nullable) (optional)
+ */
+int test_subject_nullable_optimal_parameter(TestSubject* self, gchar** param);
+
+/**
  * test_subject_return_g_error:
  * Returns: (transfer full): A GError
  *

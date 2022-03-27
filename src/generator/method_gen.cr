@@ -233,14 +233,12 @@ module Generator
         used_by_return_type = arg_used_by_return_type?(arg)
         next if !arg.optional? && !used_by_return_type
 
-        type = arg.type_info
-        type_name = to_lib_type(type, structs_as_void: true)
-
         io << to_identifier(arg.name) << " = "
         # FIXME: This is a wrong assumption that works most of the time, need refactor.
         if used_by_return_type
           io << type_info_default_value(arg.type_info)
         else
+          type_name = to_lib_type(arg.type_info, structs_as_void: true)
           io << "Pointer(" << type_name << ").null"
         end
         io << LF
@@ -284,6 +282,7 @@ module Generator
     def generate_nullable_and_arrays_params(io : IO)
       args = @method.args
       args.each do |arg|
+        next if arg.optional?
         next unless arg.nullable?
 
         arg_name = to_identifier(arg.name)

@@ -474,6 +474,13 @@ TestEmptyFlags test_subject_receive_empty_flags(TestEmptyFlags flags) {
   return flags;
 }
 
+int test_subject_nullable_optimal_parameter(TestSubject* self, gchar** param) {
+  if (param)
+    *param = g_strdup("Hi There!");
+
+  return 42;
+}
+
 GError* test_subject_return_g_error() {
   return g_error_new(G_FILE_ERROR, G_FILE_ERROR_FAILED, "whatever message");
 }
