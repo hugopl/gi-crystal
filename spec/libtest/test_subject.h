@@ -37,7 +37,7 @@ typedef struct _TestPoint {
  * TestStruct:
  * @in: A attribute using a invalid Crystal keyword.
  * @begin: Another attribute using a invalid Crystal keyword.
- * @other_struct: Another struct member of this struct.
+ * @point: Another struct member of this struct.
  *
  * A plain struct to test stuff
  */

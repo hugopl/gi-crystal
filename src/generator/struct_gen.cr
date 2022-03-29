@@ -33,12 +33,6 @@ module Generator
       @struct
     end
 
-    def do_generate(io : IO)
-      generate_struct_accessors(io)
-      MethodWrapperGenerator.generate(io, @struct.methods)
-      io << "end\nend\n" # end-class, end-module
-    end
-
     def g_error?
       namespace.g_lib? && @struct.name == "Error"
     end
@@ -77,21 +71,47 @@ module Generator
       end
     end
 
+    private def field_type_name(io, field)
+      field_type = field.type_info
+      is_interface = field_type.tag.interface?
+      io << to_crystal_type(field_type)
+      io << "?" if is_interface
+    end
+
     private def generate_getter(io : IO, field : FieldInfo)
       field_name = field.name
-      io << "def " << field_name << " : " << to_crystal_type(field.type_info) << LF
-      io << "# Property getter\n"
-      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field.type_info, structs_as_void: true) << "))\n"
+      field_type = field.type_info
+      is_interface = field_type.tag.interface?
+
+      if is_interface
+        io << "def " << field_name << "!\n"
+        io << "self." << field_name << ".not_nil!"
+        io << "\nend\n"
+      end
+
+      io << "def " << field_name << " : "
+      field_type_name(io, field)
+      io << LF
+
+      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field_type, structs_as_void: true) << "))\n"
+      if field_type.tag.interface?
+        io << "return if _var.value.null?\n"
+      end
       io << convert_to_crystal("_var.value", field.type_info, @struct.fields, :none) << LF
       io << "\nend\n"
     end
 
     private def generate_setter(io : IO, field : FieldInfo)
       field_name = field.name
-      io << "def " << field_name << "=(value : " << to_crystal_type(field.type_info) << ")\n"
-      io << "# Property setter\n"
-      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field.type_info, structs_as_void: true) << ")).value = "
-      io << convert_to_lib("value", field.type_info, :none) << LF
+      field_type = field.type_info
+      is_interface = field_type.tag.interface?
+
+      io << "def " << field_name << "=(value : "
+      field_type_name(io, field)
+      io << ")\n"
+      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field_type, structs_as_void: true) << ")).value = "
+      io << "value.nil? ? Pointer(Void).null : " if is_interface
+      io << convert_to_lib("value", field_type, :none) << LF
       io << "value\n"
       io << "end\n"
     end

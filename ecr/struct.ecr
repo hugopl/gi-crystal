@@ -4,7 +4,7 @@ module <%= namespace_name %>
     @pointer : Pointer(Void)
 
     def initialize(pointer : Pointer(Void), transfer : GICrystal::Transfer)
-      raise ArgumentError.new if pointer.null?
+      raise ArgumentError.new("Tried to generate struct with a NULL pointer") if pointer.null?
 
       <% if g_error? -%>
         @pointer = if transfer.none?
