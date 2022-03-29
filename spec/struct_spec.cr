@@ -13,8 +13,7 @@ describe "Struct bindings" do
   end
 
   it "can have structs as attributes" do
-    point =
-      truct = Test::Struct.new(begin: 42)
+    truct = Test::Struct.new(begin: 42)
     truct.point.should eq(Test::Point.new(0, 0))
     truct.point = Test::Point.new(1, 2)
     truct.point.should be_a(Test::Point)
