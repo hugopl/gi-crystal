@@ -60,30 +60,27 @@ module Generator
       end
     end
 
-    private def struct_accessors : String
-      String.build do |s|
-        @struct.fields.each do |field|
-          with_log_scope("#{scope} #{field.name} field") do
-            generate_getter(s, field)
-            generate_setter(s, field)
-          end
+    private def foreach_field
+      @struct.fields.each do |field|
+        with_log_scope("#{scope} #{field.name} field") do
+          yield(field)
         end
       end
     end
 
     private def field_type_name(io, field)
       field_type = field.type_info
-      is_interface = field_type.tag.interface?
+      is_pointer = field_type.pointer?
       io << to_crystal_type(field_type)
-      io << "?" if is_interface
+      io << "?" if is_pointer
     end
 
     private def generate_getter(io : IO, field : FieldInfo)
       field_name = field.name
       field_type = field.type_info
-      is_interface = field_type.tag.interface?
+      is_pointer = field_type.pointer?
 
-      if is_interface
+      if is_pointer
         io << "def " << field_name << "!\n"
         io << "self." << field_name << ".not_nil!"
         io << "\nend\n"
@@ -94,25 +91,41 @@ module Generator
       io << LF
 
       io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field_type, structs_as_void: true) << "))\n"
-      if field_type.tag.interface?
+      if is_pointer
         io << "return if _var.value.null?\n"
       end
-      io << convert_to_crystal("_var.value", field.type_info, @struct.fields, :none) << LF
+
+      # Bindinged objects ctors expect a pointer to the object, if the same behavior would be used for
+      # stdlib String class a constructor like `String.new(ptr : Pointer(Pointer(Void))` would need to exists,
+      # but it doesn't (of course).
+      obj_ptr_expr = !is_pointer && field_type.tag.interface? ? "_var" : "_var.value"
+      io << convert_to_crystal(obj_ptr_expr, field.type_info, @struct.fields, :none) << LF
       io << "\nend\n"
     end
 
     private def generate_setter(io : IO, field : FieldInfo)
       field_name = field.name
       field_type = field.type_info
-      is_interface = field_type.tag.interface?
+      is_pointer = field_type.pointer?
 
       io << "def " << field_name << "=(value : "
       field_type_name(io, field)
       io << ")\n"
-      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field_type, structs_as_void: true) << ")).value = "
-      io << "value.nil? ? Pointer(Void).null : " if is_interface
-      io << convert_to_lib("value", field_type, :none) << LF
-      io << "value\n"
+
+      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field_type, structs_as_void: true) << "))"
+      if !is_pointer && field_type.tag.interface?
+        iface = field_type.interface
+        if iface.is_a?(StructInfo) && iface.boxed?
+          Log.warn { "Struct with non pointer boxed struct as parameter" }
+        else
+          io << "\n_var.copy_from(value.to_unsafe, sizeof(" << to_lib_type(object) << "))"
+        end
+      else
+        io << ".value = "
+        io << "value.nil? ? Pointer(Void).null : " if is_pointer
+        io << convert_to_lib("value", field_type, :none)
+      end
+      io << "\nvalue\n"
       io << "end\n"
     end
   end

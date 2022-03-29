@@ -41,8 +41,15 @@ module <%= namespace_name %>
       <% end %>
     end
 
+    def ==(other : self) : Bool
+      LibC.memcmp(self, other.to_unsafe, sizeof(<%= to_lib_type(object) %>)).zero?
+    end
+
     <% if object.copyable? %>
-      <%= struct_accessors %>
+      <% foreach_field do |field| %>
+        <% generate_getter(io, field) -%>
+        <% generate_setter(io, field) -%>
+      <% end %>
     <% end %>
 
     <% render "ecr/g_type_method.ecr" %>

@@ -44,7 +44,8 @@ typedef struct _TestPoint {
 typedef struct _TestStruct {
   gint16 in;
   gint16 begin;
-  TestPoint* point;
+  TestPoint* point_ptr;
+  TestPoint point;
 } TestStruct;
 
 /**
