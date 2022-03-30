@@ -48,6 +48,6 @@ TestSubject* test_subject_child_new_constructor_returning_null(const gchar* stri
  *
  * Used to test object casts
  */
-GObject *test_subject_child_me_as_gobject(TestSubjectChild *self);
+GObject* test_subject_child_me_as_gobject(TestSubjectChild* self);
 
 G_END_DECLS

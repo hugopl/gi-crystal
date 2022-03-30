@@ -19,14 +19,13 @@ GType test_boxed_struct_get_type(void);
  * @obj:
  * Returns: newly allocated TextBoxedStruct
  */
-TestBoxedStruct *test_boxed_struct_copy(const TestBoxedStruct *obj);
+TestBoxedStruct* test_boxed_struct_copy(const TestBoxedStruct* obj);
 
 /**
  * test_boxed_struct_free:
  * @obj: (nullable):
  */
-void test_boxed_struct_free(TestBoxedStruct *obj);
-
+void test_boxed_struct_free(TestBoxedStruct* obj);
 
 /*
  * test_boxed_struct_return_boxed_struct:
@@ -34,24 +33,24 @@ void test_boxed_struct_free(TestBoxedStruct *obj);
  *
  * Returns: The only way to create this boxed struct.
  */
-TestBoxedStruct *test_boxed_struct_return_boxed_struct(const gchar* data);
+TestBoxedStruct* test_boxed_struct_return_boxed_struct(const gchar* data);
 
 /*
  * test_boxed_struct_return_transfer_none:
  * Returns: (transfer none): Itself
  */
-const TestBoxedStruct *test_boxed_struct_return_transfer_none(const TestBoxedStruct *self);
+const TestBoxedStruct* test_boxed_struct_return_transfer_none(const TestBoxedStruct* self);
 
 /**
-  * test_boxed_struct_get_data:
-  * Returns: data, a string.
-  */
-const gchar *test_boxed_struct_get_data(TestBoxedStruct *self);
+ * test_boxed_struct_get_data:
+ * Returns: data, a string.
+ */
+const gchar* test_boxed_struct_get_data(TestBoxedStruct* self);
 
 /**
-  * test_boxed_struct_set_data:
-  * @data: Data that will be set in the boxed struct
-  */
-void test_boxed_struct_set_data(TestBoxedStruct *self, const gchar* data);
+ * test_boxed_struct_set_data:
+ * @data: Data that will be set in the boxed struct
+ */
+void test_boxed_struct_set_data(TestBoxedStruct* self, const gchar* data);
 
 G_END_DECLS

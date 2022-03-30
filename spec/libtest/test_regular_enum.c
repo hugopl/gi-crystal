@@ -4,12 +4,10 @@ GType test_regular_enum_get_type() {
   static gsize static_g_define_type_id = 0;
 
   if (g_once_init_enter(&static_g_define_type_id)) {
-    static const GEnumValue values[] = {
-      { TEST_VALUE1, "TEST_VALUE1", "value1" },
-      { TEST_VALUE2, "TEST_VALUE2", "value2" },
-      { TEST_VALUE3, "TEST_VALUE3", "value3" },
-      { 0, NULL, NULL }
-    };
+    static const GEnumValue values[] = { { TEST_VALUE1, "TEST_VALUE1", "value1" },
+                                         { TEST_VALUE2, "TEST_VALUE2", "value2" },
+                                         { TEST_VALUE3, "TEST_VALUE3", "value3" },
+                                         { 0, NULL, NULL } };
     GType g_define_type_id = g_enum_register_static(g_intern_static_string("TestRegularEnum"), values);
     g_once_init_leave(&static_g_define_type_id, g_define_type_id);
   }

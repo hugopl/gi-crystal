@@ -8,18 +8,17 @@ G_BEGIN_DECLS
 
 G_DECLARE_INTERFACE(TestIface, test_iface, TEST, IFACE, GObject)
 
-struct _TestIfaceInterface
-{
+struct _TestIfaceInterface {
   GTypeInterface parent_iface;
 
-  TestIface *(*return_myself_as_interface)(TestIface  *self);
+  TestIface* (*return_myself_as_interface)(TestIface* self);
 };
 
 /**
  * test_iface_return_myself_as_interface
  * Returns: (transfer none):
  */
-TestIface *test_iface_return_myself_as_interface(TestIface  *self);
+TestIface* test_iface_return_myself_as_interface(TestIface* self);
 
 /**
  * test_iface_interface_class_method:

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+crystal tool format
+clang-format --style=file -i spec/libtest/*.c spec/libtest/*.h

@@ -2,6 +2,7 @@
 /lib/
 /bin/
 !/bin/compare-api
+!/bin/format
 /.shards/
 /.ccls-cache/
 *.dwarf

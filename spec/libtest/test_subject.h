@@ -1,10 +1,10 @@
 #pragma once
 
-#include <stdio.h>
 #include <glib-object.h>
+#include <stdio.h>
 
-#include "test_iface.h"
 #include "test_flags.h"
+#include "test_iface.h"
 #include "test_regular_enum.h"
 
 G_BEGIN_DECLS
@@ -82,7 +82,6 @@ struct _TestSubjectClass {
   /* Class virtual function fields. */
 };
 
-
 /**
  * test_subject_new:
  * Returns: (transfer none): Obj instance
@@ -90,7 +89,7 @@ struct _TestSubjectClass {
  * Used to test constructor that transfer none, like gtk_window_new. So expect the
  * returned object to have ref count of 2.
  */
-GObject *test_subject_new(void);
+GObject* test_subject_new(void);
 
 /**
  * test_subject_new_from_whatever:
@@ -99,7 +98,7 @@ GObject *test_subject_new(void);
  *
  * Used to test transformation of this into `Subject.from_string(...)`.
  */
-TestSubject *test_subject_new_from_string(const gchar *string);
+TestSubject* test_subject_new_from_string(const gchar* string);
 
 /**
  * test_subject_set_str_list:
@@ -130,7 +129,7 @@ void test_subject_transfer_full_param(GObject* subject);
  * @strings: (array length=n) (element-type utf8) (nullable): a buffer
  * Returns: strings concatenated.
  */
-gchar* test_subject_concat_strings(TestSubject *self, int n, const gchar **strings);
+gchar* test_subject_concat_strings(TestSubject* self, int n, const gchar** strings);
 
 /**
  * test_subject_concat_filenames:
@@ -140,7 +139,7 @@ gchar* test_subject_concat_strings(TestSubject *self, int n, const gchar **strin
  *
  * Used to test filename arguments as C arrays, non-nullable arrays and filename return values.
  */
-gchar* test_subject_concat_filenames(TestSubject *self, int n, const gchar **filenames);
+gchar* test_subject_concat_filenames(TestSubject* self, int n, const gchar** filenames);
 
 /**
  * test_subject_sum:
@@ -149,7 +148,7 @@ gchar* test_subject_concat_filenames(TestSubject *self, int n, const gchar **fil
  *
  * Used to test non-nullable array of primitive arguments
  */
-int test_subject_sum(TestSubject *self, int n, int* numbers);
+int test_subject_sum(TestSubject* self, int n, int* numbers);
 
 /**
  * test_subject_sum_nullable:
@@ -158,14 +157,14 @@ int test_subject_sum(TestSubject *self, int n, int* numbers);
  *
  * Used to test non-nullable array of primitive arguments
  */
-int test_subject_sum_nullable(TestSubject *self, int n, int* numbers);
+int test_subject_sum_nullable(TestSubject* self, int n, int* numbers);
 
 /**
  * test_subject_receive_nullable_object:
  * @nullable: (allow-none): A nullable object
  * Returns: 1 if nullable is null, 0 otherwise
  */
-int test_subject_receive_nullable_object(TestSubject *self, TestSubject *nullable);
+int test_subject_receive_nullable_object(TestSubject* self, TestSubject* nullable);
 
 /**
  * test_subject_no_optional_param:
@@ -183,14 +182,15 @@ int test_subject_no_optional_param(int* int32, const gchar** str, TestRegularEnu
  * test_subject_receive_arguments_named_as_crystal_keywords
  * Returns: Sum of all parameters
  */
-int test_subject_receive_arguments_named_as_crystal_keywords(TestSubject *self_, int def, int alias, int module, int out, int begin, int self, int end, int abstract, int in);
+int test_subject_receive_arguments_named_as_crystal_keywords(TestSubject* self_, int def, int alias, int module, int out,
+                                                             int begin, int self, int end, int abstract, int in);
 
 /**
  * test_subject_get_getter_without_args:
  *
  * Used to test transformation of this in `Subject#getter_without_args`, returns "some string"
  */
-const gchar* test_subject_get_getter_without_args(TestSubject *self);
+const gchar* test_subject_get_getter_without_args(TestSubject* self);
 
 /**
  * test_subject_is_bool: (get-property Boolean)
@@ -205,7 +205,7 @@ gboolean test_subject_is_bool(TestSubject* self);
  * Used to test transformation of this in `Subject#setter=`.
  * This change the `string` attribute, same as `Subject#string=`
  */
-void test_subject_set_setter(TestSubject *self, const gchar* data);
+void test_subject_set_setter(TestSubject* self, const gchar* data);
 
 /**
  * test_subject_return_or_on_flags:
@@ -222,7 +222,7 @@ TestFlagFlags test_subject_return_or_on_flags(TestSubject* self, TestFlagFlags f
  * Test out arguments
  * TODO: Pending
  */
-void test_subject_put_42_on_out_argument(TestSubject *self, int *out);
+void test_subject_put_42_on_out_argument(TestSubject* self, int* out);
 
 /**
  * test_subject_return_null_terminated_array_transfer_none:
@@ -305,7 +305,7 @@ GSList* test_subject_return_slist_of_strings_transfer_container(TestSubject* sel
  * Used to test out params and get_ remove, this must be `TestSubject#out_param`
  * out param will have in: 1, begin: 2 as value
  */
-void test_subject_get_out_param(TestSubject* self, TestStruct *out);
+void test_subject_get_out_param(TestSubject* self, TestStruct* out);
 
 /**
  * test_subject_array_of_g_values:
@@ -315,7 +315,7 @@ void test_subject_get_out_param(TestSubject* self, TestStruct *out);
  *
  * Used to test GValue in array parameters,
  */
-const gchar* test_subject_array_of_g_values(TestSubject* self, int n, GValue *values);
+const gchar* test_subject_array_of_g_values(TestSubject* self, int n, GValue* values);
 
 /**
  * test_subject_g_value_parameter:
@@ -398,6 +398,6 @@ void test_subject_raise_file_error2(TestSubject* self, int foo, GError** error);
  * test_subject_return_myself_as_interface:
  * Returns: (transfer none):
  */
-TestIface *test_subject_return_myself_as_interface(TestIface  *self);
+TestIface* test_subject_return_myself_as_interface(TestIface* self);
 
 G_END_DECLS
