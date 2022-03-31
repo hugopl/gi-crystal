@@ -32,4 +32,4 @@ jobs:
       - name: Linter
         run: crystal tool format --check
       - name: Run tests
-        run: make oldlibs_test
+        run: make oldlibs-test
