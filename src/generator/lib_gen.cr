@@ -29,7 +29,7 @@ module Generator
       namespace.functions.each do |func|
         all << generate_c_function(func)
       end
-      all.sort_by! { |el| el.lines.last }
+      all.sort_by!(&.lines.last)
     end
 
     private def type_init_func(info : RegisteredTypeInfo)
