@@ -1,13 +1,14 @@
 require "./wrapper_util"
 require "./property_holder"
 require "./method_holder"
-require "./signal_gen"
+require "./signal_holder"
 
 module Generator
   class ObjectGen < FileGen
     include WrapperUtil
     include PropertyHolder
     include MethodHolder
+    include SignalHolder
 
     private getter object : ObjectInfo
     @all_properties : Array(PropertyInfo)?
@@ -67,12 +68,6 @@ module Generator
         s << "require \"."
         s << "./" << module_dir(info.namespace) if info.namespace != @object.namespace
         s << '/' << info.name.underscore << "\"\n"
-      end
-    end
-
-    private macro render_signals
-      @object.signals.each do |signal|
-       SignalGen.new(@object, signal).generate(io)
       end
     end
   end

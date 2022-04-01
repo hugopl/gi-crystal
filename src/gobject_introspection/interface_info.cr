@@ -5,6 +5,7 @@ module GObjectIntrospection
   class InterfaceInfo < RegisteredTypeInfo
     include FunctionInfoContainer
     include PropertyInfoContainer
+    include SignalInfoContainer
 
     @prerequisites : Array(InterfaceInfo)?
 
@@ -14,6 +15,10 @@ module GObjectIntrospection
 
     def properties : Array(PropertyInfo)
       properties(->LibGIRepository.g_interface_info_get_n_properties, ->LibGIRepository.g_interface_info_get_property)
+    end
+
+    def signals : Array(SignalInfo)
+      signals(->LibGIRepository.g_interface_info_get_n_signals, ->LibGIRepository.g_interface_info_get_signal)
     end
 
     def prerequisites : Array(InterfaceInfo)

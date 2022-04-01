@@ -2,11 +2,11 @@ module Generator
   class SignalGen < Generator
     include WrapperUtil
 
-    getter obj : ObjectInfo
+    getter obj : RegisteredTypeInfo
     getter signal : SignalInfo
     @signal_args : Array(ArgInfo)?
 
-    def initialize(@obj : ObjectInfo, @signal : SignalInfo)
+    def initialize(@obj : ObjectInfo | InterfaceInfo, @signal : SignalInfo)
       super(@obj.namespace)
     end
 

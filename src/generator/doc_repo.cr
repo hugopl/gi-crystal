@@ -71,7 +71,7 @@ module Generator
       print_doc(io, xpath) if xpath
     end
 
-    def xpath(obj : ObjectInfo, signal : SignalInfo)
+    def xpath(obj : RegisteredTypeInfo, signal : SignalInfo)
       "/xmlns:repository/xmlns:namespace/xmlns:class[@name=\"#{obj.name}\"]" \
       "/glib:signal[@name=\"#{signal.name}\"]/xmlns:doc[1]"
     end

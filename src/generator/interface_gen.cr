@@ -1,11 +1,13 @@
 require "./property_holder"
 require "./method_holder"
+require "./signal_holder"
 
 module Generator
   class InterfaceGen < FileGen
     include WrapperUtil
     include PropertyHolder
     include MethodHolder
+    include SignalHolder
 
     @iface : InterfaceInfo
 

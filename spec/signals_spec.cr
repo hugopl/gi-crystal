@@ -62,4 +62,17 @@ describe "GObject signals" do
   end
 
   pending "test emit signals with return values"
+
+  context "when in interfaces" do
+    it "can receive details and connect to a block" do
+      iface = Test::Subject.new.return_myself_as_interface
+      iface.should be_a(Test::Iface)
+      value = 0
+      iface.iface_int32_signal.connect do |v|
+        value = v
+      end
+      iface.iface_int32_signal.emit(32)
+      value.should eq(32)
+    end
+  end
 end

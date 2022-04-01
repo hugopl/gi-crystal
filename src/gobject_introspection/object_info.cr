@@ -1,12 +1,14 @@
 require "./field_info"
 require "./function_info"
 require "./property_info"
+require "./signal_info"
 
 module GObjectIntrospection
   class ObjectInfo < RegisteredTypeInfo
     include FieldInfoContainer
     include FunctionInfoContainer
     include PropertyInfoContainer
+    include SignalInfoContainer
 
     @interfaces : Array(InterfaceInfo)?
     @properties : Array(PropertyInfo)?
@@ -34,22 +36,16 @@ module GObjectIntrospection
       properties(->LibGIRepository.g_object_info_get_n_properties, ->LibGIRepository.g_object_info_get_property)
     end
 
+    def signals : Array(SignalInfo)
+      signals(->LibGIRepository.g_object_info_get_n_signals, ->LibGIRepository.g_object_info_get_signal)
+    end
+
     def interfaces : Array(InterfaceInfo)
       @interfaces ||= begin
         n = LibGIRepository.g_object_info_get_n_interfaces(self)
         Array.new(n) do |i|
           ptr = LibGIRepository.g_object_info_get_interface(self, i)
           InterfaceInfo.new(ptr)
-        end
-      end
-    end
-
-    def signals : Array(SignalInfo)
-      @signals ||= begin
-        n = LibGIRepository.g_object_info_get_n_signals(self)
-        Array.new(n) do |i|
-          ptr = LibGIRepository.g_object_info_get_signal(self, i)
-          SignalInfo.new(ptr)
         end
       end
     end
