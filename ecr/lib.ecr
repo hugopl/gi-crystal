@@ -39,6 +39,7 @@ lib <%= to_lib_namespace(namespace) %>
                             data : Void*,
                             destroy_data : Void* -> Nil,
                             flags : UInt32) : UInt64
+  @[Raises]
   fun g_signal_emit_by_name(instance : Void*, detailed_signal : UInt8*, ...)
 
   # Null terminated strings GType, used by GValue
