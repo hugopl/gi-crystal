@@ -7,6 +7,7 @@ module Generator
     getter includes : Set(Path)
     getter handmade : Set(String)
     getter ignore : Set(String)
+    getter execute_callback : Set(String)
 
     getter base_path : Path
 
@@ -26,12 +27,13 @@ module Generator
       end
       @handmade = read_list(data, "handmade")
       @ignore = read_list(data, "ignore")
+      @execute_callback = read_list(data, "execute_callback")
     end
 
     # Constructs an empty binding config
     def initialize(@namespace, @version)
       @includes = Set(Path).new
-      @handmade = @ignore = Set(String).new
+      @execute_callback = @handmade = @ignore = Set(String).new
       @base_path = Path.new(".")
     end
 
