@@ -40,6 +40,7 @@ module Generator
       symbol = func_info.symbol
       with_log_scope("#{to_lib_namespace(func_info.namespace)}.#{symbol}") do
         String.build do |io|
+          io << "@[Raises]\n" if symbol.in? @config.execute_callback
           io << "fun " << symbol
           generate_c_function_args(io, func_info)
           io << " : " << to_lib_type(func_info.return_type, structs_as_void: true)
