@@ -79,3 +79,7 @@ ignore:
  - ParamSpecVariant
  - SignalQuery
  - WeakRef
+
+execute_callback:
+ - g_signal_emit_by_name
+ - g_signal_emitv
