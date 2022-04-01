@@ -273,3 +273,6 @@ ignore:
  - TreeNode
  - Uri
  - UriParamsIter
+
+execute_callback:
+ - g_main_loop_run
