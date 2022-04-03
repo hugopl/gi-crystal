@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.7.0] 2022-04-03
+
+## Added
+- Better code blocks in documentation (thanks @GeopJr).
+- It's possible to add `@[Raises]` annotation on functiosn that can executa a callback (thanks @BlobCodes).
+
+## Fixed
+- Structs with non pointers struct attributes works as expected.
+- Structs comparisson now are made by `memcmp`.
+- Use the correct unref function for GLib types.
+- Fix Makefile to work with parallel jobs.
+- Generate interface signals.
+
 ## [0.6.0] 2022-03-02
 ### Changed
 - Bump required Crystal version to 1.3.2 since I'm only testing with this version 🤷️.
