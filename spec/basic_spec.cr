@@ -198,6 +198,11 @@ describe "GObject Binding" do
       subject = Test::Subject.new
       subject.receive_nullable_object(subject).should eq(0)
     end
+
+    it "are hidden when also optional" do
+      subject = Test::Subject.new
+      subject.nullable_optimal_parameter.should eq(42)
+    end
   end
 
   describe "return values" do
