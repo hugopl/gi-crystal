@@ -52,6 +52,8 @@ module <%= namespace_name %>
     end
   <% end %>
 
+  <% render_methods %>
+
   # Errors
   <% enums.each do |enum_| %>
     <%= next unless enum_.error_domain %>

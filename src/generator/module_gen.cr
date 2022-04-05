@@ -10,6 +10,7 @@ require "./lib_gen"
 module Generator
   class ModuleGen < FileGen
     include WrapperUtil
+    include MethodHolder
 
     @objects : Array(ObjectGen)
     @structs : Array(StructGen)
@@ -32,6 +33,10 @@ module Generator
     end
 
     delegate version, to: @namespace
+
+    def object
+      @namespace
+    end
 
     def scope : String
       namespace.name

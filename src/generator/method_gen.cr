@@ -7,7 +7,7 @@ module Generator
     alias MethodReturnType = TypeInfo | ArgInfo
 
     private getter method : FunctionInfo
-    getter object : RegisteredTypeInfo
+    getter object : RegisteredTypeInfo | Namespace
     @method_return_type : MethodReturnType?
     @args_strategies : Array(ArgStrategy)
 

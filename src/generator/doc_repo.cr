@@ -114,6 +114,9 @@ module Generator
       "/xmlns:#{type}[@name=\"#{func.name}\"]/xmlns:doc[1]"
     end
 
+    private def xpath(obj : Namespace, func : FunctionInfo)
+    end
+
     def crystallize_doc(doc : String) : String
       crystallized_doc = doc
       crystallized_doc = crystallized_doc.gsub(/```([a-zA-Z]+)\n/, "\n\nWARNING: **⚠️ The following code is in \\1 ⚠️**\n```\\1\n")
