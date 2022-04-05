@@ -193,10 +193,13 @@ module Generator
       return if strategy.remove_from_declaration?
 
       arg = strategy.arg
-      return if !arg.ownership_transfer.full? || !arg.type_info.tag.interface?
+      return if !arg.ownership_transfer.full?
+
+      obj = arg.type_info.interface.as?(ObjectInfo)
+      return if obj.nil?
 
       add_implementation do |io|
-        io << "LibGObject.g_object_ref(" << to_identifier(arg.name) << ")"
+        io << "LibGObject." << obj.ref_function << '(' << to_identifier(arg.name) << ")"
       end
     end
   end

@@ -14,7 +14,7 @@ module <%= namespace_name %>
     # :nodoc:
     def initialize(@pointer, transfer : GICrystal::Transfer)
       <% if object.parent.nil? %>
-        LibGObject.g_object_ref(self)  unless transfer.full?
+        LibGObject.<%= object.ref_function %>(self) unless transfer.full?
       <% else %>
         super
       <% end %>

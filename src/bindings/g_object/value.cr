@@ -29,6 +29,7 @@ module GObject
       when UInt64        then LibGObject.g_value_set_uint64(ptr, value)
       when UInt8         then LibGObject.g_value_set_uchar(ptr, value)
       when GLib::Variant then LibGObject.g_value_set_variant(ptr, value)
+      when ParamSpec     then LibGObject.g_value_set_param(ptr, value)
       when Enumerable(String)
         array = value.map(&.to_unsafe).to_a << Pointer(UInt8).null
         LibGObject.g_value_set_boxed(ptr, array)
@@ -54,6 +55,7 @@ module GObject
       when UInt8              then TYPE_UCHAR
       when Enumerable(String) then TYPE_STRV
       when GLib::Variant      then TYPE_VARIANT
+      when ParamSpec          then TYPE_PARAM
       else
         raise ArgumentError.new("Unable to wrap a #{value.class} into a GValue, probably not implemented.")
       end

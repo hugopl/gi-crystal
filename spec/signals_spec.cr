@@ -1,13 +1,15 @@
 require "./spec_helper"
 
 # Used on basic signal tests
-def full_notify_slot(gobj : GObject::Object) : Nil
-  GlobalVar.value = "#{GlobalVar.value}\nfull_notify_slot called #{gobj.to_unsafe}".strip
+def full_notify_slot(gobj : GObject::Object, pspec : GObject::ParamSpec) : Nil
+  prev_value = GlobalVar.value
+  GlobalVar.value = "#{prev_value}\n#{pspec.name} changed! full_notify_slot called #{gobj.to_unsafe}.".strip
 end
 
 # Used on basic signal tests
-def lean_notify_slot : Nil
-  GlobalVar.value = "#{GlobalVar.value}\nlean_notify_slot called".strip
+def lean_notify_slot(pspec : GObject::ParamSpec) : Nil
+  prev_value = GlobalVar.value
+  GlobalVar.value = "#{prev_value}\n#{pspec.name} changed! lean_notify_slot called.".strip
 end
 
 describe "GObject signals" do
@@ -24,28 +26,28 @@ describe "GObject signals" do
 
   it "can receive details and connect to a non-closure slot without receiving the sender" do
     subject = Test::Subject.new
-    subject.notify_signal["string"].connect(->lean_notify_slot)
+    subject.notify_signal["string"].connect(->lean_notify_slot(GObject::ParamSpec))
     GlobalVar.value = ""
     subject.string = "new value"
-    GlobalVar.value.should eq("lean_notify_slot called")
+    GlobalVar.value.should eq("string changed! lean_notify_slot called.")
   end
 
   it "can receive details and connect to a non-closure slot receiving the sender" do
     subject = Test::Subject.new
-    subject.notify_signal["string"].connect(->full_notify_slot(GObject::Object))
+    subject.notify_signal["string"].connect(->full_notify_slot(GObject::Object, GObject::ParamSpec))
     GlobalVar.value = ""
     subject.string = "new value"
-    GlobalVar.value.should eq("full_notify_slot called #{subject.to_unsafe}")
+    GlobalVar.value.should eq("string changed! full_notify_slot called #{subject.to_unsafe}.")
   end
 
   it "can connect a after signal" do
     subject = Test::Subject.new
-    subject.notify_signal["string"].connect_after(->lean_notify_slot)
-    subject.notify_signal["string"].connect(->full_notify_slot(GObject::Object))
+    subject.notify_signal["string"].connect_after(->lean_notify_slot(GObject::ParamSpec))
+    subject.notify_signal["string"].connect(->full_notify_slot(GObject::Object, GObject::ParamSpec))
     GlobalVar.value = ""
     subject.string = "new value"
-    GlobalVar.value.should eq("full_notify_slot called #{subject.to_unsafe}\n" \
-                              "lean_notify_slot called")
+    GlobalVar.value.should eq("string changed! full_notify_slot called #{subject.to_unsafe}.\n" \
+                              "string changed! lean_notify_slot called.")
   end
 
   it "can have signals with nullable parameters" do

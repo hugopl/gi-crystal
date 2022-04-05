@@ -26,6 +26,11 @@ lib <%= to_lib_namespace(namespace) %>
 <% elsif g_object? %>
   # Functions not declared by GObj Introspection
 
+  # Param spec ref/unref
+  fun g_param_spec_ref_sink(pspec : Void*)
+  fun g_param_spec_ref(pspec : Void*)
+  fun g_param_spec_unref(pspec : Void*)
+
   # Property related functions
   fun g_object_get(object : Pointer(Void), property_name : Pointer(LibC::Char), ...)
   fun g_object_set(object : Pointer(Void), property_name : Pointer(LibC::Char), ...)
