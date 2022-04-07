@@ -11,15 +11,42 @@ handmade:
 
 # All GLib class and functions that have Crystal versions in the stdlib must be removed from bindings
 ignore:
+ - Array
+ - AsyncQueue
+ - BookmarkFile
+ - ByteArray
+ - Checksum
+ - ChecksumType
+ - Cond
+ - Data
+ - Date
+ - DateTime
+ - DebugKey
+ - Dir
  - g_access
  - g_aligned_alloc
  - g_aligned_alloc0
  - g_aligned_free
- - g_assert_warning
+ - g_ascii_digit_value
+ - g_ascii_dtostr
+ - g_ascii_formatd
+ - g_ascii_strcasecmp
+ - g_ascii_strdown
+ - g_ascii_string_to_signed
+ - g_ascii_string_to_unsigned
+ - g_ascii_strncasecmp
+ - g_ascii_strtod
+ - g_ascii_strtoll
+ - g_ascii_strtoull
+ - g_ascii_strup
+ - g_ascii_tolower
+ - g_ascii_toupper
+ - g_ascii_xdigit_value
  - g_assertion_message
  - g_assertion_message_cmpstr
  - g_assertion_message_cmpstrv
  - g_assertion_message_error
+ - g_assert_warning
  - g_atexit
  - g_atomic_int_add
  - g_atomic_int_and
@@ -49,47 +76,155 @@ ignore:
  - g_atomic_ref_count_dec
  - g_atomic_ref_count_inc
  - g_atomic_ref_count_init
+ - g_base64_decode
+ - g_base64_decode_inplace
+ - g_base64_encode
+ - g_base64_encode_close
+ - g_base64_encode_step
+ - g_basename
  - g_bit_lock
  - g_bit_trylock
  - g_bit_unlock
  - g_bookmark_file_error_quark
+ - g_build_filenamev
+ - g_build_pathv
+ - g_byte_array_free
+ - g_byte_array_free_to_bytes
+ - g_byte_array_new
+ - g_byte_array_new_take
+ - g_byte_array_steal
+ - g_byte_array_unref
+ - g_bytes_unref
+ - g_bytes_unref_to_array
+ - g_bytes_unref_to_data
+ - g_canonicalize_filename
+ - g_chdir
+ - g_checksum_type_get_length
+ - g_child_watch_add_full
+ - g_child_watch_source_new
  - g_clear_error
  - g_close
+ - g_compute_checksum_for_bytes
+ - g_compute_checksum_for_data
+ - g_compute_checksum_for_string
+ - g_compute_hmac_for_bytes
+ - g_compute_hmac_for_data
+ - g_compute_hmac_for_string
+ - g_convert
  - g_convert_error_quark
+ - g_convert_with_fallback
+ - g_datalist_foreach
+ - g_datalist_get_data
+ - g_datalist_get_flags
+ - g_datalist_id_get_data
+ - g_datalist_set_flags
+ - g_datalist_unset_flags
  - g_dataset_destroy
  - g_dataset_foreach
  - g_dataset_id_get_data
+ - g_date_get_days_in_month
+ - g_date_get_monday_weeks_in_year
+ - g_date_get_sunday_weeks_in_year
+ - g_date_is_leap_year
+ - g_date_strftime
+ - g_date_valid_day
+ - g_date_valid_dmy
+ - g_date_valid_julian
+ - g_date_valid_month
+ - g_date_valid_weekday
+ - g_date_valid_year
  - g_dcgettext
  - g_dgettext
+ - g_direct_equal
+ - g_direct_hash
+ - g_dir_make_tmp
  - g_dngettext
+ - g_double_equal
+ - g_double_hash
  - g_dpgettext
  - g_dpgettext2
+ - g_environ_getenv
+ - g_environ_setenv
+ - g_environ_unsetenv
+ - g_error_copy
  - g_file_error_from_errno
  - g_file_error_quark
+ - g_file_get_contents
+ - g_filename_display_basename
+ - g_filename_display_name
+ - g_filename_from_uri
+ - g_filename_from_utf8
+ - g_filename_to_uri
+ - g_filename_to_utf8
+ - g_file_open_tmp
+ - g_file_read_link
+ - g_file_set_contents
+ - g_file_set_contents_full
+ - g_file_test
+ - g_find_program_in_path
+ - g_format_size
+ - g_format_size_full
+ - g_free
  - g_get_charset
  - g_get_codeset
  - g_get_console_charset
+ - g_get_current_dir
  - g_get_current_time
+ - g_getenv
+ - g_get_environ
+ - g_get_filename_charsets
+ - g_get_home_dir
+ - g_get_host_name
  - g_get_language_names
  - g_get_language_names_with_category
  - g_get_locale_variants
+ - g_get_monotonic_time
  - g_get_num_processors
+ - g_get_real_name
  - g_get_real_time
+ - g_get_tmp_dir
+ - g_get_user_name
+ - g_hash_table_add
+ - g_hash_table_contains
+ - g_hash_table_destroy
+ - g_hash_table_insert
+ - g_hash_table_lookup
+ - g_hash_table_lookup_extended
  - g_hash_table_new_similar
+ - g_hash_table_remove
+ - g_hash_table_remove_all
+ - g_hash_table_replace
+ - g_hash_table_size
+ - g_hash_table_steal
+ - g_hash_table_steal_all
+ - g_hash_table_steal_extended
+ - g_hash_table_unref
+ - g_hook_destroy
+ - g_hook_destroy_link
+ - g_hook_free
+ - g_hook_insert_before
+ - g_hook_prepend
+ - g_hook_unref
  - g_hostname_is_ascii_encoded
  - g_hostname_is_ip_address
  - g_hostname_is_non_ascii
  - g_hostname_to_ascii
  - g_hostname_to_unicode
+ - g_idle_add_full
  - g_int64_equal
  - g_int64_hash
  - g_int_equal
- - g_int_hash
  - g_intern_static_string
  - g_intern_string
+ - g_int_hash
+ - g_io_add_watch_full
  - g_io_channel_error_from_errno
  - g_io_channel_error_quark
+ - g_io_create_watch
  - g_key_file_error_quark
+ - g_key_file_load_from_bytes
+ - g_listenv
+ - g_locale_from_utf8
  - g_locale_to_utf8
  - g_log_default_handler
  - g_log_get_debug_enabled
@@ -109,16 +244,18 @@ ignore:
  - g_log_writer_journald
  - g_log_writer_standard_streams
  - g_log_writer_supports_color
+ - g_main_context_add_poll
+ - g_main_context_remove_poll
  - g_malloc
  - g_malloc0
  - g_malloc0_n
  - g_malloc_n
  - g_markup_error_quark
+ - g_memdup
+ - g_memdup2
  - g_mem_is_system_malloc
  - g_mem_profile
  - g_mem_set_vtable
- - g_memdup
- - g_memdup2
  - g_mkdir_with_parents
  - g_nullify_pointer
  - g_number_parser_error_quark
@@ -126,13 +263,21 @@ ignore:
  - g_once_init_leave
  - g_option_error_quark
  - g_parse_debug_string
+ - g_path_get_basename
+ - g_path_get_dirname
+ - g_path_is_absolute
+ - g_path_skip_root
+ - g_pattern_match
  - g_pattern_match_simple
+ - g_pattern_match_string
+ - g_pattern_spec_free
  - g_pointer_bit_lock
  - g_pointer_bit_trylock
  - g_pointer_bit_unlock
+ - g_poll
  - g_prefix_error_literal
  - g_propagate_error
- - g_ascii_digit_value
+ - g_quark_from_static_string
  - g_random_double
  - g_random_double_range
  - g_random_int
@@ -157,9 +302,24 @@ ignore:
  - g_ref_string_new_intern
  - g_ref_string_new_len
  - g_ref_string_release
+ - g_regex_check_replacement
+ - g_regex_error_quark
+ - g_regex_escape_nul
+ - g_regex_escape_string
+ - g_regex_match_simple
+ - g_regex_split_simple
  - g_rmdir
- - g_set_error_literal
+ - g_sequence_get
+ - g_sequence_insert_before
+ - g_sequence_move
+ - g_sequence_move_range
+ - g_sequence_range_get_midpoint
+ - g_sequence_remove
+ - g_sequence_remove_range
+ - g_sequence_set
+ - g_sequence_swap
  - g_setenv
+ - g_set_error_literal
  - g_shell_error_quark
  - g_shell_parse_argv
  - g_shell_quote
@@ -172,7 +332,10 @@ ignore:
  - g_slice_get_config
  - g_slice_get_config_state
  - g_slice_set_config
- - g_ascii_dtostr
+ - g_source_add_poll
+ - g_source_remove_by_funcs_user_data
+ - g_source_remove_by_user_data
+ - g_source_remove_poll
  - g_spawn_async
  - g_spawn_async_with_fds
  - g_spawn_async_with_pipes
@@ -186,12 +349,6 @@ ignore:
  - g_spawn_exit_error_quark
  - g_spawn_sync
  - g_stpcpy
- - g_str_equal
- - g_str_has_prefix
- - g_str_has_suffix
- - g_str_hash
- - g_str_is_ascii
- - g_str_match_string
  - g_strcanon
  - g_strcasecmp
  - g_strchomp
@@ -201,13 +358,19 @@ ignore:
  - g_strdelimit
  - g_strdown
  - g_strdup
+ - g_str_equal
  - g_strerror
  - g_strescape
  - g_strfreev
+ - g_str_hash
+ - g_str_has_prefix
+ - g_str_has_suffix
  - g_strip_context
+ - g_str_is_ascii
  - g_strjoinv
  - g_strlcat
  - g_strlcpy
+ - g_str_match_string
  - g_strncasecmp
  - g_strndup
  - g_strnfill
@@ -216,7 +379,9 @@ ignore:
  - g_strrstr_len
  - g_strsignal
  - g_strstr_len
+ - g_str_to_ascii
  - g_strtod
+ - g_str_tokenize_and_fold
  - g_strup
  - g_strv_contains
  - g_strv_equal
@@ -237,152 +402,95 @@ ignore:
  - g_test_log_type_name
  - g_test_queue_destroy
  - g_test_queue_free
- - g_ascii_formatd
- - g_ascii_strcasecmp
- - g_ascii_strdown
- - g_ascii_string_to_signed
- - g_ascii_string_to_unsigned
- - g_ascii_strncasecmp
- - g_ascii_strtod
- - g_ascii_strtoll
- - g_ascii_strtoull
- - g_ascii_strup
- - g_ascii_tolower
- - g_ascii_toupper
- - g_ascii_xdigit_value
- - g_base64_decode
- - g_base64_decode_inplace
- - g_base64_encode
- - g_base64_encode_close
- - g_base64_encode_step
- - g_basename
- - g_build_filenamev
- - g_build_pathv
- - g_byte_array_free
- - g_byte_array_free_to_bytes
- - g_byte_array_new
- - g_byte_array_new_take
- - g_byte_array_steal
- - g_byte_array_unref
- - g_bytes_unref
- - g_bytes_unref_to_array
- - g_bytes_unref_to_data
- - g_canonicalize_filename
- - g_chdir
- - g_checksum_type_get_length
- - g_compute_checksum_for_bytes
- - g_compute_checksum_for_data
- - g_compute_checksum_for_string
- - g_compute_hmac_for_bytes
- - g_compute_hmac_for_data
- - g_compute_hmac_for_string
- - g_convert
- - g_convert_with_fallback
- - g_datalist_foreach
- - g_datalist_get_data
- - g_datalist_get_flags
- - g_datalist_id_get_data
- - g_datalist_set_flags
- - g_datalist_unset_flags
- - g_date_get_days_in_month
- - g_date_get_monday_weeks_in_year
- - g_date_get_sunday_weeks_in_year
- - g_date_is_leap_year
- - g_date_strftime
- - g_date_valid_day
- - g_date_valid_dmy
- - g_date_valid_julian
- - g_date_valid_month
- - g_date_valid_weekday
- - g_date_valid_year
- - g_direct_equal
- - g_direct_hash
- - g_dir_make_tmp
- - g_double_equal
- - g_double_hash
- - g_environ_getenv
- - g_environ_setenv
- - g_environ_unsetenv
- - g_error_copy
- - g_file_get_contents
- - g_filename_display_basename
- - g_filename_display_name
- - g_filename_from_uri
- - g_filename_from_utf8
- - g_filename_to_uri
- - g_filename_to_utf8
- - g_file_open_tmp
- - g_file_read_link
- - g_file_set_contents
- - g_file_set_contents_full
- - g_file_test
- - g_find_program_in_path
- - g_format_size
- - g_format_size_full
- - g_free
- - g_get_current_dir
- - g_getenv
- - g_get_environ
- - g_get_filename_charsets
- - g_get_home_dir
- - g_get_host_name
- - g_get_monotonic_time
- - g_get_tmp_dir
- - g_hash_table_add
- - g_hash_table_contains
- - g_hash_table_destroy
- - g_hash_table_insert
- - g_hash_table_lookup
- - g_hash_table_lookup_extended
- - g_hash_table_remove
- - g_hash_table_remove_all
- - g_hash_table_replace
- - g_hash_table_size
- - g_hash_table_steal
- - g_hash_table_steal_all
- - g_hash_table_steal_extended
- - g_hash_table_unref
- - g_hook_destroy
- - g_hook_destroy_link
- - g_hook_free
- - g_hook_insert_before
- - g_hook_prepend
- - g_hook_unref
- - g_idle_add_full
- - g_io_add_watch_full
- - g_io_create_watch
- - g_key_file_load_from_bytes
- - g_listenv
- - g_locale_from_utf8
- - g_main_context_add_poll
- - g_main_context_remove_poll
- - g_pattern_match
- - g_pattern_match_string
- - g_pattern_spec_free
- - g_poll
- - g_quark_from_static_string
- - g_regex_check_replacement
- - g_regex_error_quark
- - g_regex_escape_nul
- - g_regex_escape_string
- - g_regex_match_simple
- - g_regex_split_simple
- - g_sequence_get
- - g_sequence_insert_before
- - g_sequence_move
- - g_sequence_move_range
- - g_sequence_range_get_midpoint
- - g_sequence_remove
- - g_sequence_remove_range
- - g_sequence_set
- - g_sequence_swap
- - g_source_add_poll
- - g_source_remove_poll
- - g_str_to_ascii
- - g_str_tokenize_and_fold
+ - g_test_rand_double
+ - g_test_rand_double_range
+ - g_test_rand_int
+ - g_test_rand_int_range
+ - g_test_run
  - g_test_run_suite
+ - g_test_set_nonfatal_assertions
+ - g_test_skip
+ - g_test_subprocess
+ - g_test_summary
+ - g_test_timer_elapsed
+ - g_test_timer_last
+ - g_test_timer_start
+ - g_test_trap_assertions
+ - g_test_trap_fork
+ - g_test_trap_has_passed
+ - g_test_trap_reached_timeout
+ - g_test_trap_subprocess
+ - g_thread_error_quark
+ - g_thread_exit
+ - g_thread_pool_get_max_idle_time
+ - g_thread_pool_get_max_unused_threads
+ - g_thread_pool_get_num_unused_threads
+ - g_thread_pool_set_max_idle_time
+ - g_thread_pool_set_max_unused_threads
+ - g_thread_pool_stop_unused_threads
+ - g_thread_self
+ - g_thread_yield
  - g_timeout_add_full
  - g_timeout_add_seconds_full
+ - g_time_val_from_iso8601
+ - g_trash_stack_height
+ - g_trash_stack_peek
+ - g_trash_stack_pop
+ - g_trash_stack_push
+ - g_try_malloc
+ - g_try_malloc0
+ - g_try_malloc0_n
+ - g_try_malloc_n
+ - g_try_realloc
+ - g_try_realloc_n
+ - g_ucs4_to_utf16
+ - g_ucs4_to_utf8
+ - g_unichar_break_type
+ - g_unichar_combining_class
+ - g_unichar_compose
+ - g_unichar_decompose
+ - g_unichar_digit_value
+ - g_unichar_fully_decompose
+ - g_unichar_get_mirror_char
+ - g_unichar_get_script
+ - g_unichar_isalnum
+ - g_unichar_isalpha
+ - g_unichar_iscntrl
+ - g_unichar_isdefined
+ - g_unichar_isdigit
+ - g_unichar_isgraph
+ - g_unichar_islower
+ - g_unichar_ismark
+ - g_unichar_isprint
+ - g_unichar_ispunct
+ - g_unichar_isspace
+ - g_unichar_istitle
+ - g_unichar_isupper
+ - g_unichar_iswide
+ - g_unichar_iswide_cjk
+ - g_unichar_isxdigit
+ - g_unichar_iszerowidth
+ - g_unichar_tolower
+ - g_unichar_totitle
+ - g_unichar_toupper
+ - g_unichar_to_utf8
+ - g_unichar_type
+ - g_unichar_validate
+ - g_unichar_xdigit_value
+ - g_unicode_canonical_decomposition
+ - g_unicode_canonical_ordering
+ - g_unicode_script_from_iso15924
+ - g_unicode_script_to_iso15924
+ - g_unix_error_quark
+ - g_unix_fd_add_full
+ - g_unix_fd_source_new
+ - g_unix_get_passwd_entry
+ - g_unix_open_pipe
+ - g_unix_set_fd_nonblocking
+ - g_unix_signal_add_full
+ - g_unix_signal_source_new
+ - g_unlink
+ - g_unsetenv
  - g_uri_build
  - g_uri_build_with_user
  - g_uri_error_quark
@@ -434,18 +542,17 @@ ignore:
  - g_utf8_validate_len
  - g_uuid_string_is_valid
  - g_uuid_string_random
- - Array
- - AsyncQueue
- - ByteArray
- - BookmarkFile
- - Checksum
- - ChecksumType
- - Cond
- - Data
- - Date
- - DateTime
- - DebugKey
- - Dir
+ - g_variant_get_gtype
+ - g_variant_is_object_path
+ - g_variant_is_signature
+ - g_variant_parse
+ - g_variant_parse_error_print_context
+ - g_variant_parse_error_quark
+ - g_variant_parser_get_error_quark
+ - g_variant_type_checked_
+ - g_variant_type_string_get_depth_
+ - g_variant_type_string_is_valid
+ - g_variant_type_string_scan
  - HashTable
  - HashTableIter
  - Hmac
