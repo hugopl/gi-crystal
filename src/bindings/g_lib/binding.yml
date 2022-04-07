@@ -607,3 +607,5 @@ ignore:
 
 execute_callback:
  - g_main_loop_run
+ - g_main_context_invoke_full
+ - g_main_context_invoke

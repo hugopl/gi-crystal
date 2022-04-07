@@ -170,3 +170,4 @@ ignore:
 
 execute_callback:
  - g_signal_emitv
+ - g_closure_invoke
