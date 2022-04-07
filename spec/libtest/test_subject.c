@@ -418,6 +418,10 @@ static gchar* g_value_to_string(gchar* buffer, GValue* value) {
   case G_TYPE_ENUM:
     buffer += sprintf(buffer, "%d", g_value_get_enum(value));
     break;
+  case G_TYPE_PARAM:
+    GParamSpec* param = g_value_get_param(value);
+    buffer += sprintf(buffer, "%s", g_param_spec_get_name(param));
+    break;
   default:
     *buffer++ = '?';
   }

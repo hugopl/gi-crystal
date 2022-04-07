@@ -18,6 +18,7 @@ describe "GValue" do
     it { Test::Subject.g_value_parameter(Test::Subject.new).should eq("GObject:?;") }
     it { Test::Subject.g_value_parameter(GLib::Variant.new(42)).should eq("GVariant:?;") }
     it { Test::Subject.g_value_parameter(Test::Subject.new.return_myself_as_interface).should eq("GObject:?;") }
+    it { Test::Subject.g_value_parameter(GObject::ParamSpecInt.new("hi", "Hi", ".", 0, 2, 0, :readwrite)).should eq("GParam:hi;") }
   end
 
   context "respond to as_* and as_*?" do
@@ -32,6 +33,10 @@ describe "GValue" do
     it do
       gobj = Test::Subject.new
       GObject::Value.new(gobj).as_gobject.to_unsafe.should eq(gobj.to_unsafe)
+    end
+    it do
+      param = GObject::ParamSpecInt.new("hi", "Hi", ".", 0, 2, 0, :readwrite)
+      GObject::Value.new(param).as_param_spec.to_unsafe.should eq(param.to_unsafe)
     end
   end
 

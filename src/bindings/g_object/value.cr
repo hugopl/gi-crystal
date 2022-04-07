@@ -78,33 +78,35 @@ module GObject
       when TYPE_FLOAT   then LibGObject.g_value_get_float(self)
       when TYPE_INT     then LibGObject.g_value_get_int(self)
       when TYPE_INT64   then LibGObject.g_value_get_int64(self)
-      when TYPE_OBJECT  then GObject::Object.new(LibGObject.g_value_get_object(self), GICrystal::Transfer::None)
+      when TYPE_OBJECT  then GObject::Object.new(LibGObject.g_value_get_object(self), :none)
       when TYPE_STRING  then String.new(LibGObject.g_value_get_string(self))
       when TYPE_UCHAR   then LibGObject.g_value_get_uchar(self)
       when TYPE_UINT    then LibGObject.g_value_get_uint(self)
       when TYPE_UINT64  then LibGObject.g_value_get_uint64(self)
-      when TYPE_VARIANT then GLib::Variant.new(LibGObject.g_value_get_variant(self), GICrystal::Transfer::None)
+      when TYPE_VARIANT then GLib::Variant.new(LibGObject.g_value_get_variant(self), :none)
+      when TYPE_PARAM   then ParamSpec.new(LibGObject.g_value_get_param(self), :none)
       else
         raise ArgumentError.new("Cannot obtain raw value for g_type #{g_type}")
       end
     end
 
     {% for name, type in {
-                           "i8"      => Int8,
-                           "u8"      => UInt8,
-                           "i32"     => Int32,
-                           "i"       => Int32,
-                           "u32"     => UInt32,
-                           "u"       => UInt32,
-                           "i64"     => Int64,
-                           "u64"     => UInt64,
-                           "f32"     => Float32,
-                           "f"       => Float64,
-                           "f64"     => Float64,
-                           "bool"    => Bool,
-                           "s"       => String,
-                           "gobject" => GObject::Object,
-                           "variant" => GLib::Variant,
+                           "i8"         => Int8,
+                           "u8"         => UInt8,
+                           "i32"        => Int32,
+                           "i"          => Int32,
+                           "u32"        => UInt32,
+                           "u"          => UInt32,
+                           "i64"        => Int64,
+                           "u64"        => UInt64,
+                           "f32"        => Float32,
+                           "f"          => Float64,
+                           "f64"        => Float64,
+                           "bool"       => Bool,
+                           "s"          => String,
+                           "gobject"    => GObject::Object,
+                           "variant"    => GLib::Variant,
+                           "param_spec" => GObject::ParamSpec,
                          } %}
 
        def as_{{name.id}} : {{type}}
