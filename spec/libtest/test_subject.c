@@ -391,6 +391,9 @@ static gchar* g_value_to_string(gchar* buffer, GValue* value) {
   buffer += type_name_size;
   *buffer = ':';
   buffer++;
+
+  GParamSpec* param;
+
   switch (value->g_type) {
   case G_TYPE_INT:
     buffer += sprintf(buffer, "%d", g_value_get_int(value));
@@ -423,7 +426,7 @@ static gchar* g_value_to_string(gchar* buffer, GValue* value) {
     buffer += sprintf(buffer, "%d", g_value_get_enum(value));
     break;
   case G_TYPE_PARAM:
-    GParamSpec* param = g_value_get_param(value);
+    param = g_value_get_param(value);
     buffer += sprintf(buffer, "%s", g_param_spec_get_name(param));
     break;
   default:
