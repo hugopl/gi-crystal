@@ -294,6 +294,10 @@ TestFlagFlags test_subject_return_or_on_flags(TestSubject* self, TestFlagFlags f
   return flag1 | flag2;
 }
 
+TestFlagFlags test_subject_return_bad_flag() {
+  return (TestFlagFlags)17;
+}
+
 void test_subject_put_42_on_out_argument(TestSubject* self, int* out) {
   *out = 42;
 }

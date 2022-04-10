@@ -258,7 +258,7 @@ module Generator::Helpers
     when TypeInfo
       convert_to_crystal(var, info, args, transfer)
     when EnumInfo
-      "#{to_crystal_type(info, true)}.from_value(#{var})"
+      "#{to_crystal_type(info, true)}.new(#{var})"
     when ArgInfo
       if info.nullable?
         "(#{var}.null? ? nil : #{convert_to_crystal(var, info.type_info, args, transfer)})"

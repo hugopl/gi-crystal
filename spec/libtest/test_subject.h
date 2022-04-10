@@ -217,6 +217,14 @@ void test_subject_set_setter(TestSubject* self, const gchar* data);
 TestFlagFlags test_subject_return_or_on_flags(TestSubject* self, TestFlagFlags flag1, TestFlagFlags flag2);
 
 /**
+ * test_subject_return_bad_flag:
+ * Returns: A flag with bad values.
+ *
+ * Used to test bad flag values.
+ */
+TestFlagFlags test_subject_return_bad_flag();
+
+/**
  * test_subject_put_42_on_out_argument:
  *
  * Test out arguments

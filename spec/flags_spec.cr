@@ -15,4 +15,11 @@ describe "GObject flags" do
   it "are transformed into enums when they only have the None element" do
     Test::Subject.receive_empty_flags(:none).should eq(Test::EmptyFlags::None)
   end
+
+  it "ignore bad values" do
+    ret = Test::Subject.return_bad_flag
+    ret.option1?.should eq(true)
+    ret.option2?.should eq(false)
+    ret.none?.should eq(false)
+  end
 end
