@@ -21,5 +21,6 @@ describe "GObject flags" do
     ret.option1?.should eq(true)
     ret.option2?.should eq(false)
     ret.none?.should eq(false)
+    ret.to_i.should eq(17)
   end
 end

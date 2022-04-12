@@ -39,6 +39,8 @@ describe "GObject properties" do
     subject.boolean?.should eq(true)
     subject.boolean = false
     subject.boolean?.should eq(false)
+    subject.boolean = true
+    subject.boolean?.should eq(true)
   end
 
   it "can be integers" do

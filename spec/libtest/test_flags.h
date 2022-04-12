@@ -15,7 +15,8 @@ G_BEGIN_DECLS
 typedef enum {
   TEST_FLAG_OPTION1 = 1,
   TEST_FLAG_OPTION2 = 2,
-  TEST_FLAG_ALL = 3
+  TEST_FLAG_ALL = 3,
+  TEST_FLAG_RESERVED = 4 // This flag isn't exported to the bindings, see `test_subject_return_bad_flag()`.
 } TestFlagFlags;
 
 GType test_flag_flags_get_type();
