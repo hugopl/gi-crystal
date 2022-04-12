@@ -152,7 +152,7 @@ static void test_subject_class_init(TestSubjectClass* klass) {
 
   obj_properties[PROP_STRING] = g_param_spec_string("string", "String", "A string property.", "",
                                                     G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-  obj_properties[PROP_BOOLEAN] = g_param_spec_boolean("boolean", "Boolean", "A boolean property.", FALSE,
+  obj_properties[PROP_BOOLEAN] = g_param_spec_boolean("boolean", "Boolean", "A boolean property.", TRUE,
                                                       G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
   obj_properties[PROP_INT32] = g_param_spec_int("int32", "Int32", "A int32 property.", INT_MIN, INT_MAX, 0,
                                                 G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
