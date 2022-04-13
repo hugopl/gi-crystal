@@ -26,6 +26,15 @@ lib <%= to_lib_namespace(namespace) %>
 <% elsif g_object? %>
   # Functions not declared by GObj Introspection
 
+  # Type register
+  fun g_type_register_static_simple(parent_type : UInt64,
+                                    type_name : LibC::Char*,
+                                    class_size : UInt32,
+                                    class_init : ClassInitFunc,
+                                    instance_size : UInt32,
+                                    instance_init : InstanceInitFunc,
+                                    flags : Int32) : UInt64
+
   # Param spec ref/unref
   fun g_param_spec_ref_sink(pspec : Void*)
   fun g_param_spec_ref(pspec : Void*)
@@ -75,8 +84,7 @@ lib <%= to_lib_namespace(namespace) %>
 
 # Structs
 <% namespace.structs.each do |struct_info| -%>
-  <% if struct_info.g_type_struct? -%>
-  <% elsif struct_info.bytesize.zero? -%>
+  <% if struct_info.bytesize.zero? -%>
     type <%= to_type_name(struct_info.name) %> = Void # Struct with zero bytes
   <% else %>
     struct <%= to_type_name(struct_info.name) %> # <%= struct_info.bytesize %> bytes long

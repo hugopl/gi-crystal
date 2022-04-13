@@ -36,6 +36,10 @@ module Generator
       to_crystal_type(@object, false)
     end
 
+    def g_object_type? : Bool
+      object.parent.nil? && type_name == "Object" # loose check that works
+    end
+
     private def all_properties : Array(PropertyInfo)
       @all_properties = begin
         obj = @object

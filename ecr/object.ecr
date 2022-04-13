@@ -4,12 +4,70 @@
 <% end %>
 
 module <%= namespace_name %>
+  <% if g_object_type? %>
+  # :nodoc:
+  annotation GeneratedWrapper
+    # This annotation is used to identify user types that inherit from GObject from binding types that does the same.
+  end
+  <% end %>
+
   <% render_doc(object) -%>
+  @[GObject::GeneratedWrapper]
   class <%= type_name %> <%= parent_class %>
     <% object.interfaces.each do |interface| -%>
     include <%= to_crystal_type(interface, namespace != interface.namespace) %>
     <% end %>
+
     @pointer : Pointer(Void)
+
+    <% if g_object_type? %>
+    macro inherited
+      {% unless @type.annotation(GObject::GeneratedWrapper) %}
+      @@_g_type : UInt64 = 0
+
+      private def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
+        # TODO: Implement properties 😱️
+        # object_class = LibGObject.g_type_check_class_cast(klass, GObject::Object.g_type).as(Pointer(LibGObject::Object))
+      end
+
+      private def self._instance_init(ptr1, ptr2) : Nil
+      end
+
+      def self.g_type : UInt64
+        if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
+          g_type = LibGObject.g_type_register_static_simple({{ @type.superclass.id }}.g_type,
+                                                            {{ @type.stringify }},
+                                                            sizeof(LibGObject::ObjectClass),
+                                                            ->_class_init,
+                                                            sizeof(LibGObject::Object),
+                                                            ->_instance_init,
+                                                            0)
+          LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
+        end
+
+        @@_g_type
+      end
+
+      def initialize
+        @pointer = LibGObject.g_object_newv({{ @type.id }}.g_type, 0, Pointer(Void).null)
+      end
+
+      def initialize(pointer, transfer : GICrystal::Transfer)
+        super
+      end
+
+      # Cast a `GObject::Object` to this type, throw `TypeCastError` if cast can't be made.
+      def self.cast(obj : GObject::Object) : self
+        cast?(obj) || raise TypeCastError.new("can't cast #{typeof(obj).name} to #{{{ @type.stringify }}}")
+      end
+
+      # Cast a `GObject::Object` to this type, returns nil if cast can't be made.
+      def self.cast?(obj : GObject::Object) : self?
+        new(obj.to_unsafe, :none) unless LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
+      end
+      {% end %}
+    end
+    <% end %>
 
     # :nodoc:
     def initialize(@pointer, transfer : GICrystal::Transfer)
