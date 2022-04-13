@@ -26,11 +26,12 @@ module <%= namespace_name %>
       @@_g_type : UInt64 = 0
 
       private def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
-        # TODO: Implement properties 😱️
-        # object_class = LibGObject.g_type_check_class_cast(klass, GObject::Object.g_type).as(Pointer(LibGObject::Object))
       end
 
-      private def self._instance_init(ptr1, ptr2) : Nil
+      private def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
+        gi_instance = instance.as(Pointer(LibGICrystal::Object))
+        gi_instance.value.gc_collected = 0
+        gi_instance.value.crystal_instance_address = 0_u64
       end
 
       def self.g_type : UInt64
@@ -39,7 +40,7 @@ module <%= namespace_name %>
                                                             {{ @type.stringify }},
                                                             sizeof(LibGObject::ObjectClass),
                                                             ->_class_init,
-                                                            sizeof(LibGObject::Object),
+                                                            sizeof(LibGICrystal::Object),
                                                             ->_instance_init,
                                                             0)
           LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
@@ -48,11 +49,24 @@ module <%= namespace_name %>
         @@_g_type
       end
 
-      def initialize
-        @pointer = LibGObject.g_object_newv({{ @type.id }}.g_type, 0, Pointer(Void).null)
+      def self.new
+        instance = {{ @type.id }}.allocate
+        gobj_ptr = LibGObject.g_object_newv({{ @type.id }}.g_type, 0, Pointer(Void).null)
+        LibGObject.g_object_ref_sink(gobj_ptr) if LibGObject.g_object_is_floating(gobj_ptr) == 1
+
+        gobj_ptr.as(Pointer(LibGICrystal::Object)).value.crystal_instance_address = instance.object_id
+
+        instance.initialize(gobj_ptr, :full)
+        GC.add_finalizer(instance)
+        instance
       end
 
-      def initialize(pointer, transfer : GICrystal::Transfer)
+      def initialize(pointer : Pointer(Void), transfer : GICrystal::Transfer)
+        super
+      end
+
+      def finalize
+        @pointer.as(Pointer(LibGICrystal::Object)).value.gc_collected = 1
         super
       end
 
@@ -63,7 +77,22 @@ module <%= namespace_name %>
 
       # Cast a `GObject::Object` to this type, returns nil if cast can't be made.
       def self.cast?(obj : GObject::Object) : self?
-        new(obj.to_unsafe, :none) unless LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
+        return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
+
+        gi_gobject = obj.to_unsafe.as(Pointer(LibGICrystal::Object))
+
+        # If the object was collected by Crystal GC but still alive in C world we can't bring
+        # the crystal object form the dead.
+        raise GICrystal::ObjectCollectedError.new if gi_gobject.value.gc_collected != 0
+
+        instance_address = gi_gobject.value.crystal_instance_address
+        return Pointer({{ @type.id }}).new(instance_address).as({{ @type.id }}) unless instance_address.zero?
+
+        # If the object was born in C world, crystal instance address still NULL
+        # So we create a Crystal instance for it and annotate the crystal instance address
+        new_instance = {{ @type.id }}.new(obj.to_unsafe, :none)
+        new_instance.to_unsafe.as(Pointer(LibGICrystal::Object)).value.crystal_instance_address = new_instance.object_id
+        new_instance
       end
       {% end %}
     end

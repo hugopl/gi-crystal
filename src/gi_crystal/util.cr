@@ -9,6 +9,9 @@ module GICrystal
     Full
   end
 
+  class ObjectCollectedError < RuntimeError
+  end
+
   # :nodoc:
   @[AlwaysInline]
   def to_unsafe(value : String?)
