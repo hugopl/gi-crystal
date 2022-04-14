@@ -6,13 +6,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
-## [0.7.0] 2022-04-03
+## [0.8.0] 2022-04-14
+### Added
+- Module functions are generated.
+- Very basic support for GObject subclassing.
 
-## Added
+### Fixed
+- `g_main_context_invoke`, `g_main_context_invoke_full` and `g_closure_invoke` got the right `@[Raises]` annotation.
+- Don't raise an exception if the C library creates an enum or flag with an invalid value (i.e. with reserved fields).
+- Fix assignment of false value for boolean properties in constructor.
+- Fixed problems with GObject float references.
+
+### Changed
+- ⚠️ `GObject::ParamSpec` if back on bindings, so notify signals need to declare it again.
+- Some more functions were removed from the bindings, see commit `bd3cf6a3f96c5cb60796ef11ccceea242f4625cb` and `2194662ca53648972787c507e0d5e010253f218b`.
+- Removed ameba development dependency.
+
+## [0.7.0] 2022-04-03
+### Added
 - Better code blocks in documentation (thanks @GeopJr).
 - It's possible to add `@[Raises]` annotation on functiosn that can executa a callback (thanks @BlobCodes).
 
-## Fixed
+### Fixed
 - Structs with non pointers struct attributes works as expected.
 - Structs comparisson now are made by `memcmp`.
 - Use the correct unref function for GLib types.
