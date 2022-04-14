@@ -17,9 +17,19 @@ struct _TestFloatRefClass {
 
 /**
  * test_float_ref_new:
+ * Returns: (transfer none):
  *
  * Return a new FloatRef object
  */
 GObject* test_float_ref_new();
+
+/**
+ * test_float_ref_new_with_foo:
+ * @foo: value of foo property
+ * Returns: (transfer none):
+ *
+ * Used to test custom constructors returning float references
+ */
+GObject* test_float_ref_new_with_foo(int foo);
 
 G_END_DECLS

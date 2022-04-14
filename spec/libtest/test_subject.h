@@ -83,15 +83,6 @@ struct _TestSubjectClass {
 };
 
 /**
- * test_subject_new:
- * Returns: (transfer none): Obj instance
- *
- * Used to test constructor that transfer none, like gtk_window_new. So expect the
- * returned object to have ref count of 2.
- */
-GObject* test_subject_new(void);
-
-/**
  * test_subject_new_from_whatever:
  * @value:
  * Returns: (transfer full): Obj instance with value set on string property

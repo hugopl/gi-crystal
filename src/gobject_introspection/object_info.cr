@@ -26,9 +26,10 @@ module GObjectIntrospection
 
     def ref_function : String
       func = LibGIRepository.g_object_info_get_ref_function(self)
-      return "g_object_ref" if func.null?
+      return "g_object_ref_sink" if func.null?
 
       ref_func = String.new(func)
+      # FIXME: g_param_spec_ref_sink seems bad or I'm doing something wrong.
       ref_func == "g_param_spec_ref_sink" ? "g_param_spec_ref" : ref_func
     end
 

@@ -13,7 +13,11 @@ def <%= method_identifier %>(<% render_args_declaration -%>) <%= method_return_t
     # Error check
     <%= namespace_name %>.raise_exception(_error) unless _error.null?
   <% end -%>
+
   # Return value handling
+  <% if method.constructor? && method.caller_owns.none? -%>
+    LibGObject.g_object_ref_sink(_retval)
+  <% end %>
   <%= method_return %>
 end
 

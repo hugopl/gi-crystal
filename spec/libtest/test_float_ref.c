@@ -58,3 +58,7 @@ static void test_float_ref_init(TestFloatRef* self) {
 GObject* test_float_ref_new() {
   return g_object_new(TEST_TYPE_FLOAT_REF, 0, NULL);
 }
+
+GObject* test_float_ref_new_with_foo(int foo) {
+  return g_object_new(TEST_TYPE_FLOAT_REF, "foo", foo, NULL);
+}

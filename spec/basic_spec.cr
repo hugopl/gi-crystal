@@ -25,19 +25,22 @@ describe "GObject Binding" do
       subject.ref_count.should eq(2)
     end
 
-    it "hold a reference even on transfer none constructors" do
-      subject = Test::Subject.new
-      subject.ref_count.should eq(2)
-    end
-
-    it "sink all float references" do
+    it "sink float references on constructors" do
       ref = Test::FloatRef.new
       LibGObject.g_object_is_floating(ref).should eq(0)
+      ref.ref_count.should eq(1)
     end
 
-    it "sink all float references on properties constructor" do
+    it "sink float references on properties constructor" do
       ref = Test::FloatRef.new(foo: 42)
       LibGObject.g_object_is_floating(ref).should eq(0)
+      ref.ref_count.should eq(1)
+    end
+
+    it "sink float references on custom constructors" do
+      ref = Test::FloatRef.new_with_foo(42)
+      LibGObject.g_object_is_floating(ref).should eq(0)
+      ref.ref_count.should eq(1)
     end
   end
 

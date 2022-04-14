@@ -204,10 +204,6 @@ static void test_subject_init(TestSubject* self) {
    * They are all automatically initialized to 0 to begin with. */
 }
 
-GObject* test_subject_new(void) {
-  return g_object_new(TEST_TYPE_SUBJECT, "string", "", "int32", 0, NULL);
-}
-
 TestSubject* test_subject_new_from_string(const gchar* string) {
   return g_object_new(TEST_TYPE_SUBJECT, "string", string, "int32", 0, NULL);
 }

@@ -180,11 +180,6 @@ module Generator
       String.build do |s|
         if initialize_method?
           s << "@pointer = _retval"
-          if @method.caller_owns.none?
-            s << "\nLibGObject.g_object_ref(_retval)"
-          elsif @object.as?(ObjectInfo).try(&.initially_unowned?)
-            s << "\nLibGObject.g_object_ref_sink(_retval) if LibGObject.g_object_is_floating(_retval) == 1"
-          end
         elsif @method.constructor?
           s << convert_to_crystal("_retval", @method.container.not_nil!, @method.args, :full)
         elsif return_type.is_a?(ArgInfo)
