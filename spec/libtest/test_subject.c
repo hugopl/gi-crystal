@@ -49,8 +49,6 @@ static guint obj_signals[N_SIGNALS] = {
 };
 
 static void test_subject_dispose(GObject* gobject) {
-  // TestSubjectPrivate *priv = test_subject_get_instance_private(TEST_SUBJECT(gobject));
-
   G_OBJECT_CLASS(test_subject_parent_class)->dispose(gobject);
 }
 
@@ -68,7 +66,7 @@ static void test_subject_set_property(GObject* gobject, guint property_id, const
   TestSubjectPrivate* priv = test_subject_get_instance_private(self);
   GObject* gobj = NULL; // Used on gobject properties
 
-  switch ((TestSubjectProperty)property_id) {
+  switch (property_id) {
   case PROP_STRING:
     g_free(priv->string);
     priv->string = g_value_dup_string(value);
@@ -111,7 +109,7 @@ static void test_subject_set_property(GObject* gobject, guint property_id, const
 static void test_subject_get_property(GObject* gobject, guint property_id, GValue* value, GParamSpec* pspec) {
   TestSubjectPrivate* priv = test_subject_get_instance_private(TEST_SUBJECT(gobject));
 
-  switch ((TestSubjectProperty)property_id) {
+  switch (property_id) {
   case PROP_STRING:
     g_value_set_string(value, priv->string);
     break;
@@ -168,7 +166,6 @@ static void test_subject_class_init(TestSubjectClass* klass) {
   g_object_class_override_property(object_class, PROP_FLOAT64, "float64");
   g_object_class_install_properties(object_class, N_PROPERTIES, obj_properties);
 
-  // Register signals
   /**
    * TestSubject::variant:
    * @subject: the subject who sent the signal.
