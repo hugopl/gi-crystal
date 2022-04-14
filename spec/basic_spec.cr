@@ -29,6 +29,16 @@ describe "GObject Binding" do
       subject = Test::Subject.new
       subject.ref_count.should eq(2)
     end
+
+    it "sink all float references" do
+      ref = Test::FloatRef.new
+      LibGObject.g_object_is_floating(ref).should eq(0)
+    end
+
+    it "sink all float references on properties constructor" do
+      ref = Test::FloatRef.new(foo: 42)
+      LibGObject.g_object_is_floating(ref).should eq(0)
+    end
   end
 
   describe "binding configuration" do

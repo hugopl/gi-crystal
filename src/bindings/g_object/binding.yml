@@ -50,6 +50,9 @@ ignore:
  - g_gtype_get_type
  - g_object_interface_install_property
  - g_object_ref
+ - g_object_is_floating
+ - g_object_ref_sink
+ - g_object_force_floating
  - g_object_unref
  - g_param_spec_boolean
  - g_param_spec_boxed

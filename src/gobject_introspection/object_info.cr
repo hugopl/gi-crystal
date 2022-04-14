@@ -32,6 +32,25 @@ module GObjectIntrospection
       ref_func == "g_param_spec_ref_sink" ? "g_param_spec_ref" : ref_func
     end
 
+    def initially_unowned? : Bool
+      parent = LibGIRepository.g_object_info_get_parent(self)
+      return false if parent.null?
+
+      while !parent.null?
+        type_name = LibGIRepository.g_object_info_get_type_name(parent)
+        if LibC.strcmp(type_name, "GInitiallyUnowned").zero?
+          return true
+        else
+          new_parent = LibGIRepository.g_object_info_get_parent(parent)
+          LibGIRepository.g_base_info_unref(parent)
+          parent = new_parent
+        end
+      end
+      false
+    ensure
+      LibGIRepository.g_base_info_unref(parent) if parent
+    end
+
     def methods : Array(FunctionInfo)
       methods(->LibGIRepository.g_object_info_get_n_methods, ->LibGIRepository.g_object_info_get_method)
     end

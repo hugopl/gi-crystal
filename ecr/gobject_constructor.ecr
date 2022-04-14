@@ -12,4 +12,7 @@ def initialize(<%= gobject_constructor_parameter_declaration %>)
   <% end %>
 
   @pointer = LibGObject.g_object_new_with_properties(<%= to_crystal_type(object, false) %>.g_type, _n, _names, _values)
+  <% if object.initially_unowned? -%>
+  LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
+  <% end %>
 end
