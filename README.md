@@ -180,6 +180,8 @@ error in this domain you must `rescue e : GLib::FileError`, and finally if you w
 
 ## Contributing
 
+See [HACKING.md](HACKING.md) for details about how the generator works.
+
 1. Fork it (<https://github.com/hugopl/gi-crystal/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
