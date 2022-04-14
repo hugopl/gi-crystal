@@ -15,4 +15,7 @@ def initialize(<%= gobject_constructor_parameter_declaration %>)
   <% if object.initially_unowned? -%>
   LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
   <% end %>
+  _n.times do |i|
+    LibGObject.g_value_unset(_values.to_unsafe + i)
+  end
 end
