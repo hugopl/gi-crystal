@@ -1,14 +1,10 @@
 .PHONY: test just-test oldlibs-test generator test-binding libtest compare recompare doc
 
 test: test-binding
-	./bin/rspec
-
-just-test:
-	./bin/rspec
+	./bin/rspec $(RSPEC_OPTS)
 
 oldlibs-test: test-binding
-	OLD_LIBS=1 ./bin/rspec
-
+	OLD_LIBS=1 ./bin/rspec $(RSPEC_OPTS)
 
 generator:
 	shards build --error-trace

@@ -17,7 +17,7 @@ jobs:
 #          - {os: ubuntu-latest, crystal: nightly}
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Install dependencies
+      - name: Install package dependencies
         run: sudo apt-get install gobject-introspection libgirepository1.0-dev
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
@@ -25,9 +25,9 @@ jobs:
           crystal: ${{ matrix.crystal }}
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: Install dependencies
+      - name: Install crystal dependencies
         run: shards install
       - name: Linter
         run: crystal tool format --check
       - name: Run tests
-        run: make oldlibs-test
+        run: RSPEC_OPTS=-v make oldlibs-test
