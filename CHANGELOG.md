@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.9.0] 2022-04-17
+### Added
+- Add support to subclass a GObject 🎉️.
+
+### Fixed
+- Fixed memory leak in GObject proeprty constructors.
+- Fixed crash when trying to free memory of C arrays in return values.
+- Fixed problems with floating references.
+
 ## [0.8.0] 2022-04-14
 ### Added
 - Module functions are generated.
