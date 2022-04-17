@@ -30,4 +30,4 @@ jobs:
       - name: Linter
         run: crystal tool format --check
       - name: Run tests
-        run: RSPEC_OPTS=-v make oldlibs-test
+        run: RSPEC_OPTS="-v --order=random" make oldlibs-test

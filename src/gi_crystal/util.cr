@@ -32,25 +32,24 @@ module GICrystal
     item_ptr = ptr
     while !item_ptr.value.null?
       res << String.new(item_ptr.value)
-      LibGLib.g_free(item_ptr.value) if transfer.full? || transfer.container?
+      LibGLib.g_free(item_ptr.value) if transfer.full?
       item_ptr += 1
     end
-    LibGLib.g_free(ptr) if transfer.full?
+    LibGLib.g_free(ptr) unless transfer.none?
     res
   end
 
   # :nodoc:
   def transfer_array(ptr : Pointer(Pointer(UInt8)), length : Int, transfer : Transfer) : Array(String)
     res = Array(String).new(length)
+    return res if ptr.null?
+
     length.times do |i|
-      res << String.new((ptr + i).value)
+      item_ptr = (ptr + i).value
+      res << String.new(item_ptr)
+      LibGLib.g_free(item_ptr) if transfer.full?
     end
-    # FIXME: Lib gen if generating g_str_free as `g_str_free(char*) when it must be `g_str_free(char**)`
-    if transfer.full?
-      LibGLib.g_strfreev(ptr.as(Pointer(UInt8)))
-    elsif transfer.container?
-      LibGLib.g_free(ptr.as(Pointer(Void)))
-    end
+    LibGLib.g_free(ptr) unless transfer.none?
     res
   end
 
