@@ -3,6 +3,9 @@ require "./spec_helper"
 private class UserObject < GObject::Object
 end
 
+private class UserFloatRefObject < Test::FloatRef
+end
+
 describe "Classes inheriting GObject::Object" do
   it "has their own g_type registered on GLib type system" do
     UserObject.g_type.should_not eq(GObject::Object.g_type)
@@ -34,8 +37,23 @@ describe "Classes inheriting GObject::Object" do
     wrapper = GObject::Object.new(raw_gobj, :full)
     obj = UserObject.cast(wrapper)
     obj.to_unsafe.should eq(raw_gobj)
+    obj.ref_count.should eq(2)
 
     obj_again = UserObject.cast(wrapper)
     obj_again.object_id.should eq(obj.object_id)
+    obj.ref_count.should eq(2)
+  end
+
+  it "create a crystal instance if the object with float ref was born on C world" do
+    raw_gobj = LibGObject.g_object_newv(UserFloatRefObject.g_type, 0, nil)
+    wrapper = GObject::Object.new(raw_gobj, :full)
+    obj = UserFloatRefObject.cast(wrapper)
+    LibGObject.g_object_is_floating(obj).should eq(0)
+    obj.to_unsafe.should eq(raw_gobj)
+    obj.ref_count.should eq(2)
+
+    obj_again = UserFloatRefObject.cast(wrapper)
+    obj_again.object_id.should eq(obj.object_id)
+    obj.ref_count.should eq(2)
   end
 end

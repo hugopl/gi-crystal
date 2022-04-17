@@ -70,11 +70,6 @@ module <%= namespace_name %>
         super
       end
 
-      # Cast a `GObject::Object` to this type, throw `TypeCastError` if cast can't be made.
-      def self.cast(obj : GObject::Object) : self
-        cast?(obj) || raise TypeCastError.new("can't cast #{typeof(obj).name} to #{{{ @type.stringify }}}")
-      end
-
       # Cast a `GObject::Object` to this type, returns nil if cast can't be made.
       def self.cast?(obj : GObject::Object) : self?
         return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
@@ -90,6 +85,9 @@ module <%= namespace_name %>
 
         # If the object was born in C world, crystal instance address still NULL
         # So we create a Crystal instance for it and annotate the crystal instance address
+        # And if there's a float ref we sink it!
+        LibGObject.g_object_ref_sink(obj) if LibGObject.g_object_is_floating(obj) == 1
+
         new_instance = {{ @type.id }}.new(obj.to_unsafe, :none)
         new_instance.to_unsafe.as(Pointer(LibGICrystal::Object)).value.crystal_instance_address = new_instance.object_id
         new_instance
