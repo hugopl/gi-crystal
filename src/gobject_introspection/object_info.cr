@@ -33,6 +33,13 @@ module GObjectIntrospection
       ref_func == "g_param_spec_ref_sink" ? "g_param_spec_ref" : ref_func
     end
 
+    def class_struct : StructInfo
+      ptr = LibGIRepository.g_object_info_get_class_struct(self)
+      return Repository.default.find_by_name("GObject", "ObjectClass").as(StructInfo) if ptr.null?
+
+      StructInfo.new(ptr)
+    end
+
     def initially_unowned? : Bool
       parent = LibGIRepository.g_object_info_get_parent(self)
       return false if parent.null?

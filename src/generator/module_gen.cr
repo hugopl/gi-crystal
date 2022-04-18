@@ -24,7 +24,7 @@ module Generator
     end
 
     protected def initialize(@config : BindingConfig)
-      @namespace = GObjectIntrospection::Repository.require(@config.namespace, @config.version)
+      @namespace = GObjectIntrospection::Repository.default.require(@config.namespace, @config.version)
 
       @objects = @namespace.objects.map { |info| ObjectGen.new(info) }.reject(&.skip?)
       @structs = @namespace.structs.map { |info| StructGen.new(info) }.reject(&.skip?)

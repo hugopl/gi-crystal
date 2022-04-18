@@ -13,6 +13,14 @@ G_DECLARE_DERIVABLE_TYPE(TestFloatRef, test_float_ref, TEST, FLOAT_REF, GInitial
 
 struct _TestFloatRefClass {
   GInitiallyUnownedClass parent_class;
+
+  // These padding here are just to let this struct be bigger than GObjectClass and be sure we are registering the types
+  // using the right struct sizes.
+  int padding0;
+  int padding1;
+  int padding2;
+  int padding3;
+  int padding4;
 };
 
 /**

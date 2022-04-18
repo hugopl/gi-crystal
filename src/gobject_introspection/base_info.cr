@@ -71,7 +71,7 @@ module GObjectIntrospection
     end
 
     def namespace : Namespace
-      Repository.require(String.new(LibGIRepository.g_base_info_get_namespace(self)))
+      Repository.default.require(String.new(LibGIRepository.g_base_info_get_namespace(self)))
     end
 
     def deprecated? : Bool

@@ -6,7 +6,8 @@ LIBRARY_BIN=../build/lib$(LIBRARY_NAME).so
 GIR=../build/Test-1.0.gir
 TYPELIB=../build/Test-1.0.typelib
 
-CC_FLAGS=-c -Wall -g -fPIC `pkg-config gobject-2.0 --cflags`
+# To help debug the Glib macros and reproduce then in Crystal we use -save-temps here
+CC_FLAGS=-save-temps -c -Wall -g -fPIC `pkg-config gobject-2.0 --cflags`
 LD_FLAGS=`pkg-config gobject-2.0 --libs`
 
 all: $(TYPELIB)
