@@ -121,8 +121,10 @@ module Generator
       return if arg.optional?
       return unless arg.nullable?
 
-      arg_name = to_identifier(arg.name)
       arg_type = arg.type_info
+      return if BindingConfig.handmade?(arg_type)
+
+      arg_name = to_identifier(arg.name)
       add_implementation do |io|
         generate_null_guard(io, arg_name, arg_type, nullable: arg.nullable?) do
           if arg_type.array?
@@ -181,9 +183,21 @@ module Generator
       return unless BindingConfig.handmade?(arg_type)
 
       add_implementation do |io|
+        arg = strategy.arg
         type = to_crystal_type(arg_type)
-        var = to_identifier(strategy.arg.name)
-        io << var << "=" << type << ".new(" << var << ") unless " << var << ".is_a?(" << type << ")\n"
+        var = to_identifier(arg.name)
+
+        io << var << '='
+        if arg.nullable?
+          io << "if " << var << ".nil?\n"
+          io << "Pointer(Void).null\n" \
+                "els" # If arg can be null the next if will turn into a elsif, ugly but works.
+        end
+        io << "if !" << var << ".is_a?(" << type << ")\n"
+        io << type << ".new(" << var << ").to_unsafe\n"
+        io << "else\n"
+        io << var << ".to_unsafe\n"
+        io << "end\n"
       end
     end
   end

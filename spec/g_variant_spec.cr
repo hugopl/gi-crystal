@@ -16,6 +16,10 @@ describe "GVariant" do
     it { Test::Subject.g_variant_parameter(GLib::Variant.new("ho")).should eq("'ho'") }
     it { Test::Subject.g_variant_parameter(%w(hey ho)).should eq("['hey', 'ho']") }
     it { Test::Subject.g_variant_parameter({"hey", "ho"}).should eq("['hey', 'ho']") }
+
+    it "can be nullable" do
+      Test::Subject.g_variant_parameter(nil).should eq("NULL")
+    end
   end
 
   it "can be used as a signal parameter" do

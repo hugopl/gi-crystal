@@ -453,7 +453,7 @@ void test_subject_g_value_by_out_parameter(GValue* value) {
 }
 
 gchar* test_subject_g_variant_parameter(GVariant* variant) {
-  return g_variant_print(variant, TRUE);
+  return variant ? g_variant_print(variant, TRUE) : g_strdup("NULL");
 }
 
 GBytes* test_subject_string_to_bytes_transfer_full(const gchar* data) {
