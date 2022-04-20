@@ -63,6 +63,15 @@ describe "GObject signals" do
     number.should eq(42)
   end
 
+  it "can return integers" do
+    subject = Test::Subject.new
+    subject.return_int_signal.connect do
+      42
+    end
+    # TODO: Use this test to test signal accumulators, for now it's just testing if the code compiles
+    # subject.return_int_signal.emit
+  end
+
   pending "test emit signals with return values"
 
   context "when in interfaces" do

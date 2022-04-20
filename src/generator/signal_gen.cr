@@ -67,8 +67,9 @@ module Generator
       String.build do |s|
         s << "->(" << slot_c_args << ") {\n"
         generate_signal_args_conversion(s)
-        s << "::Box(Proc(" << lean_proc_params << ")).unbox(box).call(" << crystal_box_args << ")"
-        s << ".to_unsafe" if has_return_value?
+        s << "_retval = " if has_return_value?
+        s << "::Box(Proc(" << lean_proc_params << ")).unbox(box).call(" << crystal_box_args << ")\n"
+        s << convert_to_lib("_retval", @signal.return_type, @signal.caller_owns) if has_return_value?
         s << "\n}\n"
       end
     end
