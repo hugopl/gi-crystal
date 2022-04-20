@@ -126,7 +126,9 @@ module Generator::Helpers
   end
 
   def convert_to_lib(var : String, type : TypeInfo, _transfer : Transfer) : String
-    if type.tag.interface?
+    tag = type.tag
+    case tag
+    when .interface?, .utf8?, .filename?
       "#{var}.to_unsafe"
     else
       var

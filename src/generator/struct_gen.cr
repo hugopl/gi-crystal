@@ -107,12 +107,13 @@ module Generator
       field_name = field.name
       field_type = field.type_info
       is_pointer = field_type.pointer?
+      field_lib_type = to_lib_type(field_type, structs_as_void: true)
 
       io << "def " << field_name << "=(value : "
       field_type_name(io, field)
       io << ")\n"
 
-      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field_type, structs_as_void: true) << "))"
+      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << field_lib_type << "))"
       if !is_pointer && field_type.tag.interface?
         iface = field_type.interface
         if iface.is_a?(StructInfo) && iface.boxed?
@@ -122,7 +123,7 @@ module Generator
         end
       else
         io << ".value = "
-        io << "value.nil? ? Pointer(Void).null : " if is_pointer
+        io << "value.nil? ? " << field_lib_type << ".null : " if is_pointer
         io << convert_to_lib("value", field_type, :none)
       end
       io << "\nvalue\n"

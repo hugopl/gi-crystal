@@ -38,6 +38,7 @@ typedef struct _TestPoint {
  * @in: A attribute using a invalid Crystal keyword.
  * @begin: Another attribute using a invalid Crystal keyword.
  * @point: Another struct member of this struct.
+ * @string: A string
  *
  * A plain struct to test stuff
  */
@@ -46,6 +47,7 @@ typedef struct _TestStruct {
   gint16 begin;
   TestPoint* point_ptr;
   TestPoint point;
+  const char* string;
 } TestStruct;
 
 /**

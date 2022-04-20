@@ -20,4 +20,9 @@ describe "Struct bindings" do
     truct.point.x.should eq(1)
     truct.point.y.should eq(2)
   end
+
+  it "can have nullable string attributes" do
+    truct = Test::Struct.new(string: "hey")
+    truct.string.should eq("hey")
+  end
 end
