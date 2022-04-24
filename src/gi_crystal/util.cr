@@ -21,7 +21,7 @@ module GICrystal
   # :nodoc:
   @[AlwaysInline]
   def to_bool(value : Int32) : Bool
-    !value.zero?
+    value != 0
   end
 
   # :nodoc:
