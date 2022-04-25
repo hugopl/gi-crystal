@@ -4,7 +4,6 @@ include:
  - param_spec.cr
  - type.cr
  - value.cr
- - lib_gi_crystal.cr
 
 handmade:
  - Value

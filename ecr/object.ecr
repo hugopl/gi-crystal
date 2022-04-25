@@ -25,9 +25,6 @@ module <%= namespace_name %>
       {% unless @type.annotation(GObject::GeneratedWrapper) %}
       # GType for the new created type
       @@_g_type : UInt64 = 0
-      # Memory offset of `LibGICrystal::ObjectPrivate` inside the struct used for object instances, so
-      # we can restore a `LibGICrystal::ObjectPrivate` pointer from a `GObject` pointer.
-      @@_private_offset : Int32 = 0
 
       def self.g_type : UInt64
         if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
@@ -35,7 +32,6 @@ module <%= namespace_name %>
             ->_class_init(Pointer(LibGObject::TypeClass), Pointer(Void)),
             ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)))
 
-          @@_private_offset = LibGObject.g_type_add_instance_private(g_type, sizeof(LibGICrystal::ObjectPrivate))
           LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
         end
 
@@ -44,67 +40,44 @@ module <%= namespace_name %>
 
       # :nodoc:
       def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
-        # At class initialization (from GObject point of view) we need to calculate the private offset, so we
-        # can later restore `LibGICrystal::ObjectPrivate` from `GObject` pointers.
-        LibGObject.g_type_class_adjust_private_offset(klass, pointerof(@@_private_offset)) if @@_private_offset != 0
       end
 
       # :nodoc:
       def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
-        private_obj = _private_object(instance.as(Pointer(Void)))
-        private_obj.value.gc_collected = 0
-        private_obj.value.crystal_instance_address = 0_u64
       end
 
-      # :nodoc:
-      def self._private_object(instance : Pointer(Void)) : Pointer(LibGICrystal::ObjectPrivate)
-        # Retore our beloved `LibGICrystal::ObjectPrivate` from a `GObject` pointer.
-        (instance + @@_private_offset).as(Pointer(LibGICrystal::ObjectPrivate))
-      end
-
-      def self.new
+      def self.new : self
         instance = {{ @type.id }}.allocate
         gobj_ptr = LibGObject.g_object_newv({{ @type.id }}.g_type, 0, Pointer(Void).null)
         LibGObject.g_object_ref_sink(gobj_ptr) if LibGObject.g_object_is_floating(gobj_ptr) == 1
 
-        private_obj = {{ @type.id }}._private_object(gobj_ptr)
-        private_obj.value.crystal_instance_address = instance.object_id
-
+        LibGObject.<%= object.qdata_set_func %>(gobj_ptr, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(instance.object_id))
         instance.initialize(gobj_ptr, :full)
         GC.add_finalizer(instance)
         instance
       end
 
-      def initialize(pointer : Pointer(Void), transfer : GICrystal::Transfer)
-        super
-      end
+      def self.new(pointer : Pointer(Void), transfer : GICrystal::Transfer) : self
+        instance = LibGObject.g_object_get_qdata(pointer, GICrystal::INSTANCE_QDATA_KEY)
+        return instance.as(self) if instance
 
-      def finalize
-        self.class._private_object(@pointer).value.gc_collected = 1
-        super
+        instance = {{ @type }}.allocate
+        LibGObject.g_object_set_qdata(pointer, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(instance.object_id))
+        instance.initialize(pointer, transfer)
+        GC.add_finalizer(instance)
+        instance
       end
 
       # Cast a `GObject::Object` to this type, returns nil if cast can't be made.
       def self.cast?(obj : GObject::Object) : self?
         return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
 
-        private_obj = {{ @type.id }}._private_object(obj.to_unsafe)
-
         # If the object was collected by Crystal GC but still alive in C world we can't bring
         # the crystal object form the dead.
-        raise GICrystal::ObjectCollectedError.new if private_obj.value.gc_collected != 0
+        gc_collected = LibGObject.<%= object.qdata_get_func %>(obj, GICrystal::GC_COLLECTED_QDATA_KEY).address
+        raise GICrystal::ObjectCollectedError.new if gc_collected != 0
 
-        instance_address = private_obj.value.crystal_instance_address
-        return Pointer({{ @type.id }}).new(instance_address).as({{ @type.id }}) unless instance_address.zero?
-
-        # If the object was born in C world, crystal instance address still NULL
-        # So we create a Crystal instance for it and annotate the crystal instance address
-        # And if there's a float ref we sink it!
-        LibGObject.g_object_ref_sink(obj) if LibGObject.g_object_is_floating(obj) == 1
-
-        new_instance = {{ @type.id }}.new(obj.to_unsafe, :none)
-        private_obj.value.crystal_instance_address = new_instance.object_id
-        new_instance
+        new(obj.to_unsafe, :none)
       end
       {% end %}
     end
@@ -118,10 +91,25 @@ module <%= namespace_name %>
                                                sizeof(<%= to_lib_type(object) %>), instance_init, 0)
     end
 
+    def self.new(pointer : Pointer(Void), transfer : GICrystal::Transfer) : self
+      instance = LibGObject.<%= object.qdata_get_func %>(pointer, GICrystal::INSTANCE_QDATA_KEY)
+      return instance.as(self) if instance
+
+      instance = {{ @type }}.allocate
+      LibGObject.<%= object.qdata_set_func %>(pointer, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(instance.object_id))
+      instance.initialize(pointer, transfer)
+      GC.add_finalizer(instance)
+      instance
+    end
+
     # :nodoc:
     def initialize(@pointer, transfer : GICrystal::Transfer)
       <% if object.parent.nil? %>
-        LibGObject.<%= object.ref_function %>(self) unless transfer.full?
+        <% if g_object_type? %>
+          LibGObject.<%= object.ref_function %>(self) if transfer.none? || LibGObject.g_object_is_floating(self) == 1
+        <% else %>
+          LibGObject.<%= object.ref_function %>(self) if transfer.none?
+        <% end %>
       <% else %>
         super
       <% end %>
@@ -139,6 +127,8 @@ module <%= namespace_name %>
         {% if flag?(:debugmemory) %}
         LibC.printf("~%s at %p - ref count: %d\n", self.class.name.to_unsafe, self, ref_count)
         {% end %}
+        LibGObject.<%= object.qdata_set_func %>(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).null)
+        LibGObject.<%= object.qdata_set_func %>(self, GICrystal::GC_COLLECTED_QDATA_KEY, Pointer(Void).new(0x1))
         LibGObject.<%= object.unref_function %>(self)
       end
 

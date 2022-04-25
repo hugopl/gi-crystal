@@ -185,7 +185,8 @@ module Generator
 
       String.build do |s|
         if initialize_method?
-          s << "@pointer = _retval"
+          s << "@pointer = _retval \n" \
+               "LibGObject.g_object_set_qdata(_retval, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))"
         elsif @method.constructor?
           s << convert_to_crystal("_retval", @method.container.not_nil!, @method.args, :full)
         elsif return_type.is_a?(ArgInfo)

@@ -81,6 +81,30 @@ You you ran `make compare` already and want to just recompare the API with the n
 make recompare
 ```
 
+## How GObject wrappers works
+
+GICrystal use [g_object_set_qdata](https://docs.gtk.org/gobject/method.Object.set_qdata.html) function to store the Crystal
+object pointer into every wrapper it creates, so it can restore the wraper object without need to re-allocate any memory.
+
+When the wrapper is collected by the GC it reset this pointer to NULL, so if it appear again in the Crystal world we create
+another wrapper for it. See `Crystal::INSTANCE_QDATA_KEY` constant.
+
+For user made objects inheriting GObject we need another flag, since if the GC collect it all the Crystal data is removed as
+well, so we raise an exception when the user try to restore the Crystal object doing a cast, see
+`Crystal::GC_COLLECTED_QDATA_KEY`.
+
+## How Struct wrappers works
+
+Currently it creates a wrapper with a copy of the struct always... i.e. it's slow.
+
+### Plan for near future
+
+Check if the struct have no pointers to objects in their fields, is so, bind it directly to a Crystal struct, so it will be as fast as in C to use these structs in Crystal.
+
+## How GObject inheritance works
+
+TODO 😅️
+
 ## The generator code
 
 TODO 😁

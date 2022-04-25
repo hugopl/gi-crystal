@@ -18,8 +18,10 @@ describe "GObject interfaces" do
     iface.float64 = 1.5
     subject.float64.should eq(1.5)
     iface.float64.should eq(1.5)
-    subject.ref_count.should eq(2)
-    iface.ref_count.should eq(2)
+    # All Crystal instances share the same GObject ref count, since all instances are in the same memory address and
+    # will call finalize only once.
+    subject.ref_count.should eq(1)
+    iface.ref_count.should eq(1)
   end
 
   it "have class methods" do

@@ -33,6 +33,18 @@ module GObjectIntrospection
       ref_func == "g_param_spec_ref_sink" ? "g_param_spec_ref" : ref_func
     end
 
+    def qdata_get_func : String
+      # ⚠️ Ugly heuristic ahead
+      unref_func = LibGIRepository.g_object_info_get_unref_function(self)
+      unref_func.null? ? "g_object_get_qdata" : "g_param_spec_get_qdata"
+    end
+
+    def qdata_set_func : String
+      # ⚠️ Ugly heuristic ahead
+      unref_func = LibGIRepository.g_object_info_get_unref_function(self)
+      unref_func.null? ? "g_object_set_qdata" : "g_param_spec_set_qdata"
+    end
+
     def class_struct : StructInfo
       ptr = LibGIRepository.g_object_info_get_class_struct(self)
       return Repository.default.find_by_name("GObject", "ObjectClass").as(StructInfo) if ptr.null?

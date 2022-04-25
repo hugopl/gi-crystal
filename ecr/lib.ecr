@@ -26,6 +26,10 @@ lib <%= to_lib_namespace(namespace) %>
 <% elsif g_object? %>
   # Functions not declared by GObj Introspection
 
+  # We use this function to store the Crystal wrapper pointer in GObjects,
+  # So we can re-use the Crystal objects saving some memory allocations.
+  fun g_object_set_qdata(object : Void*, quark : UInt32, data : Void*)
+
   # Type register
   fun g_type_register_static_simple(parent_type : UInt64,
                                     type_name : LibC::Char*,

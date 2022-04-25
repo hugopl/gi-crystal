@@ -14,8 +14,8 @@ describe "GObject Binding" do
       subject = Test::Subject.new(boolean: true)
       subject.ref_count.should eq(1)
       iface = subject.return_myself_as_interface
-      iface.to_unsafe.should eq(subject.to_unsafe)
-      subject.ref_count.should eq(2)
+      iface.object_id.should eq(subject.object_id)
+      subject.ref_count.should eq(1)
     end
 
     it "increase object reference when passing it to a transfer full method" do
@@ -81,10 +81,10 @@ describe "GObject Binding" do
     it "can downcast objects" do
       child = Test::SubjectChild.new(string: "hey")
       gobj = child.me_as_gobject
-      gobj.ref_count.should eq(2)
-      gobj.class.should eq(GObject::Object)
+      gobj.ref_count.should eq(1)
+      gobj.class.should eq(Test::SubjectChild)
       cast = Test::Subject.cast(gobj)
-      cast.ref_count.should eq(3)
+      cast.ref_count.should eq(1)
       cast.string.should eq("hey")
     end
 

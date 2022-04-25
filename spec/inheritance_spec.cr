@@ -37,11 +37,11 @@ describe "Classes inheriting GObject::Object" do
     wrapper = GObject::Object.new(raw_gobj, :full)
     obj = UserObject.cast(wrapper)
     obj.to_unsafe.should eq(raw_gobj)
-    obj.ref_count.should eq(2)
+    obj.ref_count.should eq(1)
 
     obj_again = UserObject.cast(wrapper)
     obj_again.object_id.should eq(obj.object_id)
-    obj.ref_count.should eq(2)
+    obj.ref_count.should eq(1)
   end
 
   it "create a crystal instance if the object with float ref was born on C world" do
@@ -50,10 +50,10 @@ describe "Classes inheriting GObject::Object" do
     obj = UserFloatRefObject.cast(wrapper)
     LibGObject.g_object_is_floating(obj).should eq(0)
     obj.to_unsafe.should eq(raw_gobj)
-    obj.ref_count.should eq(2)
+    obj.ref_count.should eq(1)
 
     obj_again = UserFloatRefObject.cast(wrapper)
     obj_again.object_id.should eq(obj.object_id)
-    obj.ref_count.should eq(2)
+    obj.ref_count.should eq(1)
   end
 end
