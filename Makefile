@@ -21,5 +21,5 @@ compare:
 recompare:
 	GI_TYPELIB_PATH="./spec/build" LIBRARY_PATH="./spec/build" LD_LIBRARY_PATH="./spec/build" bin/compare-api --skip-old --binding="spec/libtest_binding.yml" --before-build="make libtest && shards build" $(OLD_VERSION) $(NEW_VERSION)
 
-doc: test_binding
+doc: test-binding
 	crystal doc src/gi-crystal.cr src/auto/test-1.0/test.cr
