@@ -529,6 +529,13 @@ int test_subject_nullable_optimal_parameter(TestSubject* self, gchar** param) {
   return 42;
 }
 
+int test_subject_sum_array_of_4_ints(TestSubject* self, int* array) {
+  int acc = 0;
+  for (int i = 0; i < 4; ++i)
+    acc += array[i];
+  return acc;
+}
+
 GError* test_subject_return_g_error() {
   return g_error_new(G_FILE_ERROR, G_FILE_ERROR_FAILED, "whatever message");
 }

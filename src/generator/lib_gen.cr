@@ -56,7 +56,7 @@ module Generator
       lib_args << "this : Void*" if flags.method?
       func_info.args.each do |arg|
         include_namespace = func_namespace != arg.type_info.interface.try(&.namespace).try(&.name)
-        arg_type = to_lib_type(arg.type_info, structs_as_void: true, include_namespace: include_namespace)
+        arg_type = to_lib_type(arg.type_info, structs_as_void: true, include_namespace: include_namespace, is_arg: true)
         arg_type = "Pointer(#{arg_type})" unless arg.direction.in?
         lib_args << "#{to_identifier(arg.name)} : #{arg_type}"
       end

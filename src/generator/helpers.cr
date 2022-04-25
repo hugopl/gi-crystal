@@ -71,7 +71,7 @@ module Generator::Helpers
     end
   end
 
-  def to_lib_type(type : TypeInfo, structs_as_void : Bool = false, include_namespace : Bool = true) : String
+  def to_lib_type(type : TypeInfo, structs_as_void : Bool = false, include_namespace : Bool = true, is_arg : Bool = false) : String
     tag = type.tag
 
     is_pointer = type.pointer?
@@ -100,8 +100,12 @@ module Generator::Helpers
               end
             elsif tag.array?
               array_type_name = to_lib_type(type.param_type, include_namespace)
-              len = type.array_fixed_size
-              len > 0 ? "#{array_type_name}[#{len}]" : array_type_name
+              if is_arg
+                array_type_name
+              else
+                array_len = type.array_fixed_size
+                array_len > 0 ? "#{array_type_name}[#{array_len}]" : array_type_name
+              end
             else
               to_lib_type(tag)
             end

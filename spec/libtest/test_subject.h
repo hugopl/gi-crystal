@@ -399,6 +399,15 @@ TestEmptyFlags test_subject_receive_empty_flags(TestEmptyFlags flags);
 int test_subject_nullable_optimal_parameter(TestSubject* self, gchar** param);
 
 /**
+ * test_subject_sum_array_of_4_ints:
+ * @array: (array fixed-size=4): An array of 4 items
+ * Returns: sum of array of for items
+ *
+ * Used to test array parameters of fixed size.
+ */
+int test_subject_sum_array_of_4_ints(TestSubject* self, int* array);
+
+/**
  * test_subject_return_g_error:
  * Returns: (transfer full): A GError
  *

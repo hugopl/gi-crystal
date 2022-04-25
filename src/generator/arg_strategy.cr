@@ -137,6 +137,14 @@ module Generator
     def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       arg_name = to_identifier(arg.name)
+      arg_type = arg.type_info
+
+      array_fixed_len = arg_type.array_fixed_size
+      if array_fixed_len > 0
+        io << "raise ArgumentError.new(\"Enumerable of size < " << array_fixed_len << "\") "
+        io << "if " << arg_name << ".size < " << array_fixed_len << "\n\n"
+      end
+
       io << arg_name << " = "
       generate_array_to_unsafe(io, arg_name, arg.type_info)
     end

@@ -22,6 +22,18 @@ describe "Raw C arrays" do
     subject.return_null_terminated_array_transfer_full.should eq(%w(Hello World))
   end
 
+  context "when of fixed size" do
+    it "can be used in parameters" do
+      Test::Subject.new.sum_array_of_4_ints({1, 2, 3, 4}).should eq(10)
+    end
+
+    it "raise ArgumentError in case of wrong arrity" do
+      expect_raises(ArgumentError) do
+        Test::Subject.new.sum_array_of_4_ints({1, 2})
+      end
+    end
+  end
+
   context "when non-zero-terminated in return values" do
     it "can be transfer full" do
       data = Test::Subject.new.return_array_transfer_full
