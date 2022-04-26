@@ -6,6 +6,12 @@ end
 private class UserFloatRefObject < Test::FloatRef
 end
 
+private class UserObjectWithCtor < GObject::Object
+  def initialize(@string : String)
+    super()
+  end
+end
+
 describe "Classes inheriting GObject::Object" do
   it "has their own g_type registered on GLib type system" do
     UserObject.g_type.should_not eq(GObject::Object.g_type)
@@ -55,5 +61,14 @@ describe "Classes inheriting GObject::Object" do
     obj_again = UserFloatRefObject.cast(wrapper)
     obj_again.object_id.should eq(obj.object_id)
     obj.ref_count.should eq(1)
+  end
+
+  it "can have any constructors" do
+    obj = UserObjectWithCtor.new("hey")
+    obj.ref_count.should eq(1)
+    obj_wrapper = GObject::Object.new(obj.to_unsafe, :full)
+    obj_wrapper.class.should eq(UserObjectWithCtor)
+    obj2 = UserObjectWithCtor.cast(obj)
+    obj2.should eq(obj)
   end
 end

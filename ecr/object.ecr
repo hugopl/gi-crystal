@@ -46,38 +46,17 @@ module <%= namespace_name %>
       def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
       end
 
-      def self.new : self
-        instance = {{ @type.id }}.allocate
-        gobj_ptr = LibGObject.g_object_newv({{ @type.id }}.g_type, 0, Pointer(Void).null)
-        LibGObject.g_object_ref_sink(gobj_ptr) if LibGObject.g_object_is_floating(gobj_ptr) == 1
-
-        LibGObject.<%= object.qdata_set_func %>(gobj_ptr, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(instance.object_id))
-        instance.initialize(gobj_ptr, :full)
-        GC.add_finalizer(instance)
-        instance
-      end
-
-      def self.new(pointer : Pointer(Void), transfer : GICrystal::Transfer) : self
-        instance = LibGObject.g_object_get_qdata(pointer, GICrystal::INSTANCE_QDATA_KEY)
-        return instance.as(self) if instance
-
-        instance = {{ @type }}.allocate
-        LibGObject.g_object_set_qdata(pointer, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(instance.object_id))
-        instance.initialize(pointer, transfer)
-        GC.add_finalizer(instance)
-        instance
-      end
-
       # Cast a `GObject::Object` to this type, returns nil if cast can't be made.
       def self.cast?(obj : GObject::Object) : self?
         return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
 
         # If the object was collected by Crystal GC but still alive in C world we can't bring
         # the crystal object form the dead.
-        gc_collected = LibGObject.<%= object.qdata_get_func %>(obj, GICrystal::GC_COLLECTED_QDATA_KEY).address
-        raise GICrystal::ObjectCollectedError.new if gc_collected != 0
+        gc_collected = LibGObject.<%= object.qdata_get_func %>(obj, GICrystal::GC_COLLECTED_QDATA_KEY)
+        instance = LibGObject.<%= object.qdata_get_func %>(obj, GICrystal::INSTANCE_QDATA_KEY)
+        raise GICrystal::ObjectCollectedError.new if gc_collected || instance.null?
 
-        new(obj.to_unsafe, :none)
+        instance.as(self)
       end
       {% end %}
     end
@@ -91,15 +70,25 @@ module <%= namespace_name %>
                                                sizeof(<%= to_lib_type(object) %>), instance_init, 0)
     end
 
+    # :nodoc:
     def self.new(pointer : Pointer(Void), transfer : GICrystal::Transfer) : self
+      # Try to recover the Crystal instance if any
       instance = LibGObject.<%= object.qdata_get_func %>(pointer, GICrystal::INSTANCE_QDATA_KEY)
       return instance.as(self) if instance
 
+      # This object never meet Crystal land, so we allocate memory and initialize it.
       instance = {{ @type }}.allocate
       LibGObject.<%= object.qdata_set_func %>(pointer, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(instance.object_id))
       instance.initialize(pointer, transfer)
       GC.add_finalizer(instance)
       instance
+    end
+
+    # Initialize a new `<%= type_name %>`.
+    def initialize
+      @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(Void).null)
+      LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
+      LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))
     end
 
     # :nodoc:
