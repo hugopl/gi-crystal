@@ -26,7 +26,7 @@ module Generator
       args_strategies.each do |arg_strategy|
         if arg_strategy.has_implementation?
           arg_strategy.write_implementation(io)
-        else
+        elsif !arg_strategy.remove_from_declaration?
           arg_name = arg_strategy.arg.name
           io << to_identifier(arg_name) << '=' << "lib_" << arg_name << LF
         end
@@ -50,21 +50,31 @@ module Generator
       end
     end
 
-    private def generate_unbox_call(io : IO, callable : CallableInfo, args_strategies : Array(ArgStrategy), box_type : BoxType)
-      if box_type.signal?
-        user_data_var = "_lib_box"
-      else
-        last_arg = args_strategies.last?
-        user_data_var = if last_arg
-                          to_identifier(args_strategies.last.arg.name)
-                        else
-                          Log.warn { "Callback without user_data!" }
-                          "Pointer(Void).null"
-                        end
+    def arg_strategies_to_proc_param_string(io : IO, callable : CallableInfo, strategies : Array(ArgStrategy)) : Nil
+      strategies.each do |arg_strategy|
+        next if arg_strategy.remove_from_declaration?
+
+        arg = arg_strategy.arg
+        arg_type_info = arg.type_info
+        nullmark = '?' if arg.nullable?
+        io << to_crystal_type(arg_type_info, include_namespace: true) << nullmark << ','
       end
+      io << to_crystal_type(callable.return_type, include_namespace: true)
+    end
+
+    private def generate_unbox_call(io : IO, callable : CallableInfo, args_strategies : Array(ArgStrategy), box_type : BoxType)
+      user_data_var = if box_type.signal?
+                        "_lib_box"
+                      elsif args_strategies.last?
+                        "lib_#{to_identifier(args_strategies.last.arg.name)}"
+                      else
+                        Log.warn { "Callback without user_data!" }
+                        "Pointer(Void).null"
+                      end
+
       io << "::Box(Proc("
       io << to_crystal_type(callable.container.not_nil!) << ',' if box_type.full_signal?
-      callable_to_crystal_types(io, callable)
+      arg_strategies_to_proc_param_string(io, callable, args_strategies)
       io << ")).unbox(" << user_data_var << ").call("
       io << "_sender," if box_type.full_signal?
       args_strategies.each do |strategy|

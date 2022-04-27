@@ -58,14 +58,7 @@ module Generator
     end
 
     def render_args_declaration(io : IO)
-      print_comma = false
-      @args_strategies.each do |arg_strategy|
-        next if arg_strategy.remove_from_declaration?
-
-        io << ',' if print_comma
-        arg_strategy.render_declaration(io)
-        print_comma = true
-      end
+      @args_strategies.each(&.render_declaration(io))
     end
 
     macro render_args_preparation

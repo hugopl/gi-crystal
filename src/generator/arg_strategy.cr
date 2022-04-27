@@ -82,6 +82,7 @@ module Generator
       type = to_crystal_type(arg_type, is_arg: true)
       name = to_crystal_arg_decl(arg.name)
       io << name << " : " << type << null_mark
+      io << ','
     end
 
     def add_implementation(arg_plan : ArgPlan, direction : Direction) : Nil
@@ -150,6 +151,24 @@ module Generator
     end
 
     def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      arg_name = to_identifier(arg.name)
+      arg_type = arg.type_info
+
+      array_len = arg_type.array_length
+      if array_len > 0
+        len_arg = strategies[arg_type.array_length].arg
+        len_arg_name = to_identifier(len_arg.name)
+        param_type = to_crystal_type(arg_type.param_type)
+
+        io << "lib_" << arg_name << " = lib_" << arg_name << ".as(Pointer(Pointer(Void)))\n"
+
+        io << arg_name << "= Array(" << param_type << ").new(lib_" << len_arg_name << ") do |_i|\n"
+        io << param_type << ".new((lib_" << arg_name << " + _i).value, GICrystal::Transfer::" << arg.ownership_transfer << ")\n"
+        io << "end\n"
+      else
+        io << "raise NotImplementedError.new\n"
+      end
     end
   end
 
@@ -311,8 +330,10 @@ module Generator
 
   struct GObjectArgPlan < ArgPlan
     def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
-      type_info = strategy.arg.type_info
-      direction.c_to_crystal? && type_info.tag.interface?
+      arg_type = strategy.arg.type_info
+      return false if BindingConfig.handmade?(arg_type)
+
+      direction.c_to_crystal? && arg_type.tag.interface?
     end
 
     def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil

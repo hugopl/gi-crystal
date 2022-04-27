@@ -8,9 +8,12 @@ module Generator
     getter obj : RegisteredTypeInfo
     getter signal : SignalInfo
     @signal_args : Array(ArgInfo)?
+    @args_strategies : Array(ArgStrategy)
 
     def initialize(@obj : ObjectInfo | InterfaceInfo, @signal : SignalInfo)
       super(@obj.namespace)
+
+      @args_strategies = ArgStrategy.find_strategies(@signal, :crystal_to_c)
     end
 
     def filename : String?
@@ -40,7 +43,7 @@ module Generator
 
     private def lean_proc_params : String
       String.build do |s|
-        callable_to_crystal_types(s, @signal)
+        arg_strategies_to_proc_param_string(s, @signal, @args_strategies)
       end
     end
 
@@ -56,29 +59,24 @@ module Generator
       generate_box(io, "handler", @signal, box_type)
     end
 
-    private def signal_emit_method : String
-      # FIXME: Use ArgStrategy classe to handle arguments here.
-      String.build do |s|
-        arg_vars = signal_args.map { |arg| to_identifier(arg.name) }
+    macro render_emit_method
+      render_emit_method(io)
+    end
 
-        # Emit declaration
-        s << "def emit("
-        s << signal_args.map_with_index do |arg, i|
-          null_mark = "?" if arg.nullable?
-          "#{arg_vars[i]} : #{to_crystal_type(arg.type_info, is_arg: true)}#{null_mark}"
-        end.join(",")
-        s << ") : Nil\n"
+    private def render_emit_method(io : IO)
+      io << "def emit("
+      @args_strategies.each(&.render_declaration(io))
+      io << ") : Nil\n"
 
-        generate_handmade_types_param_conversion(s, signal_args)
+      @args_strategies.each(&.write_implementation(io))
 
-        # Signal emission
-        s << "LibGObject.g_signal_emit_by_name(@source, \"" << @signal.name << "\""
-        arg_vars.each do |arg|
-          s << ", " << arg
-        end
-        s << ")\n"
-        s << "end\n"
+      # Signal emission
+      io << "\nLibGObject.g_signal_emit_by_name(@source, \"" << @signal.name << "\""
+      @args_strategies.each do |strategy|
+        io << ", " << to_identifier(strategy.arg.name)
       end
+      io << ")\n"
+      io << "end\n"
     end
   end
 end

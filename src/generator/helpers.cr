@@ -31,10 +31,14 @@ module Generator::Helpers
     name.tr("-", "_")
   end
 
-  def abstract_interface_name(iface : InterfaceInfo)
+  def abstract_interface_name(iface : InterfaceInfo, include_namespace : Bool = true)
     # I hope for the best that this wont cause any name clash.... but if so, at least it can be fixed
     # in a single place once someone report such clash in some library.
-    "Abstract#{to_type_name(iface.name)}"
+    if include_namespace
+      "#{to_type_name(iface.namespace.name)}::Abstract#{to_type_name(iface.name)}"
+    else
+      "Abstract#{to_type_name(iface.name)}"
+    end
   end
 
   def type_info_default_value(type_info : TypeInfo)
@@ -300,8 +304,11 @@ module Generator::Helpers
         convert_to_crystal(var, info.type_info, args, transfer)
       end
     else
-      crystal_type = to_crystal_type(info, true)
-      crystal_type = abstract_interface_name(info) if info.is_a?(InterfaceInfo)
+      crystal_type = if info.is_a?(InterfaceInfo)
+                       abstract_interface_name(info, true)
+                     else
+                       to_crystal_type(info, true)
+                     end
       "#{crystal_type}.new(#{var}, GICrystal::Transfer::#{transfer})"
     end
   end

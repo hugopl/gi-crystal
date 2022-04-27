@@ -43,6 +43,7 @@ typedef enum {
   VARIANT_SIGNAL = 1,
   NULLABLE_ARGS_SIGNAL,
   RETURN_INT_SIGNAL,
+  ARRAY_OF_GOBJ_SIGNAL,
   N_SIGNALS
 } TestSubjectSignals;
 
@@ -211,7 +212,7 @@ static void test_subject_class_init(TestSubjectClass* klass) {
                    2, // n_params
                    G_TYPE_STRING, G_TYPE_INT, NULL);
   /**
-   * TestSubject::return_int:
+   * TestSubject::return-int:
    * @subject: the subject that requires a int return value
    */
   obj_signals[RETURN_INT_SIGNAL]
@@ -223,6 +224,23 @@ static void test_subject_class_init(TestSubjectClass* klass) {
                    G_TYPE_INT, // return_type
                    0, // n_params
                    NULL);
+  /**
+   * TestSubject::array-of-gobj:
+   * @self: the subject who sent the signal.
+   * @objs: (array length=n_objs) (element-type TestSubject): an array of TestSubject.
+   * @n_objs: length of @objs.
+   *
+   * Used to test signals with array of GObject.
+   */
+  obj_signals[ARRAY_OF_GOBJ_SIGNAL]
+    = g_signal_new("array-of-gobj", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                   0, // class_offset
+                   NULL, // accumulator
+                   NULL, // accumulator data
+                   NULL, // C marshaller
+                   G_TYPE_NONE, // return_type
+                   2, // n_params
+                   G_TYPE_POINTER, G_TYPE_INT, NULL);
 }
 
 static void test_subject_init(TestSubject* self) {

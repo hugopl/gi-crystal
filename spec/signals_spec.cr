@@ -74,6 +74,19 @@ describe "GObject signals" do
 
   pending "test emit signals with return values"
 
+  it "can have array parameters" do
+    subject = Test::Subject.new
+    obj1 = Test::Subject.new
+    obj2 = Test::Subject.new
+    received_objs = nil
+    subject.array_of_gobj_signal.connect do |objs|
+      received_objs = objs
+    end
+
+    subject.array_of_gobj_signal.emit([obj1, obj2])
+    received_objs.should eq([obj1, obj2])
+  end
+
   context "when in interfaces" do
     it "can receive details and connect to a block" do
       iface = Test::Subject.new.return_myself_as_interface

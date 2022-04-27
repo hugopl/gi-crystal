@@ -34,25 +34,5 @@ module Generator
       end
       io << ".to_unsafe\n"
     end
-
-    private def generate_method_wrapper_args(io : IO, args : Array(ArgInfo))
-      io << "("
-      io << args.map do |arg|
-        null_mark = "?" if arg.nullable?
-        type = to_crystal_type(arg.type_info, is_arg: true)
-        "#{to_crystal_arg_decl(arg.name)} : #{type}#{null_mark}"
-      end.join(", ")
-      io << ")"
-    end
-
-    private def generate_handmade_types_param_conversion(io : IO, args : Array(ArgInfo))
-      args.each do |arg|
-        if BindingConfig.handmade?(arg.type_info)
-          type = to_crystal_type(arg.type_info)
-          var = to_identifier(arg.name)
-          io << var << "=" << type << ".new(" << var << ") unless " << var << ".is_a?(" << type << ")\n"
-        end
-      end
-    end
   end
 end

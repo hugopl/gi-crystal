@@ -10,7 +10,7 @@ module <%= namespace_name %>
 
   # :nodoc:
   @[GObject::GeneratedWrapper]
-  class <%= abstract_interface_name(object) %> < GObject::Object
+  class <%= abstract_interface_name(object, false) %> < GObject::Object
     include <%= type_name %>
 
     GICrystal.define_new_method(<%= abstract_interface_name(object) %>, g_object_get_qdata, g_object_set_qdata)

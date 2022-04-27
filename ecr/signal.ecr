@@ -47,7 +47,7 @@ struct <%= signal_type %>
       GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, 1)
   end
 
-  <%= signal_emit_method %>
+  <% render_emit_method %>
 end
 
 def <%= to_method_name(signal.name) %>_signal
