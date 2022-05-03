@@ -72,14 +72,14 @@ function returning the interface.
 
 ### Down Casts
 
-Must be done using `ClassName.cast(instance)` or `ClassName.cast?(instance)`, since Crystal type system doesn't knows about GObject type system. `.cast` throws a `TypeCastError` if the cast can't be made while `.cast?` just returns `nil`.
+If the object was created by Crystal code you can cast it like you do with any Crystal object instance, using `.as?` and `.as`.
+
+If the object was created by C code, e.g. `Gtk::Builder` where you get everything as a `GObject::Object` instance, Crystal type system doesn't knows the exact type of the object in GObject type system so you need to cast it using `ClassName.cast(instance)` or `ClassName.cast?(instance)`. `.cast` throws a `TypeCastError` if the cast can't be made while `.cast?` just returns `nil`.
 
 ```Crystal
   builder = Gtk::Builder.new_from_string("...") # Returns a Gtk::Object
   label = Gtk::Label.cast(builder["label"])
 ```
-
-A cast just creates a new wrapper object, so it increases the object reference count and allocate memory for the Crystal object instance.
 
 ## Signal Connections
 
