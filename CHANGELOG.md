@@ -6,6 +6,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.10.0] 2022-05-02
+### Added
+- Callback parameters are now supported.
+- Fixed size array parameters raises `ArgumentError` if the size is less than the expected size.
+
+### Fixed
+- User classes can inherit from classes with size bigger than `GObject::Object` (e.g. `Gtk::Widget`).
+- Methods with nilable handmade types (GValue/GVariant) in parameters now works.
+- Strings in structs now works.
+- Signals with return types now works.
+- Methods named `initialize` are now correctly binded to `_initialize` (thanks @GeopJr).
+- Fixed parameters of fixed size arrays.
+- Fix `make doc`.
+
+### Changed
+- Wrapper instances are now re-used and shared, so all variables wrapping the same GObject now share the same address and hold
+  just 1 reference to the GObject, this mean some things:
+
+  - A lot less memory allocations! 🎉️.
+  - Ordinary Crystal casts will work for Objects created from Crystal code and you rarely will need to use the `.cast` method.
+
 ## [0.9.0] 2022-04-17
 ### Added
 - Add support to subclass a GObject 🎉️.
