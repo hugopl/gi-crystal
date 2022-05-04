@@ -9,8 +9,8 @@ module GICrystal
     Full
   end
 
-  INSTANCE_QDATA_KEY     = LibGLib.g_quark_from_string("gi-crystal::instance")
-  GC_COLLECTED_QDATA_KEY = LibGLib.g_quark_from_string("gi-crystal::gc-collected")
+  INSTANCE_QDATA_KEY     = LibGLib.g_quark_from_static_string("gi-crystal::instance")
+  GC_COLLECTED_QDATA_KEY = LibGLib.g_quark_from_static_string("gi-crystal::gc-collected")
 
   class ObjectCollectedError < RuntimeError
   end
