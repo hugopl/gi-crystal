@@ -1,6 +1,6 @@
 <% libraries.each do |libname| -%>
 @[Link("<%= libname %>", pkg_config: "<%= libname %>")]
-<% end %>
+<% end -%>
 lib <%= to_lib_namespace(namespace) %>
 
 <% if g_lib? %>
