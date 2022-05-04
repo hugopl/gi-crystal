@@ -7,11 +7,11 @@ G_BEGIN_DECLS
 #define TEST_TYPE_SUBJECT_CHILD test_subject_child_get_type()
 G_DECLARE_DERIVABLE_TYPE(TestSubjectChild, test_subject_child, TEST, SUBJECT_CHILD, TestSubject)
 
-struct _TestSubjectChildClass {
-  GObjectClass parent_class;
+typedef struct _TestSubjectChildClass {
+  TestSubjectClass parent_class;
 
   /* Class virtual function fields. */
-};
+} TestSubjectChildClass;
 
 TestSubject* test_subject_child_new(const gchar* string);
 

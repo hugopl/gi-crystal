@@ -78,11 +78,11 @@ typedef struct _TestStruct {
 #define TEST_TYPE_SUBJECT test_subject_get_type()
 G_DECLARE_DERIVABLE_TYPE(TestSubject, test_subject, TEST, SUBJECT, GObject)
 
-struct _TestSubjectClass {
+typedef struct _TestSubjectClass {
   GObjectClass parent_class;
 
   /* Class virtual function fields. */
-};
+} TestSubjectClass;
 
 /**
  * TestSubjectSimpleFunc:
