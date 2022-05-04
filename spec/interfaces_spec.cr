@@ -30,5 +30,7 @@ describe "GObject interfaces" do
 
   it "have abstract to_unsafe method" do
     typeof(->func_with_iface_param(Test::Iface))
+
+    # Test::AbstractIface.new
   end
 end

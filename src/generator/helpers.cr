@@ -31,6 +31,12 @@ module Generator::Helpers
     name.tr("-", "_")
   end
 
+  def abstract_interface_name(iface : InterfaceInfo)
+    # I hope for the best that this wont cause any name clash.... but if so, at least it can be fixed
+    # in a single place once someone report such clash in some library.
+    "Abstract#{to_type_name(iface.name)}"
+  end
+
   def type_info_default_value(type_info : TypeInfo)
     case type_info.tag
     when .boolean?, .int32? then "0"
@@ -295,7 +301,7 @@ module Generator::Helpers
       end
     else
       crystal_type = to_crystal_type(info, true)
-      crystal_type = "#{crystal_type}__Impl" if info.is_a?(InterfaceInfo)
+      crystal_type = abstract_interface_name(info) if info.is_a?(InterfaceInfo)
       "#{crystal_type}.new(#{var}, GICrystal::Transfer::#{transfer})"
     end
   end

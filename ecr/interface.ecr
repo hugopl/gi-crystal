@@ -10,8 +10,29 @@ module <%= namespace_name %>
 
   # :nodoc:
   @[GObject::GeneratedWrapper]
-  class <%= type_name %>__Impl < GObject::Object
+  class <%= abstract_interface_name(object) %> < GObject::Object
     include <%= type_name %>
+
+    def self.new(pointer : Pointer(Void), transfer : GICrystal::Transfer) : self
+      # This is a copy of the code in object.ecr, it exists here just because
+      # we do a private `def initialize` bellow to avoid people to instantiate this abstract class.
+      # FIXME: Let this code be a macro to avoid code repetition.
+
+      # Try to recover the Crystal instance if any
+      instance = LibGObject.g_object_get_qdata(pointer, GICrystal::INSTANCE_QDATA_KEY)
+      return instance.as(self) if instance
+
+      # This object never meet Crystal land, so we allocate memory and initialize it.
+      instance = <%= abstract_interface_name(object) %>.allocate
+      LibGObject.g_object_set_qdata(pointer, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(instance.object_id))
+      instance.initialize(pointer, transfer)
+      GC.add_finalizer(instance)
+      instance
+    end
+
+    # Forbid users to create instances of this.
+    private def initialize
+    end
 
     <% render "ecr/g_type_method.ecr" %>
     <% render "ecr/cast_methods.ecr" %>
