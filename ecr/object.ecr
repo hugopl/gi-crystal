@@ -70,19 +70,7 @@ module <%= namespace_name %>
                                                sizeof(<%= to_lib_type(object) %>), instance_init, 0)
     end
 
-    # :nodoc:
-    def self.new(pointer : Pointer(Void), transfer : GICrystal::Transfer) : self
-      # Try to recover the Crystal instance if any
-      instance = LibGObject.<%= object.qdata_get_func %>(pointer, GICrystal::INSTANCE_QDATA_KEY)
-      return instance.as(self) if instance
-
-      # This object never meet Crystal land, so we allocate memory and initialize it.
-      instance = {{ @type }}.allocate
-      LibGObject.<%= object.qdata_set_func %>(pointer, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(instance.object_id))
-      instance.initialize(pointer, transfer)
-      GC.add_finalizer(instance)
-      instance
-    end
+    GICrystal.define_new_method(<%= type_name %>, <%= object.qdata_get_func %>, <%= object.qdata_set_func %>)
 
     # Initialize a new `<%= type_name %>`.
     def initialize

@@ -83,5 +83,21 @@ module GICrystal
     end
   end
 
+  macro define_new_method(type, qdata_get_func, qdata_set_func)
+    # :nodoc:
+    def self.new(pointer : Pointer(Void), transfer : GICrystal::Transfer) : self
+      # Try to recover the Crystal instance if any
+      instance = LibGObject.{{ qdata_get_func }}(pointer, GICrystal::INSTANCE_QDATA_KEY)
+      return instance.as({{ type }}) if instance
+
+      # This object never meet Crystal land, so we allocate memory and initialize it.
+      instance = {{ type }}.allocate
+      LibGObject.{{ qdata_set_func }}(pointer, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(instance.object_id))
+      instance.initialize(pointer, transfer)
+      GC.add_finalizer(instance)
+      instance
+    end
+  end
+
   extend self
 end
