@@ -60,10 +60,10 @@ make test
 If you want to re-run a specific test without re-generate the bindings, i.e. you just changed the test code, you can run:
 
 ```
-./bin/rspec
+./bin/spec
 ```
 
-It accepts the same parameters that `crystal spec` does, why `rspec`? I don't know... maybe I'm too used to ruby that just create the file with this name without thinking.
+It accepts the same parameters that `crystal spec` does.
 
 ## Comparing API changes
 
