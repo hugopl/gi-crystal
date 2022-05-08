@@ -241,6 +241,23 @@ static void test_subject_class_init(TestSubjectClass* klass) {
                    G_TYPE_NONE, // return_type
                    2, // n_params
                    G_TYPE_POINTER, G_TYPE_INT, NULL);
+  /**
+   * TestSubject::array-of-iface:
+   * @self: the subject who sent the signal.
+   * @objs: (array length=n_objs) (element-type TestIface): an array of TestIface.
+   * @n_objs: length of @objs.
+   *
+   * Used to test signals with array of interfaces.
+   */
+  obj_signals[ARRAY_OF_GOBJ_SIGNAL]
+    = g_signal_new("array-of-iface", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+                   0, // class_offset
+                   NULL, // accumulator
+                   NULL, // accumulator data
+                   NULL, // C marshaller
+                   G_TYPE_NONE, // return_type
+                   2, // n_params
+                   G_TYPE_POINTER, G_TYPE_INT, NULL);
 }
 
 static void test_subject_init(TestSubject* self) {

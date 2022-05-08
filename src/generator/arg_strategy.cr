@@ -164,7 +164,12 @@ module Generator
         io << "lib_" << arg_name << " = lib_" << arg_name << ".as(Pointer(Pointer(Void)))\n"
 
         io << arg_name << "= Array(" << param_type << ").new(lib_" << len_arg_name << ") do |_i|\n"
-        io << param_type << ".new((lib_" << arg_name << " + _i).value, GICrystal::Transfer::" << arg.ownership_transfer << ")\n"
+
+        ptr_expr = "(lib_#{arg_name} + _i).value"
+        # FIXME: Maybe convert_crystal should return a macro code that does that, instead of generate this,
+        #        something like we do with transferArray, but need to be a macro since we need more type
+        #        information.
+        io << convert_to_crystal(ptr_expr, arg_type.param_type, nil, arg.ownership_transfer)
         io << "end\n"
       else
         io << "raise NotImplementedError.new\n"

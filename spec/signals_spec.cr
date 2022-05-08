@@ -74,7 +74,7 @@ describe "GObject signals" do
 
   pending "test emit signals with return values"
 
-  it "can have array parameters" do
+  it "can have array GObject as parameter" do
     subject = Test::Subject.new
     obj1 = Test::Subject.new
     obj2 = Test::Subject.new
@@ -85,6 +85,21 @@ describe "GObject signals" do
 
     subject.array_of_gobj_signal.emit([obj1, obj2])
     received_objs.should eq([obj1, obj2])
+  end
+
+  it "can have array Interface as parameter" do
+    subject = Test::Subject.new
+    obj1 = Test::Subject.new
+    obj2 = Test::Subject.new
+    # FIXME: Changing the line bellow to `received_objs2 = nil` will crash the compiler
+    #        However I can't reduce the issue to a minimal code 😢️
+    received_objs2 = [] of Test::Iface
+    subject.array_of_iface_signal.connect do |objs|
+      received_objs2 = objs
+    end
+
+    subject.array_of_iface_signal.emit([obj1, obj2])
+    received_objs2.should eq([obj1, obj2])
   end
 
   context "when in interfaces" do
