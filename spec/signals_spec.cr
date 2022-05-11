@@ -93,13 +93,24 @@ describe "GObject signals" do
     obj2 = Test::Subject.new
     # FIXME: Changing the line bellow to `received_objs2 = nil` will crash the compiler
     #        However I can't reduce the issue to a minimal code 😢️
-    received_objs2 = [] of Test::Iface
+    received_objs = [] of Test::Iface
     subject.array_of_iface_signal.connect do |objs|
-      received_objs2 = objs
+      received_objs = objs
     end
 
     subject.array_of_iface_signal.emit([obj1, obj2])
-    received_objs2.should eq([obj1, obj2])
+    received_objs.should eq([obj1, obj2])
+  end
+
+  it "can have a string as parameter" do
+    subject = Test::Subject.new
+    received_str = ""
+    subject.nullable_args_signal.connect do |signal_str|
+      received_str = signal_str
+    end
+
+    subject.nullable_args_signal.emit("Olá", 0)
+    received_str.should eq("Olá")
   end
 
   context "when in interfaces" do

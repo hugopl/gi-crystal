@@ -39,7 +39,7 @@ module Generator
                              CallerAllocatesPlan
                              HandmadeArgPlan
                              TransferFullArgPlan
-                             GObjectArgPlan) %}
+                             BuiltInTypeArgPlan) %}
       plan = {{ plan_class.id }}.new(strategies)
       strategies.each do |strategy|
         if plan.match?(strategy, direction)
@@ -333,12 +333,20 @@ module Generator
     end
   end
 
-  struct GObjectArgPlan < ArgPlan
+  struct BuiltInTypeArgPlan < ArgPlan
     def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
+      return false if strategy.remove_from_declaration?
+
       arg_type = strategy.arg.type_info
       return false if BindingConfig.handmade?(arg_type)
+      return false if direction.crystal_to_c?
 
-      direction.c_to_crystal? && arg_type.tag.interface?
+      case arg_type.tag
+      when .interface?, .utf8?, .filename?
+        true
+      else
+        false
+      end
     end
 
     def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
@@ -349,7 +357,19 @@ module Generator
       arg_name = to_identifier(arg.name)
       type_info = arg.type_info
 
-      io << arg_name << '=' << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", :none)\n"
+      io << arg_name << '='
+
+      tag = type_info.tag
+      if tag.interface?
+        io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", :none)"
+      elsif tag.utf8? || tag.filename?
+        io << convert_to_crystal("lib_#{arg_name}", type_info, nil, :none)
+      end
+
+      if arg.nullable?
+        io << " unless lib_" << arg_name << ".null?"
+      end
+      io << LF
     end
   end
 
