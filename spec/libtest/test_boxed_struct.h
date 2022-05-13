@@ -10,7 +10,7 @@ G_BEGIN_DECLS
  */
 typedef struct _TestBoxedStruct TestBoxedStruct;
 
-#define TEST_BOXED_STRUCT (test_boxed_struct_get_type())
+#define TEST_TYPE_BOXED_STRUCT (test_boxed_struct_get_type())
 
 GType test_boxed_struct_get_type(void);
 

@@ -124,6 +124,18 @@ describe "GObject signals" do
     received_enum.should eq(Test::RegularEnum::Value2)
   end
 
+  it "can have a boxed struct as parameter" do
+    subject = Test::Subject.new
+    received_boxed = nil
+    subject.boxed_signal.connect do |box|
+      received_boxed = box
+    end
+
+    box = Test::BoxedStruct.return_boxed_struct("hey")
+    subject.boxed_signal.emit(box)
+    received_boxed.not_nil!.data.should eq("hey")
+  end
+
   context "when in interfaces" do
     it "can receive details and connect to a block" do
       iface = Test::Subject.new.return_myself_as_interface

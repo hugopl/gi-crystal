@@ -361,7 +361,7 @@ module Generator
 
       tag = type_info.tag
       if tag.interface?
-        if type_info.interface.class.in?(ObjectInfo, InterfaceInfo)
+        if type_info.interface.class.in?(ObjectInfo, InterfaceInfo, StructInfo)
           io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", :none)"
         else
           io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ")"
