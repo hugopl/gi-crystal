@@ -152,7 +152,7 @@ module Generator
 
     private def method_c_call_args : String
       args = Array(String).new(@method.args.size + 2) # +2, just in case we need space for `self` and `error`.
-      args << "self" if @method.method?
+      args << "@pointer" if @method.method?
       @method.args.each do |arg|
         if arg.direction.out? && arg_used_by_return_type?(arg)
           args << "pointerof(#{to_identifier(arg.name)})"
