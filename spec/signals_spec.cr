@@ -113,6 +113,17 @@ describe "GObject signals" do
     received_str.should eq("Olá")
   end
 
+  it "can have an enum as parameter" do
+    subject = Test::Subject.new
+    received_enum = Test::RegularEnum::Value1
+    subject.enum_signal.connect do |_enum|
+      received_enum = _enum
+    end
+
+    subject.enum_signal.emit(:value2)
+    received_enum.should eq(Test::RegularEnum::Value2)
+  end
+
   context "when in interfaces" do
     it "can receive details and connect to a block" do
       iface = Test::Subject.new.return_myself_as_interface

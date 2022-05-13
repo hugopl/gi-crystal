@@ -361,7 +361,11 @@ module Generator
 
       tag = type_info.tag
       if tag.interface?
-        io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", :none)"
+        if type_info.interface.class.in?(ObjectInfo, InterfaceInfo)
+          io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", :none)"
+        else
+          io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ")"
+        end
       elsif tag.utf8? || tag.filename?
         io << convert_to_crystal("lib_#{arg_name}", type_info, nil, :none)
       end

@@ -242,6 +242,22 @@ static void test_subject_class_init(TestSubjectClass* klass) {
                G_TYPE_NONE, // return_type
                2, // n_params
                G_TYPE_POINTER, G_TYPE_INT, NULL);
+  /**
+   * TestSubject::enum:
+   * @self: the subject who sent the signal.
+   * @value: the enum value.
+   *
+   * Used to test signals with enums
+   */
+  g_signal_new("enum", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+               0, // class_offset
+               NULL, // accumulator
+               NULL, // accumulator data
+               NULL, // C marshaller
+               G_TYPE_NONE, // return_type
+               1, // n_params
+               TEST_TYPE_REGULAR_ENUM, NULL);
+
 }
 
 static void test_subject_init(TestSubject* self) {
