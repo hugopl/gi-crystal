@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.11.0] 2022-05-18
+### Added
+- Allow user objects inheriting GObject to have custom constructors.
+- Support signals with array of GObjects.
+- Support signals with array of GObjetct Interfaces.
+- Support signals with boxed structs.
+- Support signals with enums.
+
+### Fixed
+- Avoid copy strings when creating quarks to store object qdata.
+- Fix signals with nullable strings.
+- Don't use `self` on method implementations, so they can be used in constructors before instance variables be set.
+
 ## [0.10.0] 2022-05-02
 ### Added
 - Callback parameters are now supported.
