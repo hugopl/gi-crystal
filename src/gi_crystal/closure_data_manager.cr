@@ -24,6 +24,10 @@ module GICrystal
     end
 
     def deregister(data : Pointer(Void)) : Nil
+      {% if flag?(:debugmemory) %}
+        puts "Deregistering #{data} from ClosureDataManager, count: #{@closure_data[data]}."
+      {% end %}
+
       @closure_data[data] -= 1
       if @closure_data[data] <= 0
         @closure_data.delete(data)

@@ -70,6 +70,8 @@ where `GLib` and `Gtk` are modules.
 GObject interfaces are mapped to Crystal modules + a dummy class that only implements this module, used when there's some
 function returning the interface.
 
+Currently isn't possible to include a GObject interface on your objects, see [issue 10](https://github.com/hugopl/gi-crystal/issues/10).
+
 ### Down Casts
 
 If the object was created by Crystal code you can cast it like you do with any Crystal object instance, using `.as?` and `.as`.
@@ -135,7 +137,10 @@ end
 ```
 ### Disconnecting signals
 
-- TBD
+When you connect a signal it returns a `GObject::SignalConnection` object, call the disconnect method on it and it's done.
+
+⚠️ Objects with signals connections will never be garbage collected, so remember to disconnect all signals from your object
+if you want to really free up that beloved memory.
 
 ## GValue
 
@@ -149,14 +154,18 @@ GObjects must always have a reference in Crystal world, otherwise they will be c
 
 Trying to cast a GObject that was already collected by Crystal GC will result in a `GICrystal::ObjectCollectedError` exception.
 
-Different from wrappers, crystal objects that inherit `GObject` returns the same object reference on casts, i.e. no memory
-allocation is done. For more examples see the [inheritance tests](spec/inheritance_spec.cr).
+Crystal objects that inherit `GObject` returns the same object reference on casts, i.e. no memory allocation is done.
+For more examples see the [inheritance tests](spec/inheritance_spec.cr).
 
 ## Declaring GObject signals
 
 - TBD
 
 ## Declaring GObject properties
+
+- TBD
+
+### Virtual Methods
 
 - TBD
 

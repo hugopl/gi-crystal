@@ -148,4 +148,20 @@ describe "GObject signals" do
       value.should eq(32)
     end
   end
+
+  context "when disconnecting signals" do
+    it "works" do
+      subject = Test::Subject.new
+      received_enum = Test::RegularEnum::Value1
+      connection = subject.enum_signal.connect do |_enum|
+        received_enum = _enum
+      end
+
+      connection.connected?.should eq(true)
+      connection.disconnect
+      connection.connected?.should eq(false)
+      subject.enum_signal.emit(:value2)
+      received_enum.should eq(Test::RegularEnum::Value1)
+    end
+  end
 end

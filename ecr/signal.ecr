@@ -15,36 +15,40 @@ struct <%= signal_type %>
     @detail ? "<%= signal.name %>::#{@detail}" : "<%= signal.name %>"
   end
 
-  def connect(&block : Proc(<%= lean_proc_params %>))
+  def connect(&block : Proc(<%= lean_proc_params %>)) : GObject::SignalConnection
     connect(block)
   end
 
-  def connect_after(&block : Proc(<%= lean_proc_params %>))
+  def connect_after(&block : Proc(<%= lean_proc_params %>)) : GObject::SignalConnection
     connect(block)
   end
 
-  def connect(handler : Proc(<%= lean_proc_params %>))
+  def connect(handler : Proc(<%= lean_proc_params %>)) : GObject::SignalConnection
     <% render_box(:lean_signal) %>
-    LibGObject.g_signal_connect_data(@source, name, handler,
+    handler = LibGObject.g_signal_connect_data(@source, name, handler,
       GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, 0)
+    GObject::SignalConnection.new(@source, handler)
   end
 
-  def connect_after(handler : Proc(<%= lean_proc_params %>))
+  def connect_after(handler : Proc(<%= lean_proc_params %>)) : GObject::SignalConnection
     <% render_box(:lean_signal) %>
-    LibGObject.g_signal_connect_data(@source, name, handler,
+    handler = LibGObject.g_signal_connect_data(@source, name, handler,
       GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, 1)
+    GObject::SignalConnection.new(@source, handler)
   end
 
-  def connect(handler : Proc(<%= full_proc_params %>))
+  def connect(handler : Proc(<%= full_proc_params %>)) : GObject::SignalConnection
     <% render_box(:full_signal) %>
-    LibGObject.g_signal_connect_data(@source, name, handler,
+    handler = LibGObject.g_signal_connect_data(@source, name, handler,
       GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, 0)
+    GObject::SignalConnection.new(@source, handler)
   end
 
-  def connect_after(handler : Proc(<%= full_proc_params %>))
+  def connect_after(handler : Proc(<%= full_proc_params %>)) : GObject::SignalConnection
     <% render_box(:full_signal) %>
-    LibGObject.g_signal_connect_data(@source, name, handler,
+    handler = LibGObject.g_signal_connect_data(@source, name, handler,
       GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, 1)
+    GObject::SignalConnection.new(@source, handler)
   end
 
   <% render_emit_method %>
