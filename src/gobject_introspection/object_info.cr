@@ -45,11 +45,9 @@ module GObjectIntrospection
       unref_func.null? ? "g_object_set_qdata" : "g_param_spec_set_qdata"
     end
 
-    def class_struct : StructInfo
+    def class_struct : StructInfo?
       ptr = LibGIRepository.g_object_info_get_class_struct(self)
-      return Repository.default.find_by_name("GObject", "ObjectClass").as(StructInfo) if ptr.null?
-
-      StructInfo.new(ptr)
+      StructInfo.new(ptr) if ptr
     end
 
     def initially_unowned? : Bool

@@ -20,8 +20,10 @@ module <%= namespace_name %>
 
     @pointer : Pointer(Void)
 
-    <% if g_object_type? %>
     macro inherited
+    <% if object.class_struct.nil? %>
+    {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GObject::GeneratedWrapper) }}
+    <% elsif g_object_type? %>
       {% unless @type.annotation(GObject::GeneratedWrapper) %}
       # GType for the new created type
       @@_g_type : UInt64 = 0
@@ -59,16 +61,18 @@ module <%= namespace_name %>
         instance.as(self)
       end
       {% end %}
+    <% end %>
     end
 
-    <% end %>
-
+    <% class_struct = object.class_struct -%>
+    <% if class_struct %>
     # :nodoc:
     def self._register_derived_type(klass : Class, class_init, instance_init)
       LibGObject.g_type_register_static_simple(g_type, klass.name,
-                                               sizeof(<%= to_lib_type(object.class_struct) %>), class_init,
+                                               sizeof(<%= to_lib_type(class_struct) %>), class_init,
                                                sizeof(<%= to_lib_type(object) %>), instance_init, 0)
     end
+    <% end %>
 
     GICrystal.define_new_method(<%= type_name %>, <%= object.qdata_get_func %>, <%= object.qdata_set_func %>)
 
