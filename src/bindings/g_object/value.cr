@@ -12,6 +12,14 @@ module GObject
     end
 
     # :nodoc:
+    def initialize(ptr : Pointer(Void), transfer : GICrystal::Transfer)
+      value_g_type = ptr.as(Pointer(LibGObject::Value)).value.g_type
+      LibGObject.g_value_init(self, value_g_type)
+      LibGObject.g_value_copy(ptr, self)
+      LibGObject.g_value_unset(ptr) if transfer.full?
+    end
+
+    # :nodoc:
     def self.init_g_value(ptr : Pointer(LibGObject::Value), value) : Nil
       LibGObject.g_value_init(ptr, Value.g_type_for(value))
 
@@ -119,6 +127,11 @@ module GObject
          nil
        end
     {% end %}
+
+    # Compare two GObject::Value objects
+    def ==(other : Value) : Bool
+      LibC.memcmp(self, other.to_unsafe, sizeof(LibGObject::Value)).zero?
+    end
 
     def to_unsafe
       pointerof(@g_value).as(Pointer(Void))

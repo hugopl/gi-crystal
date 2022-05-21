@@ -273,6 +273,21 @@ static void test_subject_class_init(TestSubjectClass* klass) {
                G_TYPE_NONE, // return_type
                1, // n_params
                TEST_TYPE_BOXED_STRUCT, NULL);
+  /**
+   * TestSubject::gvalue:
+   * @self: the subject who sent the signal.
+   * @gvalue: (nullable): the boxed struct.
+   *
+   * Used to test signals with boxed structs
+   */
+  g_signal_new("gvalue", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+               0, // class_offset
+               NULL, // accumulator
+               NULL, // accumulator data
+               NULL, // C marshaller
+               G_TYPE_NONE, // return_type
+               1, // n_params
+               G_TYPE_VALUE, NULL);
 }
 
 static void test_subject_init(TestSubject* self) {

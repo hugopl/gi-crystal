@@ -305,7 +305,9 @@ module Generator
       type = to_crystal_type(arg_type)
       var = to_identifier(arg.name)
 
-      io << var << '=' << type << ".new(lib_" << var << ", :none)\n"
+      io << var << '=' << type << ".new(lib_" << var << ", :none)"
+      io << " unless lib_" << var << ".null?" if arg.nullable?
+      io << LF
     end
   end
 

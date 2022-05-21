@@ -136,6 +136,20 @@ describe "GObject signals" do
     received_boxed.not_nil!.data.should eq("hey")
   end
 
+  it "can have a GValue as parameter" do
+    subject = Test::Subject.new
+    received_value = nil
+    subject.gvalue_signal.connect do |value|
+      received_value = value
+    end
+
+    subject.gvalue_signal.emit(42)
+    received_value.should eq(GObject::Value.new(42))
+
+    subject.gvalue_signal.emit(nil)
+    received_value.should eq(nil)
+  end
+
   context "when in interfaces" do
     it "can receive details and connect to a block" do
       iface = Test::Subject.new.return_myself_as_interface
