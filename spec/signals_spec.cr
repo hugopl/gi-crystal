@@ -1,5 +1,12 @@
 require "./spec_helper"
 
+private class UserSignalObj < GObject::Object
+  signal no_args
+  signal uint32(uint32 : UInt32)
+  signal int64(int64 : Int64, uint64 : UInt64)
+  signal floats(float : Float32, double : Float64)
+end
+
 # Used on basic signal tests
 def full_notify_slot(gobj : GObject::Object, pspec : GObject::ParamSpec) : Nil
   prev_value = GlobalVar.value
@@ -42,7 +49,7 @@ describe "GObject signals" do
 
   it "can connect a after signal" do
     subject = Test::Subject.new
-    subject.notify_signal["string"].connect_after(->lean_notify_slot(GObject::ParamSpec))
+    subject.notify_signal["string"].connect(->lean_notify_slot(GObject::ParamSpec), after: true)
     subject.notify_signal["string"].connect(->full_notify_slot(GObject::Object, GObject::ParamSpec))
     GlobalVar.value = ""
     subject.string = "new value"
@@ -160,6 +167,60 @@ describe "GObject signals" do
       end
       iface.iface_int32_signal.emit(32)
       value.should eq(32)
+    end
+  end
+
+  context "when declaring signals" do
+    it "they have a name" do
+      obj = UserSignalObj.new
+      obj.uint32_signal.name.should eq("uint32")
+    end
+
+    it "works no parameters" do
+      obj = UserSignalObj.new
+      called = false
+      obj.no_args_signal.connect { called = true }
+      obj.no_args_signal.emit
+      called.should eq(true)
+    end
+
+    it "works with 32 bits integer parameters" do
+      obj = UserSignalObj.new
+      value = 0
+      obj.uint32_signal.connect do |v|
+        value = v
+      end
+
+      obj.uint32_signal.emit(32)
+      value.should eq(32)
+    end
+
+    it "works with 64 bits integer parameters" do
+      obj = UserSignalObj.new
+      received_i64 = 0_i64
+      received_u64 = 0_i64
+      obj.int64_signal.connect do |i64, u64|
+        received_i64 = i64
+        received_u64 = u64
+      end
+
+      obj.int64_signal.emit(32_i64, 128_u64)
+      received_i64.should eq(32_i64)
+      received_u64.should eq(128_u64)
+    end
+
+    it "works with float parameters" do
+      obj = UserSignalObj.new
+      received_f32 = 0.0_f32
+      received_f64 = 0.0
+      obj.floats_signal.connect do |f32, f64|
+        received_f32 = f32
+        received_f64 = f64
+      end
+
+      obj.floats_signal.emit(3.14_f32, 6.28)
+      received_f32.should eq(3.14_f32)
+      received_f64.should eq(6.28_f64)
     end
   end
 

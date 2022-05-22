@@ -23,3 +23,59 @@ module GObject
   TYPE_VARIANT   = 0x54_u64
   TYPE_STRV      = LibGObject.g_strv_get_type
 end
+
+struct Int8
+  # Returns the GObject GType for Int8.
+  def self.g_type
+    GObject::TYPE_CHAR
+  end
+end
+
+struct UInt8
+  # Returns the GObject GType for UInt8.
+  def self.g_type
+    GObject::TYPE_UCHAR
+  end
+end
+
+struct Int32
+  # Returns the GObject GType for Int32.
+  def self.g_type
+    GObject::TYPE_INT
+  end
+end
+
+struct UInt32
+  # Returns the GObject GType for UInt32.
+  def self.g_type
+    GObject::TYPE_UINT
+  end
+end
+
+struct Int64
+  # Returns the GObject GType for Int64.
+  def self.g_type
+    GObject::TYPE_INT64
+  end
+end
+
+struct UInt64
+  # Returns the GObject GType for UInt64.
+  def self.g_type
+    GObject::TYPE_UINT64
+  end
+end
+
+struct Float32
+  # Returns the GObject GType for Float32.
+  def self.g_type
+    GObject::TYPE_FLOAT
+  end
+end
+
+struct Float64
+  # Returns the GObject GType for Float64.
+  def self.g_type
+    GObject::TYPE_DOUBLE
+  end
+end

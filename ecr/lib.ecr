@@ -30,7 +30,16 @@ lib <%= to_lib_namespace(namespace) %>
   # So we can re-use the Crystal objects saving some memory allocations.
   fun g_object_set_qdata(object : Void*, quark : UInt32, data : Void*)
 
-  # Type register
+  fun g_signal_new(signal_name : LibC::Char*,
+                   itype : UInt64,
+                   signal_flags : UInt32,
+                   class_offset : UInt32,
+                   accumulator : Pointer(Void),
+                   accu_data : Pointer(Void),
+                   c_marshaller : Pointer(Void),
+                   return_type : UInt64,
+                   n_params : UInt32, ...) : UInt32
+
   fun g_type_register_static_simple(parent_type : UInt64,
                                     type_name : LibC::Char*,
                                     class_size : UInt32,

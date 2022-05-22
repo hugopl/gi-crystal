@@ -20,6 +20,74 @@ module <%= namespace_name %>
 
     @pointer : Pointer(Void)
 
+
+  <% if g_object_type? %>
+    # Declares a GObject signal.
+    #
+    # Supported signal parameter types are:
+    #
+    #  - Integer types
+    #  - Float types
+    macro signal(signature)
+      {%
+      raise "signal parameter must be a signature (Macros::Call), got #{signature.class_name}" unless signature.is_a?(Call)
+      raise "Signal signature #{signature} can't have a receiver" if signature.receiver
+      raise "Signal signature #{signature} can't have a block argument" if signature.block_arg
+      %}
+
+      struct {{ signature.name.titleize }}Signal < GObject::Signal
+        def name : String
+          @detail ? "{{ signature.name }}::#{@detail}" : {{ signature.name.stringify }}
+        end
+
+        alias LeanProc = Proc({{ (signature.args.map(&.type) << Nil).splat }})
+
+        def connect(*, after : Bool = false, &block : LeanProc) : GObject::SignalConnection
+          connect(block, after: after)
+        end
+
+        def connect(handler : LeanProc, *, after : Bool = false) : GObject::SignalConnection
+          _box = ::Box.box(handler)
+          {% if signature.args.empty? %}
+          handler = ->(_lib_sender : Pointer(Void), _lib_box : Pointer(Void)) { ::Box(LeanProc).unbox(_lib_box).call }.pointer
+          {% else %}
+          handler = ->(_lib_sender : Pointer(Void), {{ signature.args.splat }}, _lib_box : Pointer(Void)) {
+            ::Box(LeanProc).unbox(_lib_box).call({{ signature.args.map(&.var).splat }})
+          }.pointer
+          {% end %}
+
+          handler = LibGObject.g_signal_connect_data(@source, name, handler,
+            GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, after.to_unsafe)
+          GObject::SignalConnection.new(@source, handler)
+        end
+
+        def emit({{ signature.args.splat }})
+          LibGObject.g_signal_emit_by_name(@source, {{ signature.name.stringify }}, {{ signature.args.map(&.var).splat }})
+        end
+      end
+
+      def {{ signature.name }}_signal
+        {{ signature.name.titleize }}Signal.new(self)
+      end
+
+      def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
+        LibGObject.g_signal_new({{ signature.name.stringify }}, g_type,
+        GObject::SignalFlags.flags(RunLast, NoRecurse, NoHooks),
+        0,                   # class_offset
+        Pointer(Void).null,  # accumulator
+        Pointer(Void).null,  # accumulator_data
+        Pointer(Void).null,  # marshaller
+        GObject::TYPE_NONE,  # return_type
+        {{ signature.args.size }}, # n_params
+        {% for arg in signature.args %}
+        {{ arg.type }}.g_type,
+        {% end %}
+        Pointer(Void).null)
+        previous_def
+      end
+    end
+  <% end %>
+
     macro inherited
     <% if object.class_struct.nil? %>
     {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GObject::GeneratedWrapper) }}

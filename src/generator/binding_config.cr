@@ -5,6 +5,7 @@ module Generator
     getter namespace : String
     getter version : String
     getter includes : Set(Path)
+    getter includes_before : Set(Path)
     getter handmade : Set(String)
     getter ignore : Set(String)
     getter execute_callback : Set(String)
@@ -25,6 +26,12 @@ module Generator
       read_list(data, "include").each do |i|
         @includes << @base_path.join(i)
       end
+
+      @includes_before = Set(Path).new
+      read_list(data, "include_before").each do |i|
+        @includes_before << @base_path.join(i)
+      end
+
       @handmade = read_list(data, "handmade")
       @ignore = read_list(data, "ignore")
       @execute_callback = read_list(data, "execute_callback")
@@ -32,7 +39,7 @@ module Generator
 
     # Constructs an empty binding config
     def initialize(@namespace, @version)
-      @includes = Set(Path).new
+      @includes_before = @includes = Set(Path).new
       @execute_callback = @handmade = @ignore = Set(String).new
       @base_path = Path.new(".")
     end

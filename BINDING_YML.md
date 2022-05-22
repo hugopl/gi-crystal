@@ -22,6 +22,10 @@ Version of the GObject namespace this file describes.
 
 List of extra files that must be included in the binding, the generator will add an `require` call for each of then at the end of module definition.
 
+## include_before
+
+List of extra files that must be included in the binding, the generator will add an `require` call for each of then at the end of module definition *before* the inclusion of the wrappers.
+
 ## handmade
 
 List of types that are going to be handmade. The generator does not generate implementation for handmade types since they are

@@ -159,7 +159,25 @@ For more examples see the [inheritance tests](spec/inheritance_spec.cr).
 
 ## Declaring GObject signals
 
-- TBD
+You can declare signals in your `GObject::Object` derived class using the `signal` macro, e.g.:
+
+```Crystal
+class Foo < GObject::Object
+  signal my_signal_without_args
+  signal my_signal(number : Int32, some_float : Float32)
+end
+
+# Using the signal
+foo = Foo.new
+foo.my_signal_without_args_signal.connect { puts "Got signal!" }
+foo.my_signal_signal.connect { |a, b| puts "Got signal with #{a} and #{b}!" }
+
+# emitting signals
+foo.my_signal_without_args_signal.emit
+foo.my_signal_signal.emit(42, 3.14)
+```
+
+⚠️ Meanwhile signals only support parameters of Integer and Float types. Support for other types will be added later.
 
 ## Declaring GObject properties
 

@@ -6,6 +6,10 @@ require "../<%= dep.module_dir %>/<%= dep.filename%>"
 # C lib declaration
 require "./<%= @lib.filename %>"
 
+<% config.includes_before.each do |inc| -%>
+require "<%= inc.relative_to("#{output_dir}/#{module_dir}") %>"
+<% end %>
+
 # Wrappers
 <% wrapper_files.each do |inc| -%>
 require "./<%= inc %>"

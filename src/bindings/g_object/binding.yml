@@ -1,8 +1,12 @@
 namespace: GObject
 version: "2.0"
+
+include_before:
+ - type.cr
+ - signal.cr
+
 include:
  - param_spec.cr
- - type.cr
  - value.cr
  - signal_connection.cr
 
