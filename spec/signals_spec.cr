@@ -5,6 +5,8 @@ private class UserSignalObj < GObject::Object
   signal uint32(uint32 : UInt32)
   signal int64(int64 : Int64, uint64 : UInt64)
   signal floats(float : Float32, double : Float64)
+  signal string(str : String)
+  signal bool(value : Bool)
 end
 
 # Used on basic signal tests
@@ -221,6 +223,30 @@ describe "GObject signals" do
       obj.floats_signal.emit(3.14_f32, 6.28)
       received_f32.should eq(3.14_f32)
       received_f64.should eq(6.28_f64)
+    end
+
+    it "works with string parameters" do
+      obj = UserSignalObj.new
+      received_str = ""
+      obj.string_signal.connect do |str|
+        received_str = str
+      end
+
+      obj.string_signal.emit("Hello")
+      received_str.should eq("Hello")
+    end
+
+    it "works with boolean parameters" do
+      obj = UserSignalObj.new
+      received_bool = false
+      obj.bool_signal.connect do |bool|
+        received_bool = bool
+      end
+
+      obj.bool_signal.emit(true)
+      received_bool.should eq(true)
+      obj.bool_signal.emit(false)
+      received_bool.should eq(false)
     end
   end
 

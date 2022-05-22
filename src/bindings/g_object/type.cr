@@ -24,6 +24,20 @@ module GObject
   TYPE_STRV      = LibGObject.g_strv_get_type
 end
 
+class String
+  # Returns the GObject GType for String.
+  def self.g_type
+    GObject::TYPE_STRING
+  end
+end
+
+struct Bool
+  # Returns the GObject GType for Bool.
+  def self.g_type
+    GObject::TYPE_BOOL
+  end
+end
+
 struct Int8
   # Returns the GObject GType for Int8.
   def self.g_type

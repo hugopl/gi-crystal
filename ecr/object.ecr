@@ -51,7 +51,31 @@ module <%= namespace_name %>
           {% if signature.args.empty? %}
           handler = ->(_lib_sender : Pointer(Void), _lib_box : Pointer(Void)) { ::Box(LeanProc).unbox(_lib_box).call }.pointer
           {% else %}
-          handler = ->(_lib_sender : Pointer(Void), {{ signature.args.splat }}, _lib_box : Pointer(Void)) {
+          handler = ->(_lib_sender : Pointer(Void),
+          {% for arg in signature.args %}
+          {%
+            resolved_type = arg.type.resolve
+            if resolved_type == String
+              type = ::Pointer(UInt8)
+            elsif resolved_type == Bool
+              type = ::Int32
+            else
+              type = arg.type
+            end
+          %}
+          {{ arg.var }} : {{ type }},
+          {% end %}
+          _lib_box : Pointer(Void)) {
+
+            {% for arg in signature.args %}
+            {% resolved_type = arg.type.resolve %}
+            {% if arg.type.resolve == String %}
+              {{ arg.var }} = String.new({{ arg.var }})
+            {% elsif arg.type.resolve == Bool %}
+              {{ arg.var }} = {{ arg.var }} != 0
+            {% end %}
+            {% end %}
+
             ::Box(LeanProc).unbox(_lib_box).call({{ signature.args.map(&.var).splat }})
           }.pointer
           {% end %}

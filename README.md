@@ -177,7 +177,10 @@ foo.my_signal_without_args_signal.emit
 foo.my_signal_signal.emit(42, 3.14)
 ```
 
-⚠️ Meanwhile signals only support parameters of Integer and Float types. Support for other types will be added later.
+⚠️ Meanwhile signals only support parameters of Integer, Float, String and Boolean types.
+
+Also note that String parameters will be copied for each signal receiver, this is because the String goes to C, then back to
+Crystal as a `const char*` pointer. This may change in the future.
 
 ## Declaring GObject properties
 
