@@ -1,6 +1,7 @@
 namespace: GLib
 version: "2.0"
 include:
+ - bytes.cr
  - list.cr
  - slist.cr
  - timeout.cr
@@ -94,6 +95,9 @@ ignore:
  - g_byte_array_new_take
  - g_byte_array_steal
  - g_byte_array_unref
+ - g_bytes_new
+ - g_bytes_new_take
+ - g_bytes_ref
  - g_bytes_unref
  - g_bytes_unref_to_array
  - g_bytes_unref_to_data
