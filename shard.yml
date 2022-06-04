@@ -1,5 +1,5 @@
 name: gi-crystal
-version: 0.11.0
+version: 0.12.0
 
 authors:
   - Hugo Parente Lima <hugo.pl@gmail.com>
@@ -23,6 +23,6 @@ executables:
   - gi-crystal
   - compare-api
 
-crystal: ">= 1.3.2"
+crystal: ">= 1.4.1"
 
 license: BSD-3-Clause

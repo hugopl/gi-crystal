@@ -6,6 +6,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.12.0] 2022-06-04
+### Added
+- Signals can now be disconnected, `connect` method returns a `GObject::SignalConnection` object.
+  - Disconnect signals from an object is important to let them be collected by the GC.
+- Raises a compile time error if trying to inherit from a final GObject type.
+- Initial support for user defined signals 🎉️, current supported parameter types are `Number`, `String` and `Boolean`.
+
+### Changed
+- `GLib::Bytes#data` now returns a `Slice(UInt8)` instead of `Enumerator(UInt8)`.
+- `GLib::Bytes` constructor can accept any pointer + size in constructor, unsafe but doesn't copy data.
+- Removed all `GObject::ParamSpec` subclasses, they don't need to be exposed in bindings, `GObject::ParamSpec` is enough.
+- Requires crystal compiler version >= 1.4.1.
+
+### Fixed
+- Don't generate code for constructors with empty parameters (generic constructor will work).
+
+
 ## [0.11.0] 2022-05-18
 ### Added
 - Allow user objects inheriting GObject to have custom constructors.
