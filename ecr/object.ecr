@@ -112,6 +112,7 @@ module <%= namespace_name %>
     end
   <% end %>
 
+    <% if object.class_struct.nil? || g_object_type? # This is just to avoid render a empty macro block %>
     macro inherited
     <% if object.class_struct.nil? %>
     {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GObject::GeneratedWrapper) }}
@@ -155,6 +156,7 @@ module <%= namespace_name %>
       {% end %}
     <% end %>
     end
+    <% end %>
 
     <% class_struct = object.class_struct -%>
     <% if class_struct %>
