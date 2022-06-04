@@ -12,6 +12,12 @@ private class UserObjectWithCtor < GObject::Object
   end
 end
 
+private class UserSubject < Test::Subject
+  def initialize(string : String)
+    super(string: string)
+  end
+end
+
 describe "Classes inheriting GObject::Object" do
   it "has their own g_type registered on GLib type system" do
     UserObject.g_type.should_not eq(GObject::Object.g_type)
@@ -70,5 +76,11 @@ describe "Classes inheriting GObject::Object" do
     obj_wrapper.class.should eq(UserObjectWithCtor)
     obj2 = UserObjectWithCtor.cast(obj)
     obj2.should eq(obj)
+  end
+
+  it "can call parent generic constructors" do
+    obj = UserSubject.new("hey")
+    LibGObject.g_type_check_instance_is_a(obj, UserSubject.g_type).should eq(1)
+    obj.string.should eq("hey")
   end
 end
