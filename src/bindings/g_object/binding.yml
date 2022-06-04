@@ -173,6 +173,30 @@ ignore:
  - g_type_test_flags
  - g_value_type_compatible
  - g_value_type_transformable
+ - ParamSpecBoolean
+ - ParamSpecBoxed
+ - ParamSpecChar
+ - ParamSpecDouble
+ - ParamSpecEnum
+ - ParamSpecFlags
+ - ParamSpecFloat
+ - ParamSpecGType
+ - ParamSpecInt
+ - ParamSpecInt64
+ - ParamSpecLong
+ - ParamSpecObject
+ - ParamSpecOverride
+ - ParamSpecParam
+ - ParamSpecPointer
+ - ParamSpecString
+ - ParamSpecUChar
+ - ParamSpecUInt
+ - ParamSpecUInt64
+ - ParamSpecULong
+ - ParamSpecUnichar
+ - ParamSpecValueArray
+ - ParamSpecVariant
+ - ParamSpecTypeInfo
  - SignalQuery
  - WeakRef
 

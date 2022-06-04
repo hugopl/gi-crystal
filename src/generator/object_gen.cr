@@ -21,8 +21,12 @@ module Generator
       "#{@object.name.underscore}.cr"
     end
 
+    def subject : String
+      @object.name
+    end
+
     def generate
-      generate(filename)
+      generate(filename) unless skip?
     end
 
     private def parent_class
