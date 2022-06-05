@@ -128,7 +128,8 @@ module Generator
 
         io << "# Returns: (transfer " << @method.caller_owns.to_s.downcase
         return_type = @method.return_type
-        io << " Filename" if return_type.tag.filename?
+        io << ") (filename" if return_type.tag.filename?
+        io << ") (nullable" if @method.may_return_null?
         io << ") " << type_info_gi_annotations(args, @method.return_type) << LF
       end
     end
