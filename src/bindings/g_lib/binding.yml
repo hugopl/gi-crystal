@@ -6,6 +6,7 @@ include:
  - slist.cr
  - timeout.cr
  - variant.cr
+ - variant_dict.cr
 
 handmade:
  - Variant
