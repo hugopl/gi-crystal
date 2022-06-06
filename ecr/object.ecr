@@ -112,7 +112,6 @@ module <%= namespace_name %>
     end
   <% end %>
 
-    <% if object.class_struct.nil? || g_object_type? # This is just to avoid render a empty macro block %>
     macro inherited
     <% if object.class_struct.nil? %>
     {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GObject::GeneratedWrapper) }}
@@ -155,8 +154,29 @@ module <%= namespace_name %>
       end
       {% end %}
     <% end %>
-    end
+    <% unless object.class_struct.nil? %>
+      macro method_added(method)
+        {% verbatim do %}
+        <% object.class_struct.try &.fields.each do |field| -%>
+          <% next unless field.type_info.tag.interface? -%>
+          <% next unless interface = field.type_info.interface.as?(CallbackInfo) -%>
+          <% next if interface.args.empty? %>
+          {% if method.name == "<%= field.name %>" %}
+            def self._vfunc_<%= field.name %>(<%= interface.args.map { |arg| "#{arg.name} : #{to_crystal_type(arg.type_info, include_namespace: true)}" }.join(", ") %>) : <%= to_crystal_type(interface.return_type) %>
+              <%= interface.args.first.name %>.unsafe_as(self).<%= field.name %>(<%= interface.args[1..].map(&.name).join(", ") %>)
+            end
+
+            def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
+              vfunc_ptr = (klass.as(Pointer(Void)) + <%= field.byteoffset %>).as(Pointer(Pointer(Void)))
+              vfunc_ptr.value = (->_vfunc_<%= field.name %>(<%= interface.args.map { |arg| to_crystal_type(arg.type_info, include_namespace: true) }.join(", ") %>)).pointer
+              previous_def
+            end
+          {% end %}
+        <% end %>
+        {% end %}
+      end
     <% end %>
+    end
 
     <% class_struct = object.class_struct -%>
     <% if class_struct %>
