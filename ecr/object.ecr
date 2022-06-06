@@ -163,7 +163,8 @@ module <%= namespace_name %>
           <% next if interface.args.empty? %>
           {% if method.name == "<%= field.name %>" %}
             def self._vfunc_<%= field.name %>(<%= interface.args.map { |arg| "#{arg.name} : #{to_crystal_type(arg.type_info, include_namespace: true)}" }.join(", ") %>) : <%= to_crystal_type(interface.return_type) %>
-              <%= interface.args.first.name %>.unsafe_as(self).<%= field.name %>(<%= interface.args[1..].map(&.name).join(", ") %>)
+              %ptr = LibGObject.g_object_get_qdata(<%= interface.args.first.name %>.unsafe_as(Pointer(Void)), GICrystal::INSTANCE_QDATA_KEY)
+              %ptr.as(self).<%= field.name %>(<%= interface.args[1..].map(&.name).join(", ") %>)
             end
 
             def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
