@@ -88,7 +88,7 @@ module Generator
       end
     end
 
-    private def raise_module_exceptions : String
+    private def gerror_to_crystal_implementation : String
       return "" if enums.none?(&.error_domain)
 
       String.build do |s|
@@ -103,8 +103,8 @@ module Generator
 
           s << "if error_domain == LibGLib.g_quark_try_string(\"" << domain << "\")\n"
           enum_.values.each do |value|
-            s << "raise " << error_domain_type << "::" << to_type_name(value.name) <<
-              ".new(error) if error_code == " << value.value << LF
+            s << "return " << error_domain_type << "::" << to_type_name(value.name) <<
+              ".new(error, transfer) if error_code == " << value.value << LF
           end
           s << "end\n\n"
         end

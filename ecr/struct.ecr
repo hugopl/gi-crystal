@@ -1,7 +1,7 @@
 module <%= namespace_name %>
   <% render_doc(object) -%>
   class <%= type_name %>
-    <% if !g_error? && object.copyable? %>
+    <% if object.copyable? %>
       @data : <%= to_lib_type(object) %>
     <% else %>
       @pointer : Pointer(Void)
@@ -10,13 +10,7 @@ module <%= namespace_name %>
     def initialize(pointer : Pointer(Void), transfer : GICrystal::Transfer)
       raise ArgumentError.new("Tried to generate struct with a NULL pointer") if pointer.null?
 
-      <% if g_error? -%>
-        @pointer = if transfer.none?
-                     LibGLib.g_error_copy(pointer)
-                   else
-                     pointer
-                   end
-      <% elsif object.boxed? %>
+      <% if object.boxed? %>
         @pointer = if transfer.none?
                      LibGObject.g_boxed_copy(<%= to_crystal_type(object, false) %>.g_type, pointer)
                    else
@@ -31,11 +25,11 @@ module <%= namespace_name %>
       <% end %>
     end
 
-    <% if object.copyable? && !g_error? %>
+    <% if object.copyable? %>
       <%= struct_new_method %>
     <% end %>
 
-    <% if g_error? || !object.copyable? %>
+    <% if !object.copyable? %>
       # :nodoc:
       # Code copied from crystal/src/weak_ref.cr
       # Allocates this object using malloc_atomic, allowing the GC to run more efficiently.
@@ -47,14 +41,11 @@ module <%= namespace_name %>
       end
     <% end %>
 
+    <% if object.boxed? %>
     def finalize
-      <% if g_error? -%>
-        # FIXME: calling g_error_free causes a double free here, but WTF is also freeing this!?
-        # LibGLib.g_error_free(self)
-      <% elsif object.boxed? %>
-        LibGObject.g_boxed_free(<%= type_name %>.g_type, self)
-      <% end %>
+      LibGObject.g_boxed_free(<%= type_name %>.g_type, self)
     end
+    <% end %>
 
     def ==(other : self) : Bool
       LibC.memcmp(self, other.to_unsafe, sizeof(<%= to_lib_type(object) %>)).zero?
@@ -71,7 +62,7 @@ module <%= namespace_name %>
     <% render_methods %>
 
     def to_unsafe
-      <% if !g_error? && object.copyable? %>
+      <% if object.copyable? %>
         pointerof(@data).as(Void*)
       <% else %>
         @pointer
