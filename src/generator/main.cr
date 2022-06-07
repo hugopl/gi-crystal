@@ -2,6 +2,7 @@ require "colorize"
 require "log"
 require "option_parser"
 require "version_from_shard"
+require "compiler/crystal/tools/formatter"
 
 require "./module_gen"
 require "./binding_config"
@@ -76,17 +77,15 @@ private def find_bindings : Array(String)
   Dir[find_pattern]
 end
 
-private def format_files(dir)
-  # We need to chdir into output dir since the formatter ignores everything under `lib` dir.
-  Dir.cd(dir) { `crystal tool format` }
-  raise Generator::Error.new("Error formating generated files at '#{dir}'.") unless $?.success?
-end
-
 private def generate_all
   Generator::BindingConfig.loaded_configs.each_value do |conf|
-    Generator::ModuleGen.load(conf).generate
+    module_gen = Generator::ModuleGen.load(conf)
+    output_dir = File.join(module_gen.output_dir, module_gen.module_dir)
+    FileUtils.mkdir_p(output_dir)
+    generated = String.build { |io| module_gen.generate(io) }
+    formatted = Crystal.format(generated)
+    File.write(File.join(output_dir, module_gen.filename), formatted)
   end
-  format_files(Generator::Generator.output_dir)
 end
 
 private def main(argv)
