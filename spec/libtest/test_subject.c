@@ -91,11 +91,8 @@ static void test_subject_set_property(GObject* gobject, guint property_id, const
     priv->iface = TEST_IFACE(gobj);
     break;
   case PROP_GOBJ:
-    if (priv->gobj)
-      g_object_unref(G_OBJECT(priv->gobj));
     gobj = g_value_get_object(value);
-    g_object_ref(gobj);
-    priv->gobj = gobj;
+    g_set_object(&priv->gobj, gobj);
     break;
   case PROP_ENUM:
     priv->_enum = g_value_get_enum(value);
@@ -126,10 +123,10 @@ static void test_subject_get_property(GObject* gobject, guint property_id, GValu
     g_value_set_int(value, priv->int32);
     break;
   case PROP_IFACE:
-    g_value_set_object(value, G_OBJECT(priv->iface));
+    g_value_take_object(value, G_OBJECT(priv->iface));
     break;
   case PROP_GOBJ:
-    g_value_set_object(value, G_OBJECT(priv->gobj));
+    g_value_take_object(value, G_OBJECT(priv->gobj));
     break;
   case PROP_ENUM:
     g_value_set_enum(value, priv->_enum);
