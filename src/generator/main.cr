@@ -2,7 +2,6 @@ require "colorize"
 require "log"
 require "option_parser"
 require "version_from_shard"
-require "compiler/crystal/tools/formatter"
 
 require "./module_gen"
 require "./binding_config"
@@ -79,12 +78,7 @@ end
 
 private def generate_all
   Generator::BindingConfig.loaded_configs.each_value do |conf|
-    module_gen = Generator::ModuleGen.load(conf)
-    output_dir = File.join(module_gen.output_dir, module_gen.module_dir)
-    FileUtils.mkdir_p(output_dir)
-    generated = String.build { |io| module_gen.generate(io) }
-    formatted = Crystal.format(generated)
-    File.write(File.join(output_dir, module_gen.filename), formatted)
+    Generator::ModuleGen.load(conf).generate
   end
 end
 

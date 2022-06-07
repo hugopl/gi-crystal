@@ -1,5 +1,6 @@
 require "ecr"
 require "log"
+require "compiler/crystal/tools/formatter"
 
 require "../gobject_introspection"
 require "./helpers"
@@ -73,6 +74,15 @@ module Generator
 
     def scope : String
       self.class.name
+    end
+
+    def generate(filename : String)
+      output_dir = File.join(Generator.output_dir, module_dir)
+      FileUtils.mkdir_p(output_dir)
+
+      generated = String.build { |io| generate(io) }
+      formatted = Crystal.format(generated)
+      File.write(File.join(output_dir, filename), formatted)
     end
 
     def with_log_scope(scope_name = scope)
