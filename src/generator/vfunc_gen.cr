@@ -50,7 +50,7 @@ module Generator
     end
 
     private def proc_args(io)
-      vfunc.args.join(io, ", ") { |arg| io << to_lib_type(arg.type_info, structs_as_void: true) }
+      vfunc.args.each { |arg| io << ", " << to_lib_type(arg.type_info, structs_as_void: true) }
     end
 
     private def type_name
