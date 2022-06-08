@@ -1,7 +1,7 @@
 module GObject
   # :nodoc:
-  annotation GeneratedWrapper # This annotation is used to identify user types that inherit from GObject from binding types that does the same.
-
+  # This annotation is used to identify user types that inherit from GObject from binding types that does the same.
+  annotation GeneratedWrapper
   end
 
   class Object
