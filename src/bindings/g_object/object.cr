@@ -135,9 +135,8 @@ module GObject
       {% unless @type.annotation(GObject::GeneratedWrapper) %}
         macro method_added(method)
           {% verbatim do %}
-            {% if method.name.starts_with?("vfunc_") && method.name.size > 6 %}
-              {% function_name = method.name[6..] %}
-              _register_vfunc_{{function_name}}
+            {% if method.name.starts_with?("vfunc_") %}
+              _register_{{method.name}}
             {% end %}
           {% end %}
         end
