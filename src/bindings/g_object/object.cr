@@ -1,7 +1,7 @@
 module GObject
   # :nodoc:
-  annotation GeneratedWrapper
-    # This annotation is used to identify user types that inherit from GObject from binding types that does the same.
+  annotation GeneratedWrapper # This annotation is used to identify user types that inherit from GObject from binding types that does the same.
+
   end
 
   class Object
@@ -50,9 +50,9 @@ module GObject
     #  - Float types
     macro signal(signature)
       {%
-      raise "signal parameter must be a signature (Macros::Call), got #{signature.class_name}" unless signature.is_a?(Call)
-      raise "Signal signature #{signature} can't have a receiver" if signature.receiver
-      raise "Signal signature #{signature} can't have a block argument" if signature.block_arg
+        raise "signal parameter must be a signature (Macros::Call), got #{signature.class_name}" unless signature.is_a?(Call)
+        raise "Signal signature #{signature} can't have a receiver" if signature.receiver
+        raise "Signal signature #{signature} can't have a block argument" if signature.block_arg
       %}
 
       struct {{ signature.name.titleize }}Signal < GObject::Signal

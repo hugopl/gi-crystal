@@ -42,9 +42,9 @@ module Generator
 
     private def byte_offset
       struct_info = case object
-      when InterfaceInfo then object.as(InterfaceInfo).iface_struct
-      when ObjectInfo then object.as(ObjectInfo).class_struct
-      end
+                    when InterfaceInfo then object.as(InterfaceInfo).iface_struct
+                    when ObjectInfo    then object.as(ObjectInfo).class_struct
+                    end
       return nil unless struct_info
       struct_info.fields.find { |field| field.name == vfunc.name }.try &.byteoffset
     end
