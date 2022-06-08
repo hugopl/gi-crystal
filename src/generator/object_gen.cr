@@ -80,9 +80,5 @@ module Generator
         s << '/' << info.name.underscore << "\"\n"
       end
     end
-
-    private def struct_info
-      object.class_struct
-    end
   end
 end

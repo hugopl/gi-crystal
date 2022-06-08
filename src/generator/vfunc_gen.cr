@@ -8,10 +8,10 @@ module Generator
     alias MethodReturnType = TypeInfo | ArgInfo
 
     private getter vfunc : VFuncInfo
-    getter struct_info : StructInfo
+    getter object : InterfaceInfo | ObjectInfo
     @byte_offset : Int32?
 
-    def initialize(@struct_info, @vfunc)
+    def initialize(@object, @vfunc)
       super(@vfunc.namespace)
       @byte_offset = byte_offset
     end
@@ -41,11 +41,20 @@ module Generator
     end
 
     private def byte_offset
+      struct_info = case object
+      when InterfaceInfo then object.as(InterfaceInfo).iface_struct
+      when ObjectInfo then object.as(ObjectInfo).class_struct
+      end
+      return nil unless struct_info
       struct_info.fields.find { |field| field.name == vfunc.name }.try &.byteoffset
     end
 
     private def proc_args(io)
       vfunc.args.join(io, ", ") { |arg| io << to_lib_type(arg.type_info, structs_as_void: true) }
+    end
+
+    private def type_name
+      to_crystal_type(@object, false)
     end
   end
 end

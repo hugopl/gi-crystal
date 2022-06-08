@@ -1,6 +1,20 @@
 module <%= namespace_name %>
   <% render_doc(object) -%>
   module <%= type_name %>
+    macro included
+      {% unless @type.annotation(GObject::GeneratedWrapper) %}
+        def self._install_iface_<%= namespace_name %>__<%= type_name %>(interface : Pointer(LibGObject::TypeInterface)) : Nil
+        end
+
+        closure = ->_install_iface_<%= namespace_name %>__<%= type_name %>(Pointer(LibGObject::TypeInterface))
+        interface_info = LibGObject::InterfaceInfo.new()
+        interface_info.interface_init = closure.pointer
+        interface_info.interface_finalize = Pointer(Void).null
+        interface_info.interface_data = closure.closure_data
+        LibGObject.g_type_add_interface_static(g_type, <%= namespace_name %>::<%= abstract_interface_name(object, false) %>.g_type, pointerof(interface_info))
+      {% end %}
+    end
+
     <% render_properties %>
     <% render_methods %>
     <% render_vfuncs %>

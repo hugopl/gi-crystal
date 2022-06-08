@@ -46,9 +46,5 @@ module Generator
         end
       end
     end
-
-    private def struct_info
-      @iface.iface_struct
-    end
   end
 end
