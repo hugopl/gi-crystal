@@ -16,6 +16,29 @@ module GObject
             previous_def
           end
         end
+
+        # GType for the new created type
+        @@_g_type : UInt64 = 0
+
+        def self.g_type : UInt64
+          if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
+            g_type = {{ @type.superclass.id }}._register_derived_type({{ @type.id }},
+              ->_class_init(Pointer(LibGObject::TypeClass), Pointer(Void)),
+              ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)))
+
+            LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
+          end
+
+          @@_g_type
+        end
+
+        # :nodoc:
+        def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
+        end
+
+        # :nodoc:
+        def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
+        end
       {% end %}
     end
 
