@@ -1,4 +1,9 @@
 class GObject::Object
+  # :nodoc:
+  annotation GeneratedWrapper
+    # This annotation is used to identify user types that inherit from GObject from binding types that does the same.
+  end
+
   macro inherited
     {% unless @type.annotation(GObject::GeneratedWrapper) %}
       macro method_added(method)
