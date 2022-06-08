@@ -37,7 +37,7 @@ module Generator
       io << "}.pointer\n"
     end
 
-    private def generate_lib_args(io : IO, callable : CallableInfo)
+    def generate_lib_args(io : IO, callable : CallableInfo)
       is_signal = callable.is_a?(SignalInfo)
 
       callable.args.each do |arg|

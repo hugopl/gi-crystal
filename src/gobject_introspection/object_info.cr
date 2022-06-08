@@ -2,6 +2,7 @@ require "./field_info"
 require "./function_info"
 require "./property_info"
 require "./signal_info"
+require "./vfunc_info"
 
 module GObjectIntrospection
   class ObjectInfo < RegisteredTypeInfo
@@ -9,6 +10,7 @@ module GObjectIntrospection
     include FunctionInfoContainer
     include PropertyInfoContainer
     include SignalInfoContainer
+    include VFuncInfoContainer
 
     @interfaces : Array(InterfaceInfo)?
     @properties : Array(PropertyInfo)?
@@ -83,6 +85,10 @@ module GObjectIntrospection
 
     def signals : Array(SignalInfo)
       signals(->LibGIRepository.g_object_info_get_n_signals, ->LibGIRepository.g_object_info_get_signal)
+    end
+
+    def vfuncs : Array(VFuncInfo)
+      vfuncs(->LibGIRepository.g_object_info_get_n_vfuncs, ->LibGIRepository.g_object_info_get_vfunc)
     end
 
     def interfaces : Array(InterfaceInfo)

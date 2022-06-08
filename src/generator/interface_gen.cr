@@ -1,6 +1,7 @@
 require "./property_holder"
 require "./method_holder"
 require "./signal_holder"
+require "./vfunc_holder"
 
 module Generator
   class InterfaceGen < FileGen
@@ -8,6 +9,7 @@ module Generator
     include PropertyHolder
     include MethodHolder
     include SignalHolder
+    include VFuncHolder
 
     @iface : InterfaceInfo
 
@@ -43,6 +45,10 @@ module Generator
           yield(method) if method.flags.none?
         end
       end
+    end
+
+    private def struct_info
+      @iface.iface_struct
     end
   end
 end

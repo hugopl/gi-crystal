@@ -170,7 +170,7 @@ module Generator
         #        something like we do with transferArray, but need to be a macro since we need more type
         #        information.
         io << convert_to_crystal(ptr_expr, arg_type.param_type, nil, arg.ownership_transfer)
-        io << "end\n"
+        io << "\nend\n"
       else
         io << "raise NotImplementedError.new\n"
       end
