@@ -1,5 +1,5 @@
 # :nodoc:
-macro _register_vfunc_<%= vfunc.name %>
+private macro _register_vfunc_<%= vfunc.name %>
   # :nodoc:
   private def self._vfunc_<%= vfunc.name %>(_this : Pointer(Void), <% generate_lib_args(io, vfunc) %>) : <%= return_type %>
     <% write_implementations(io) %>
