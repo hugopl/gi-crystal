@@ -4,6 +4,7 @@ version: "2.0"
 include_before:
  - type.cr
  - signal.cr
+ - object.cr
 
 include:
  - param_spec.cr
