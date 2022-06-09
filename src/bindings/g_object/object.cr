@@ -17,6 +17,14 @@ module GObject
           end
         end
 
+        macro method_added(method)
+          {% verbatim do %}
+            {% if method.name.starts_with?("do_") %}
+              _register_{{method.name}}
+            {% end %}
+          {% end %}
+        end
+
         # GType for the new created type
         @@_g_type : UInt64 = 0
 
@@ -129,18 +137,6 @@ module GObject
         Pointer(Void).null)
         previous_def
       end
-    end
-
-    macro inherited
-      {% unless @type.annotation(GObject::GeneratedWrapper) %}
-        macro method_added(method)
-          {% verbatim do %}
-            {% if method.name.starts_with?("do_") %}
-              _register_{{method.name}}
-            {% end %}
-          {% end %}
-        end
-      {% end %}
     end
   end
 end
