@@ -1,11 +1,11 @@
-    private macro _register_vfunc_<%= vfunc.name %>
+    private macro _register_do_<%= vfunc.name %>
       private def self._vfunc_<%= vfunc.name %>(_this : Pointer(Void), <% generate_lib_args(io, vfunc) %>) : <%= return_type %>
         <%- write_implementations(io) -%>
         <%-= '\n' unless vfunc.args.empty? -%>
         LibGObject
           .g_object_get_qdata(_this, GICrystal::INSTANCE_QDATA_KEY)
           .as(self)
-          .vfunc_<%= vfunc.name %>(<% call_user_method(io) %>)
+          .do_<%= vfunc.name %>(<% call_user_method(io) %>)
       end
 
     <%- if object.is_a?(InterfaceInfo) -%>
