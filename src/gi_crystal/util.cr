@@ -15,6 +15,18 @@ module GICrystal
   class ObjectCollectedError < RuntimeError
   end
 
+  def gc_collected?(object) : Bool
+    {% raise "Implement GICrystal.gc_collected?(object) for your fundamental type." %}
+  end
+
+  def instance_pointer(object) : Pointer(Void)
+    {% raise "Implement GICrystal.instance_pointer(object) for your fundamental type." %}
+  end
+
+  def finalize_instance(object)
+    {% raise "Implement GICrystal.finalize_instance(object) for your fundamental type." %}
+  end
+
   # :nodoc:
   @[AlwaysInline]
   def to_unsafe(value : String?)

@@ -29,6 +29,19 @@ module GObject
         # :nodoc:
         def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
         end
+
+        # Cast a `GObject::Object` to this type, returns nil if cast can't be made.
+        def self.cast?(obj : GObject::Object) : self?
+          return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
+
+          # If the object was collected by Crystal GC but still alive in C world we can't bring
+          # the crystal object form the dead.
+          gc_collected = GICrystal.gc_collected?(obj)
+          instance = GICrystal.instance_pointer(obj)
+          raise GICrystal::ObjectCollectedError.new if gc_collected || instance.null?
+
+          instance.as(self)
+        end
       {% end %}
     end
 
@@ -119,6 +132,11 @@ module GObject
         Pointer(Void).null)
         previous_def
       end
+    end
+
+    # Returns GObject reference counter.
+    def ref_count : UInt32
+      to_unsafe.as(Pointer(LibGObject::Object)).value.ref_count
     end
   end
 end

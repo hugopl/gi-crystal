@@ -13,26 +13,9 @@ module <%= namespace_name %>
 
     @pointer : Pointer(Void)
 
-    <% if object.class_struct.nil? || g_object_type? # This is just to avoid render a empty macro block %>
-    macro inherited
     <% if object.class_struct.nil? %>
-    {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GObject::GeneratedWrapper) }}
-    <% elsif g_object_type? %>
-      {% unless @type.annotation(GObject::GeneratedWrapper) %}
-      # Cast a `GObject::Object` to this type, returns nil if cast can't be made.
-      def self.cast?(obj : GObject::Object) : self?
-        return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
-
-        # If the object was collected by Crystal GC but still alive in C world we can't bring
-        # the crystal object form the dead.
-        gc_collected = LibGObject.<%= object.qdata_get_func %>(obj, GICrystal::GC_COLLECTED_QDATA_KEY)
-        instance = LibGObject.<%= object.qdata_get_func %>(obj, GICrystal::INSTANCE_QDATA_KEY)
-        raise GICrystal::ObjectCollectedError.new if gc_collected || instance.null?
-
-        instance.as(self)
-      end
-      {% end %}
-    <% end %>
+    macro inherited
+      {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GObject::GeneratedWrapper) }}
     end
     <% end %>
 
@@ -46,7 +29,7 @@ module <%= namespace_name %>
     end
     <% end %>
 
-    GICrystal.define_new_method(<%= type_name %>, <%= object.qdata_get_func %>, <%= object.qdata_set_func %>)
+    GICrystal.declare_new_method(<%= type_name %>, <%= object.qdata_get_func %>, <%= object.qdata_set_func %>)
 
     # Initialize a new `<%= type_name %>`.
     def initialize
@@ -73,16 +56,13 @@ module <%= namespace_name %>
     <% end %>
 
     <% if object.parent.nil? %>
-
       # Called by the garbage collector. Decreases the reference count of object.
       # (i.e. its memory is freed).
       def finalize
         {% if flag?(:debugmemory) %}
         LibC.printf("~%s at %p - ref count: %d\n", self.class.name.to_unsafe, self, ref_count)
         {% end %}
-        LibGObject.<%= object.qdata_set_func %>(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).null)
-        LibGObject.<%= object.qdata_set_func %>(self, GICrystal::GC_COLLECTED_QDATA_KEY, Pointer(Void).new(0x1))
-        LibGObject.<%= object.unref_function %>(self)
+        GICrystal.finalize_instance(self)
       end
 
       # Returns a pointer to the C object.
@@ -91,7 +71,6 @@ module <%= namespace_name %>
       end
 
       <% render "ecr/cast_methods.ecr" %>
-      <% render "ecr/ref_count_method.ecr" %>
     <% end %>
 
     <% render "ecr/g_type_method.ecr" %>
