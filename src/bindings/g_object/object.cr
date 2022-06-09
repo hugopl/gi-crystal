@@ -7,16 +7,6 @@ module GObject
   class Object
     macro inherited
       {% unless @type.annotation(GObject::GeneratedWrapper) %}
-        def self._install_ifaces
-        end
-
-        macro finished
-          def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
-            _install_ifaces
-            previous_def
-          end
-        end
-
         macro method_added(method)
           {% verbatim do %}
             {% if method.name.starts_with?("do_") %}
@@ -35,6 +25,7 @@ module GObject
               ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)))
 
             LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
+            self._install_ifaces
           end
 
           @@_g_type
@@ -46,6 +37,10 @@ module GObject
 
         # :nodoc:
         def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
+        end
+
+        # :nodoc:
+        def self._install_ifaces
         end
       {% end %}
     end
