@@ -11,6 +11,7 @@ include:
  - param_spec.cr
  - value.cr
  - signal_connection.cr
+ - gi_crystal.cr
 
 handmade:
  - Value

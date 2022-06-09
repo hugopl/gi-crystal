@@ -41,7 +41,7 @@ module <%= namespace_name %>
   class <%= abstract_interface_name(object, false) %> < GObject::Object
     include <%= type_name %>
 
-    GICrystal.define_new_method(<%= abstract_interface_name(object) %>, g_object_get_qdata, g_object_set_qdata)
+    GICrystal.declare_new_method(<%= abstract_interface_name(object) %>, g_object_get_qdata, g_object_set_qdata)
 
     # Forbid users to create instances of this.
     private def initialize
@@ -49,6 +49,5 @@ module <%= namespace_name %>
 
     <% render "ecr/g_type_method.ecr" %>
     <% render "ecr/cast_methods.ecr" %>
-    <% render "ecr/ref_count_method.ecr" %>
   end
 end
