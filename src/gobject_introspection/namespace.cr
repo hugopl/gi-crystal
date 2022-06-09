@@ -27,14 +27,6 @@ module GObjectIntrospection
       load
     end
 
-    def g_lib?
-      @name == "GLib"
-    end
-
-    def g_object?
-      @name == "GObject"
-    end
-
     def methods
       functions
     end
