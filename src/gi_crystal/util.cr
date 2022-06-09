@@ -95,7 +95,7 @@ module GICrystal
     end
   end
 
-  macro define_new_method(type, qdata_get_func, qdata_set_func)
+  macro declare_new_method(type, qdata_get_func, qdata_set_func)
     # :nodoc:
     def self.new(pointer : Pointer(Void), transfer : GICrystal::Transfer) : self
       # Try to recover the Crystal instance if any
