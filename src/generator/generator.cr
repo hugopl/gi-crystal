@@ -21,9 +21,6 @@ module Generator
     getter config : BindingConfig
     getter namespace : Namespace
 
-    delegate g_lib?, to: namespace
-    delegate g_object?, to: namespace
-
     def initialize(@namespace)
       @config = BindingConfig.for(@namespace.name, @namespace.version)
     end

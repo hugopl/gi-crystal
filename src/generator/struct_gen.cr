@@ -34,7 +34,7 @@ module Generator
     end
 
     def g_error?
-      namespace.g_lib? && @struct.name == "Error"
+      namespace.name == "GLib" && @struct.name == "Error"
     end
 
     def struct_new_method : String
