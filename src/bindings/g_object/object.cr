@@ -33,6 +33,16 @@ module GObject
 
         # :nodoc:
         def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
+          \{%
+            unless @type.instance_vars.size == 1
+              remove_variables = @type.instance_vars
+                .map { |var| "@#{var.id}" }
+                .reject { |var| var == "@pointer" }
+
+              raise "Cannot define instance variables in a GObject\n\
+                     Please remove these variables: #{remove_variables.join(", ").id}"
+            end
+          %}
         end
 
         # :nodoc:
