@@ -149,12 +149,7 @@ GValue as parameter you can pass any supported value. I.e. you can pass e.g. a p
 
 ## GObject inheritance
 
-You can inherit GObjects, when you do so a new type is registered in GObject type system. Crystal objects that inherit
-GObjects must always have a reference in Crystal world, otherwise they will be collected by the GC.
-
-Trying to cast a GObject that was already collected by Crystal GC will result in a `GICrystal::ObjectCollectedError` exception.
-
-Crystal objects that inherit `GObject` returns the same object reference on casts, i.e. no memory allocation is done.
+You can inherit GObjects, when you do so a new type is registered in GObject type system.
 For more examples see the [inheritance tests](spec/inheritance_spec.cr).
 
 ## Declaring GObject signals
