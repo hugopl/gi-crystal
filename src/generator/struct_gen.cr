@@ -45,8 +45,7 @@ module Generator
         end.join(", ")
         s << ")\n"
 
-        s << "_ptr = Pointer(Void).malloc(" << @struct.bytesize << ")\n"
-        s << "_instance = new(_ptr, GICrystal::Transfer::None)\n"
+        s << "_instance = allocate\n"
         generate_ctor_fields_assignment(s)
         s << "_instance\n"
         s << "end\n"
