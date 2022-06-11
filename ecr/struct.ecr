@@ -32,7 +32,7 @@ module <%= namespace_name %>
       <%= struct_new_method %>
     <% end %>
 
-    <% unless object.copyable? %>
+    <% if g_error? || !object.copyable? %>
       # :nodoc:
       # Code copied from crystal/src/weak_ref.cr
       # Allocates this object using malloc_atomic, allowing the GC to run more efficiently.
