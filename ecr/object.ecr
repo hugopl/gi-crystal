@@ -13,14 +13,12 @@ module <%= namespace_name %>
 
     @pointer : Pointer(Void)
 
-    <% if object.class_struct.nil? %>
+    <% class_struct = object.class_struct -%>
+    <% if class_struct.nil? || object.fundamental? %>
     macro inherited
       {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GObject::GeneratedWrapper) }}
     end
-    <% end %>
-
-    <% class_struct = object.class_struct -%>
-    <% if class_struct %>
+    <% elsif class_struct %>
     # :nodoc:
     def self._register_derived_type(klass : Class, class_init, instance_init)
       LibGObject.g_type_register_static_simple(g_type, klass.name,
