@@ -1,4 +1,11 @@
 module GObject
+  class ParamSpec
+    # Returns ParamSpec reference counter.
+    def ref_count : UInt32
+      to_unsafe.as(Pointer(LibGObject::ParamSpec)).value.ref_count
+    end
+  end
+
   class ParamSpecInt < ParamSpec
     # :nodoc:
     def initialize(name : String, nick : String, blurb : String,

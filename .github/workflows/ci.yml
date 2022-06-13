@@ -31,3 +31,5 @@ jobs:
         run: crystal tool format --check
       - name: Run tests
         run: RSPEC_OPTS="-v --order=random" make oldlibs-test
+      - name: Run tests with -Ddebugmemory
+        run: OLD_LIBS=1 ./bin/spec -Ddebugmemory -v --order=random
