@@ -22,10 +22,13 @@ module <%= namespace_name %>
     <% class_struct = object.class_struct -%>
     <% if class_struct %>
     # :nodoc:
-    def self._register_derived_type(klass : Class, class_init, instance_init)
+    alias LIB_TYPE = <%= to_lib_type(object) %>
+
+    # :nodoc:
+    def self._register_derived_type(klass : Class, instance_size, class_init, instance_init)
       LibGObject.g_type_register_static_simple(g_type, klass.name,
                                                sizeof(<%= to_lib_type(class_struct) %>), class_init,
-                                               sizeof(<%= to_lib_type(object) %>), instance_init, 0)
+                                               instance_size, instance_init, 0)
     end
     <% end %>
 

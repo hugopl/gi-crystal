@@ -6,10 +6,12 @@ module <%= namespace_name %>
       {% raise "#{@type} must inherit from GObject::Object to implement GObject interfaces" unless (@type < ::GObject::Object) %}
 
       macro inherited
-        include <%= namespace_name %>::<%= type_name %>
+        \{% if @type.annotation(GObject::PrivateDataClass) %}
+          include <%= namespace_name %>::<%= type_name %>
+        \{% end %}
       end
 
-      {% unless @type.annotation(GObject::GeneratedWrapper) %}
+      {% if !@type.annotation(GObject::GeneratedWrapper) && @type.annotation(GObject::PrivateDataClass) %}
         def self._install_iface_<%= namespace_name %>__<%= type_name %>(interface : Pointer(LibGObject::TypeInterface)) : Nil
         end
 

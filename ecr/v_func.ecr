@@ -2,7 +2,7 @@
       private def self._vfunc_<%= vfunc.name %>(%this : Pointer(Void), <% generate_lib_args(io, vfunc) %>) : <%= return_type %>
         <%- write_implementations(io) -%>
         <%-= '\n' unless vfunc.args.empty? -%>
-        self.new(%this, :none).do_<%= vfunc.name %>(<% call_user_method(io) %>)
+        (%this + PRIVATE_INSTANCE_OFFSET).as(self*).value.do_<%= vfunc.name %>(<% call_user_method(io) %>)
       end
 
     <%- if object.is_a?(InterfaceInfo) -%>

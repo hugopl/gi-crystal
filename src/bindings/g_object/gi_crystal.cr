@@ -16,3 +16,10 @@ module GICrystal
     LibGObject.g_param_spec_unref(object)
   end
 end
+
+macro implementation(&block)
+  @[GObject::PrivateDataClass]
+  class PrivateData < self
+    {{yield}}
+  end
+end
