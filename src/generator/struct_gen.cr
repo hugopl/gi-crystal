@@ -45,8 +45,7 @@ module Generator
         end.join(", ")
         s << ")\n"
 
-        s << "_ptr = Pointer(Void).malloc(" << @struct.bytesize << ")\n"
-        s << "_instance = new(_ptr, GICrystal::Transfer::None)\n"
+        s << "_instance = allocate\n"
         generate_ctor_fields_assignment(s)
         s << "_instance\n"
         s << "end\n"
@@ -90,7 +89,7 @@ module Generator
       field_type_name(io, field)
       io << LF
 
-      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field_type, structs_as_void: true) << "))\n"
+      io << "_var = (to_unsafe + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field_type, structs_as_void: true) << "))\n"
       if is_pointer
         io << "return if _var.value.null?\n"
       end
@@ -113,7 +112,7 @@ module Generator
       field_type_name(io, field)
       io << ")\n"
 
-      io << "_var = (@pointer + " << field.byteoffset << ").as(Pointer(" << field_lib_type << "))"
+      io << "_var = (to_unsafe + " << field.byteoffset << ").as(Pointer(" << field_lib_type << "))"
       if !is_pointer && field_type.tag.interface?
         iface = field_type.interface
         if iface.is_a?(StructInfo) && iface.boxed?
