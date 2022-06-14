@@ -1,7 +1,11 @@
 module <%= namespace_name %>
   <% render_doc(object) -%>
   class <%= type_name %>
-    @pointer : Pointer(Void)
+    <% if !g_error? && object.copyable? %>
+      @data : <%= to_lib_type(object) %>
+    <% else %>
+      @pointer : Pointer(Void)
+    <% end %>
 
     def initialize(pointer : Pointer(Void), transfer : GICrystal::Transfer)
       raise ArgumentError.new("Tried to generate struct with a NULL pointer") if pointer.null?
@@ -20,8 +24,7 @@ module <%= namespace_name %>
                    end
       <% elsif object.copyable? %>
         # Raw structs are always moved to Crystal memory.
-        @pointer = Pointer(Void).malloc(sizeof(<%= to_lib_type(object) %>))
-        @pointer.copy_from(pointer, sizeof(<%= to_lib_type(object) %>))
+        @data = pointer.as(Pointer(<%= to_lib_type(object) %>)).value
         LibGLib.g_free(pointer) if transfer.full?
       <% else %>
         @pointer = pointer
@@ -30,6 +33,18 @@ module <%= namespace_name %>
 
     <% if object.copyable? && !g_error? %>
       <%= struct_new_method %>
+    <% end %>
+
+    <% if g_error? || !object.copyable? %>
+      # :nodoc:
+      # Code copied from crystal/src/weak_ref.cr
+      # Allocates this object using malloc_atomic, allowing the GC to run more efficiently.
+      # As GObjects memory is managed using reference counting, we do not need to scan its pointers.
+      def self.allocate
+        ptr = GC.malloc_atomic(instance_sizeof(self)).as(self)
+        set_crystal_type_id(ptr)
+        ptr
+      end
     <% end %>
 
     def finalize
@@ -56,7 +71,11 @@ module <%= namespace_name %>
     <% render_methods %>
 
     def to_unsafe
-      @pointer
+      <% if !g_error? && object.copyable? %>
+        pointerof(@data).as(Void*)
+      <% else %>
+        @pointer
+      <% end %>
     end
   end
 end
