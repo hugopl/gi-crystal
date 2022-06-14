@@ -33,6 +33,12 @@ module GObjectIntrospection
       ref_func == "g_param_spec_ref_sink" ? "g_param_spec_ref" : ref_func
     end
 
+    # Return true for fundamental types, like GParamSpec, GObject isn't considered
+    # a fundamental type by introspection API.
+    def fundamental? : Bool
+      GICrystal.to_bool(LibGIRepository.g_object_info_get_fundamental(self))
+    end
+
     def qdata_get_func : String
       # ⚠️ Ugly heuristic ahead
       unref_func = LibGIRepository.g_object_info_get_unref_function(self)
