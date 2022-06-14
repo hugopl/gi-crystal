@@ -89,10 +89,6 @@ object pointer into every wrapper it creates, so it can restore the wraper objec
 When the wrapper is collected by the GC it reset this pointer to NULL, so if it appear again in the Crystal world we create
 another wrapper for it. See `Crystal::INSTANCE_QDATA_KEY` constant.
 
-For user made objects inheriting GObject we need another flag, since if the GC collect it all the Crystal data is removed as
-well, so we raise an exception when the user try to restore the Crystal object doing a cast, see
-`Crystal::GC_COLLECTED_QDATA_KEY`.
-
 ## How Struct wrappers works
 
 Currently it creates a wrapper with a copy of the struct always... i.e. it's slow.

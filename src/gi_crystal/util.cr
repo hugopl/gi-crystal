@@ -13,17 +13,6 @@ module GICrystal
 
   # See `declare_new_method`.
   INSTANCE_QDATA_KEY = LibGLib.g_quark_from_static_string("gi-crystal::instance")
-  # See `declare_new_method`.
-  GC_COLLECTED_QDATA_KEY = LibGLib.g_quark_from_static_string("gi-crystal::gc-collected")
-
-  # Raised when trying to cast an object that was already collected by GC.
-  class ObjectCollectedError < RuntimeError
-  end
-
-  # :nodoc:
-  def gc_collected?(object) : Bool
-    {% raise "Implement GICrystal.gc_collected?(object) for your fundamental type." %}
-  end
 
   # :nodoc:
   def instance_pointer(object) : Pointer(Void)
@@ -103,7 +92,7 @@ module GICrystal
     end
   end
 
-  # This declare the `new` method on a instance of type *type*, *qdata_get_func* and *qdata_set_func* are functions used
+  # This declare the `new` method, *qdata_get_func* and *qdata_set_func* are functions used
   # to set/get qdata on objects, e.g. `g_object_get_qdata`/`g_object_set_qdata` for GObjects.
   #
   # GICrystal stores two qdatas in objects on following keys:
@@ -116,15 +105,15 @@ module GICrystal
   # `GC_COLLECTED_QDATA_KEY` is used to avoid to restore a wrapper that was already collected by GC.
   #
   # This is mainly used for `GObject::Object`, since `GObject::ParamSpec` doesn't support casts on GICrystal.
-  macro declare_new_method(type, qdata_get_func, qdata_set_func)
+  macro declare_new_method(qdata_get_func, qdata_set_func)
     # :nodoc:
     def self.new(pointer : Pointer(Void), transfer : GICrystal::Transfer) : self
       # Try to recover the Crystal instance if any
       instance = LibGObject.{{ qdata_get_func }}(pointer, GICrystal::INSTANCE_QDATA_KEY)
-      return instance.as({{ type }}) if instance
+      return instance.as(self) if instance
 
       # This object never meet Crystal land, so we allocate memory and initialize it.
-      instance = {{ type }}.allocate
+      instance = self.allocate
       LibGObject.{{ qdata_set_func }}(pointer, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(instance.object_id))
       instance.initialize(pointer, transfer)
       GC.add_finalizer(instance)

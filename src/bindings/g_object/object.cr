@@ -4,44 +4,166 @@ module GObject
   annotation GeneratedWrapper
   end
 
+  annotation PrivateDataClass
+  end
+
   class Object
     macro inherited
       {% unless @type.annotation(GObject::GeneratedWrapper) %}
-        # GType for the new created type
-        @@_g_type : UInt64 = 0
+        {% if @type.annotation(GObject::PrivateDataClass) %}
+          # GType for the new created type
+          @@_g_type : UInt64 = 0
 
-        def self.g_type : UInt64
-          if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
-            g_type = {{ @type.superclass.id }}._register_derived_type({{ @type.id }},
-              ->_class_init(Pointer(LibGObject::TypeClass), Pointer(Void)),
-              ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)))
+          # This will get overwritten by _set_pointer, but ensures the compiler does not complain
+          @pointer : Pointer(Void) = Pointer(Void).null
 
-            LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
+          class ::{{ @type.superclass }}
+            def self.g_type : UInt64
+              {{@type}}.g_type
+            end
+
+            # :nodoc:
+            def _private_instance_pointer : {{@type}}
+              (@pointer + PRIVATE_INSTANCE_OFFSET).as({{@type}}*).value
+            end
           end
 
-          @@_g_type
-        end
+          def self.g_type : UInt64
+            if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
+              g_type = {{ @type.superclass.superclass }}._register_derived_type({{ @type.superclass }}, _instance_size,
+                ->_class_init(Pointer(LibGObject::TypeClass), Pointer(Void)),
+                ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)))
 
-        # :nodoc:
-        def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
-        end
+              LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
+            end
 
-        # :nodoc:
-        def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
-        end
+            @@_g_type
+          end
 
-        # Cast a `GObject::Object` to this type, returns nil if cast can't be made.
-        def self.cast?(obj : GObject::Object) : self?
-          return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
+          # :nodoc:
+          def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
+          end
 
-          # If the object was collected by Crystal GC but still alive in C world we can't bring
-          # the crystal object form the dead.
-          gc_collected = GICrystal.gc_collected?(obj)
-          instance = GICrystal.instance_pointer(obj)
-          raise GICrystal::ObjectCollectedError.new if gc_collected || instance.null?
+          # :nodoc:
+          def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
+            instance_pointer = (instance.as(Void*) + PRIVATE_INSTANCE_OFFSET).as(self*)
+            this = self.allocate
+            instance_pointer.value = this
+            this._instance_var_initializers
+            this._set_pointer(instance.as(Void*))
+            this.initialize()
+          end
 
-          instance.as(self)
-        end
+          # :nodoc:
+          def self.allocate
+            ptr = GC.malloc_uncollectable(instance_sizeof(self)).as(self)
+            set_crystal_type_id(ptr)
+            ptr
+          end
+
+          # :nodoc:
+          # Normally, the allocate method sets the instance variables' default values.
+          # Because the allocate method has been overwritten, this functionality has to be re-implemented.
+          def _instance_var_initializers
+            {% verbatim do %}
+              {% for ivar in @type.instance_vars %}
+                {% if ivar.has_default_value? %}
+                  @{{ivar.name}} = {{ivar.default_value}}
+                {% end %}
+              {% end %}
+            {% end %}
+          end
+
+          # :nodoc:
+          # Sets the pointer
+          def _set_pointer(pointer : Void*)
+            @pointer = pointer
+          end
+
+          def initialize
+          end
+
+          # TODO: Depends on #26
+          # def do_finalize
+          #   GC.free(self.as(Void*))
+          # end
+          #
+          # macro _register_do_finalize
+          #   \{% raise "Cannot use do_finalize, use finalize instead" %}
+          # end
+
+          macro inherited
+            \{% raise "Cannot inherit GObject private data class" %}
+          end
+
+          # This huge macro copies the whole method signature of arbitrary methods defined in the object to the parent
+          # Crystal doesn't make it easy to copy the method signature, making this rather complicated
+          macro method_added(method)
+            {% verbatim do %}
+              class ::{{ @type.superclass }}
+                {%
+                  splat_index = method.splat_index
+                  def_args = method.args.map_with_index do |arg, index|
+                    (index == splat_index ? "*" : "") + arg.stringify + ", "
+                  end.join("")
+                  double_splat = method.double_splat ? "**" + method.double_splat.internal_name.stringify : ""
+                  block_arg = method.block_arg ? "&" + method.block_arg.stringify : ""
+                  return_type = method.return_type ? " : " + method.return_type.stringify : ""
+                  free_vars = !method.free_vars.empty? ? " forall " + method.free_vars.join(",") : ""
+
+                  call_args = method.args.map_with_index do |arg, index|
+                    (index == splat_index ? "*" : "") + arg.internal_name.stringify + ", "
+                  end.join("")
+                %}
+                # View `{{@type}}#{{method.name}}`
+                def {{ method.name }}({{ def_args.id }}{{ double_splat.id }}{{ block_arg.id }}){{ return_type.id }}{{ free_vars.id }}
+                  {% if method.name == "initialize" %}
+                    @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(Void).null)
+                    LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
+                    LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))
+                  {% end %}
+
+                  {% if method.name == "initialize" && method.args.size == 0 && !method.accepts_block? %}
+                    # Do nothing
+                  {% elsif method.accepts_block? %}
+                    _private_instance_pointer.{{ method.name }}({{ call_args.id }}{{ double_splat.id }}) do |*yield_args|
+                      yield *yield_args
+                    end
+                  {% else %}
+                    _private_instance_pointer.{{ method.name }}({{ call_args.id }}{{ double_splat.id }})
+                  {% end %}
+                end
+              end
+            {% end %}
+          end
+        {% else %}
+          private def self._complain_about_instance_vars
+            \{%
+              unless @type.instance_vars.size == 1
+                remove_variables = @type.instance_vars
+                  .map { |var| "@#{var.id}" }
+                  .reject { |var| var == "@pointer" }
+
+                raise "Cannot define instance variables in a GObject wrapper\n\
+                      Please remove these variables: #{remove_variables.join(", ").id}"
+              end
+            %}
+          end
+          _complain_about_instance_vars()
+
+          @pointer : Pointer(Void)
+
+          # :nodoc:
+          def self._instance_size : Int32
+            sizeof(LIB_TYPE)
+          end
+
+          # :nodoc:
+          alias LIB_TYPE = Tuple({{ @type.superclass }}::LIB_TYPE, Void*)
+
+          # :nodoc:
+          PRIVATE_INSTANCE_OFFSET = offsetof({ {{ @type.superclass }}::LIB_TYPE, Void* }, 1)
+        {% end %}
       {% end %}
     end
 
