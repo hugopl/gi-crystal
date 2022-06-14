@@ -106,8 +106,8 @@ describe "GObject Binding" do
     it "removes out params" do
       subject = Test::Subject.new
       ret = subject.out_param
-      ret.in.should eq(1)
-      ret.begin.should eq(2)
+      ret._in.should eq(1)
+      ret._begin.should eq(2)
     end
   end
 
@@ -240,7 +240,7 @@ describe "GObject Binding" do
 
     it "works on plain structs" do
       subject = Test::Struct.new(begin: 42)
-      subject.begin.should eq(42)
+      subject._begin.should eq(42)
     end
   end
 end

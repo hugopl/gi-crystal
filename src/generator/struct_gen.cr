@@ -51,7 +51,7 @@ module Generator
     private def generate_ctor_fields_assignment(io)
       @struct.fields.each do |field|
         field_name = to_identifier(field.name)
-        io << "_instance." << field.name << " = " << field_name << " unless " << field_name << ".nil?\n"
+        io << "_instance." << field_name << " = " << field_name << " unless " << field_name << ".nil?\n"
       end
     end
 
@@ -71,7 +71,7 @@ module Generator
     end
 
     private def generate_getter(io : IO, field : FieldInfo)
-      field_name = field.name
+      field_name = to_identifier(field.name)
       field_type = field.type_info
       is_pointer = field_type.pointer?
 
@@ -99,7 +99,7 @@ module Generator
     end
 
     private def generate_setter(io : IO, field : FieldInfo)
-      field_name = field.name
+      field_name = to_identifier(field.name)
       field_type = field.type_info
       is_pointer = field_type.pointer?
       field_lib_type = to_lib_type(field_type, structs_as_void: true)
