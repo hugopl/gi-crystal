@@ -51,15 +51,17 @@ module <%= namespace_name %>
       <% end %>
     end
 
-    # :nodoc:
-    # Code copied from crystal/src/weak_ref.cr
-    # Allocates this object using malloc_atomic, allowing the GC to run more efficiently.
-    # As GObjects memory is managed using reference counting, we do not need to scan its pointers.
-    def self.allocate
-      ptr = GC.malloc_atomic(instance_sizeof(self)).as(self)
-      set_crystal_type_id(ptr)
-      ptr
-    end
+    {% if @type.annotation(GObject::GeneratedWrapper) %}
+      # :nodoc:
+      # Code copied from crystal/src/weak_ref.cr
+      # Allocates this object using malloc_atomic, allowing the GC to run more efficiently.
+      # As GObjects memory is managed using reference counting, we do not need to scan its pointers.
+      def self.allocate
+        ptr = GC.malloc_atomic(instance_sizeof(self)).as(self)
+        set_crystal_type_id(ptr)
+        ptr
+      end
+    {% end %}
 
     <% if all_properties.any? -%>
       <% render "ecr/gobject_constructor.ecr" %>
