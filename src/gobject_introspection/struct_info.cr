@@ -19,6 +19,10 @@ module GObjectIntrospection
       bytesize > 0
     end
 
+    def g_error?
+      name == "Error" && namespace.name == "GLib"
+    end
+
     def boxed?
       bytesize.zero? && !type_init.nil?
     end

@@ -11,7 +11,7 @@ def <%= method_identifier %>(<% render_args_declaration -%>) <%= method_return_t
 
   <% if throws? -%>
     # Error check
-    <%= namespace_name %>.raise_exception(_error) unless _error.null?
+    <%= namespace_name %>.raise_gerror(_error) unless _error.null?
   <% end -%>
 
   # Return value handling

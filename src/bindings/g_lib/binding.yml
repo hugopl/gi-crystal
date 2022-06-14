@@ -2,7 +2,8 @@ namespace: GLib
 version: "2.0"
 
 include_before:
-  - lib_g_lib.cr
+ - error.cr
+ - lib_g_lib.cr
 
 include:
  - bytes.cr
@@ -17,6 +18,7 @@ handmade:
 
 # All GLib class and functions that have Crystal versions in the stdlib must be removed from bindings
 ignore:
+ - ErrorCopyFunc
  - Array
  - AsyncQueue
  - BookmarkFile

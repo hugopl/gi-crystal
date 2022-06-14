@@ -22,7 +22,7 @@ module Generator
     end
 
     def skip?(key : String = subject) : Bool
-      super || @struct.g_type_struct?
+      super || @struct.g_type_struct? || @struct.g_error?
     end
 
     def type_name
@@ -31,10 +31,6 @@ module Generator
 
     def object
       @struct
-    end
-
-    def g_error?
-      namespace.name == "GLib" && @struct.name == "Error"
     end
 
     def struct_new_method : String

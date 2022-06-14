@@ -28,18 +28,7 @@ module <%= namespace_name %>
   <% end %>
 
   # Base class for all errors in this module.
-  class <%= namespace_name %>Error < RuntimeError
-    # :nodoc:
-    def initialize(error : Pointer(LibGLib::Error))
-      message_ptr = error.value.message
-      super(String.new(message_ptr)) unless message_ptr.null?
-      LibGLib.g_error_free(error)
-    end
-
-    # :inherit:
-    def initialize(message : String)
-      super
-    end
+  class <%= namespace_name %>Error < GLib::Error
   end
 
   # Enums
@@ -77,8 +66,13 @@ module <%= namespace_name %>
     class <%= to_type_name(enum_.name) -%> < <%= namespace_name %>Error
       <% enum_.values.each do |value| -%>
         class <%= to_type_name(value.name) %> < <%= to_type_name(enum_.name) %>
-          def code : Int32
-            <%= value.value %>
+          def initialize(message : String = "")
+            domain_quark = LibGLib.g_quark_from_static_string("<%= enum_.error_domain %>")
+            @pointer = LibGLib.g_error_new_literal(domain_quark, <%= value.value %>, message)
+          end
+
+          def initialize(pointer : Pointer(LibGLib::Error), transfer : GICrystal::Transfer)
+            super
           end
         end
       <% end %>
@@ -86,12 +80,22 @@ module <%= namespace_name %>
   <% end %>
 
   # :nodoc:
-  def raise_exception(error : Pointer(LibGLib::Error))
-    <%= raise_module_exceptions %>
+  def gerror_to_crystal(error : Pointer(LibGLib::Error), transfer : GICrystal::Transfer) : GLib::Error
+    gerror_to_crystal?(error, transfer) || GLib::Error.new(error, transfer)
+  end
+
+  # :nodoc:
+  def gerror_to_crystal?(error : Pointer(LibGLib::Error), transfer : GICrystal::Transfer) : GLib::Error?
+    <%= gerror_to_crystal_implementation %>
 
     <% immediate_dependencies.each do |namespace| -%>
-      <%= namespace.namespace_name %>.raise_exception(error)
+      <%= namespace.namespace_name %>.gerror_to_crystal?(error, transfer)
     <% end -%>
+  end
+
+  # :nodoc:
+  def raise_gerror(error : Pointer(LibGLib::Error))
+    raise gerror_to_crystal(error, :full)
   end
 
   extend self

@@ -159,6 +159,19 @@ describe "GObject signals" do
     received_value.should eq(nil)
   end
 
+  it "can have a GError as parameter" do
+    subject = Test::Subject.new
+    received_error = nil
+    subject.gerror_signal.connect do |error|
+      received_error = error
+    end
+
+    error = GLib::ConvertError::Failed.new("test")
+    subject.gerror_signal.emit(error)
+    received_error.class.should eq(GLib::ConvertError::Failed)
+    received_error.not_nil!.message.should eq("test")
+  end
+
   context "when in interfaces" do
     it "can receive details and connect to a block" do
       iface = Test::Subject.new.return_myself_as_interface

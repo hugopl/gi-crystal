@@ -39,6 +39,7 @@ module Generator
                              CallerAllocatesPlan
                              HandmadeArgPlan
                              TransferFullArgPlan
+                             GErrorArgPlan
                              BuiltInTypeArgPlan) %}
       plan = {{ plan_class.id }}.new(strategies)
       strategies.each do |strategy|
@@ -335,13 +336,37 @@ module Generator
     end
   end
 
+  struct GErrorArgPlan < ArgPlan
+    def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
+      return false if direction.crystal_to_c?
+      return false if strategy.remove_from_declaration?
+
+      arg_type = strategy.arg.type_info
+      return false unless arg_type.tag.error?
+
+      true
+    end
+
+    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    end
+
+    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      arg_name = to_identifier(arg.name)
+      namespace = to_type_name(strategy.method.namespace.name)
+      transfer = arg.ownership_transfer
+      io << arg_name << '=' << namespace
+      io << ".gerror_to_crystal(lib_" << arg_name << ".as(Pointer(LibGLib::Error)), GICrystal::Transfer::" << transfer << ")\n"
+    end
+  end
+
   struct BuiltInTypeArgPlan < ArgPlan
     def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
+      return false if direction.crystal_to_c?
       return false if strategy.remove_from_declaration?
 
       arg_type = strategy.arg.type_info
       return false if BindingConfig.handmade?(arg_type)
-      return false if direction.crystal_to_c?
 
       case arg_type.tag
       when .interface?, .utf8?, .filename?
