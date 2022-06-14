@@ -83,15 +83,6 @@ module GObject
           def initialize
           end
 
-          # TODO: Depends on #26
-          # def do_finalize
-          #   GC.free(self.as(Void*))
-          # end
-          #
-          # macro _register_do_finalize
-          #   \{% raise "Cannot use do_finalize, use finalize instead" %}
-          # end
-
           macro inherited
             \{% raise "Cannot inherit GObject private data class" %}
           end
