@@ -68,13 +68,18 @@ describe "GObject properties" do
   end
 
   it "can be GObjects" do
-    subject = Test::Subject.new(boolean: true)
+    subject = Test::Subject.new
     subject.gobj.should eq(nil)
 
-    value = Test::Subject.new(boolean: true)
+    value = Test::Subject.new
     subject.gobj = value
     value.ref_count.should eq(2)
-    subject.gobj.not_nil!.to_unsafe.should eq(value.to_unsafe)
+    subject.gobj.object_id.should eq(value.object_id)
+    value.ref_count.should eq(2)
+
+    subject.gobj = nil
+    value.ref_count.should eq(1)
+    subject.gobj.should eq(nil)
   end
 
   it "can be null terminated string lists" do
