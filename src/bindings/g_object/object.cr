@@ -7,6 +7,14 @@ module GObject
   class Object
     macro inherited
       {% unless @type.annotation(GObject::GeneratedWrapper) %}
+        macro method_added(method)
+          {% verbatim do %}
+            {% if method.name.starts_with?("do_") %}
+              _register_{{method.name}}
+            {% end %}
+          {% end %}
+        end
+
         # GType for the new created type
         @@_g_type : UInt64 = 0
 
@@ -17,6 +25,7 @@ module GObject
               ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)))
 
             LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
+            self._install_ifaces
           end
 
           @@_g_type
@@ -28,6 +37,10 @@ module GObject
 
         # :nodoc:
         def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
+        end
+
+        # :nodoc:
+        def self._install_ifaces
         end
 
         # Cast a `GObject::Object` to this type, returns nil if cast can't be made.

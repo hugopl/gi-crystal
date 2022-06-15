@@ -1,0 +1,22 @@
+    private macro _register_do_<%= vfunc.name %>
+      private def self._vfunc_<%= vfunc.name %>(%this : Pointer(Void), <% generate_lib_args(io, vfunc) %>) : <%= return_type %>
+        <%- write_implementations(io) -%>
+        <%-= '\n' unless vfunc.args.empty? -%>
+
+        %gc_collected = !LibGObject.g_object_get_qdata(%this, GICrystal::GC_COLLECTED_QDATA_KEY).null?
+        %instance = LibGObject.g_object_get_qdata(%this, GICrystal::INSTANCE_QDATA_KEY)
+        raise GICrystal::ObjectCollectedError.new if %gc_collected || %instance.null?
+
+        %instance.as(self).do_<%= vfunc.name %>(<% call_user_method(io) %>)
+      end
+
+    <%- if object.is_a?(InterfaceInfo) -%>
+      def self._install_iface_<%= namespace_name %>__<%= type_name %>(type_struct : Pointer(LibGObject::TypeInterface)) : Nil
+    <%- else -%>
+      def self._class_init(type_struct : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
+    <%- end -%>
+        vfunc_ptr = (type_struct.as(Pointer(Void)) + <%= @byte_offset %>).as(Pointer(Pointer(Void)))
+        vfunc_ptr.value = (->_vfunc_<%= vfunc.name %>(Pointer(Void)<% proc_args(io) %>)).pointer
+        previous_def
+      end
+    end
