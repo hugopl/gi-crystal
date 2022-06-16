@@ -1,5 +1,6 @@
     private macro _register_do_<%= vfunc.name %>
       private def self._vfunc_<%= vfunc.name %>(%this : Pointer(Void), <% generate_lib_args(io, vfunc) %>) : <%= return_type %>
+        <%= vfunc_gi_annotations %>
         <%- write_implementations(io) -%>
         <%-= '\n' unless vfunc.args.empty? -%>
 

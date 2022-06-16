@@ -389,12 +389,12 @@ module Generator
       tag = type_info.tag
       if tag.interface?
         if type_info.interface.class.in?(ObjectInfo, InterfaceInfo, StructInfo)
-          io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", :none)"
+          io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", GICrystal::Transfer::" << arg.ownership_transfer << ")"
         else
           io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ")"
         end
       elsif tag.utf8? || tag.filename?
-        io << convert_to_crystal("lib_#{arg_name}", type_info, nil, :none)
+        io << convert_to_crystal("lib_#{arg_name}", type_info, nil, arg.ownership_transfer)
       end
 
       if arg.nullable?

@@ -4,6 +4,7 @@ require "./box_helper"
 module Generator
   class VFuncGen < Generator
     include BoxHelper
+    include Helpers
 
     alias MethodReturnType = TypeInfo | ArgInfo
 
@@ -55,6 +56,13 @@ module Generator
 
     private def type_name
       to_crystal_type(@object, false)
+    end
+
+    private def vfunc_gi_annotations : String
+      args = @vfunc.args
+      String.build do |io|
+        args_gi_annotations(io, args)
+      end
     end
   end
 end
