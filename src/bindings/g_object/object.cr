@@ -20,7 +20,7 @@ module GObject
 
         def self.g_type : UInt64
           if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
-            g_type = {{ @type.superclass.id }}._register_derived_type({{ @type.id }},
+            g_type = {{ @type.superclass.id }}._register_derived_type("{{ @type.name.gsub(/::/, "-") }}",
               ->_class_init(Pointer(LibGObject::TypeClass), Pointer(Void)),
               ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)))
 

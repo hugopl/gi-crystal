@@ -20,8 +20,8 @@ module <%= namespace_name %>
     end
     <% elsif class_struct %>
     # :nodoc:
-    def self._register_derived_type(klass : Class, class_init, instance_init)
-      LibGObject.g_type_register_static_simple(g_type, klass.name,
+    def self._register_derived_type(class_name : String, class_init, instance_init)
+      LibGObject.g_type_register_static_simple(g_type, class_name,
                                                sizeof(<%= to_lib_type(class_struct) %>), class_init,
                                                sizeof(<%= to_lib_type(object) %>), instance_init, 0)
     end
