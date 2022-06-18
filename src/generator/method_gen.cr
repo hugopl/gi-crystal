@@ -22,7 +22,7 @@ module Generator
       @crystal_arg_count = @args_strategies.size - @args_strategies.count(&.remove_from_declaration?)
     end
 
-    def ignore?
+    def skip? : Bool
       config.ignore?(@method.symbol)
     end
 

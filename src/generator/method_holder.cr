@@ -5,7 +5,7 @@ module Generator
     macro render_methods
       each_object_method do |method|
         gen = MethodGen.new(object, method)
-        gen.generate(io) unless gen.ignore?
+        gen.generate(io) unless gen.skip?
       end
     end
 
