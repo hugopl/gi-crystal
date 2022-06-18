@@ -23,7 +23,7 @@ module Generator
     end
 
     def skip? : Bool
-      config.ignore?(@method.symbol)
+      config.ignore?(@method.symbol) || (@method.flags.constructor? && @method.args.empty? && object.is_a?(StructInfo))
     end
 
     def scope
@@ -38,7 +38,7 @@ module Generator
       identifier = to_identifier(@method.name)
       method_flags = @method.flags
       identifier = if method_flags.constructor?
-                     @method.name == "new" ? "initialize" : "self.#{identifier}"
+                     "self.#{identifier}"
                    elsif identifier.starts_with?("get_") && identifier.size > 4
                      identifier[4..]
                    elsif method_flags.getter? && identifier.starts_with?("is_") && identifier.size > 3
@@ -84,13 +84,7 @@ module Generator
       end
     end
 
-    private def initialize_method? : Bool
-      @method.constructor? && @method.name == "new"
-    end
-
     private def method_return_type_declaration : String
-      return "" if initialize_method?
-
       if @method.flags.constructor?
         return @method.may_return_null? ? ": self?" : ": self"
       end
@@ -178,10 +172,7 @@ module Generator
       return_type = method_return_type
 
       String.build do |s|
-        if initialize_method?
-          s << "@pointer = _retval \n" \
-               "LibGObject.g_object_set_qdata(_retval, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))"
-        elsif @method.constructor?
+        if @method.constructor?
           s << convert_to_crystal("_retval", @method.container.not_nil!, @method.args, :full)
         elsif return_type.is_a?(ArgInfo)
           s << to_identifier(return_type.name)
