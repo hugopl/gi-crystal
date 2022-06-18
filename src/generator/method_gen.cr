@@ -22,10 +22,8 @@ module Generator
       @crystal_arg_count = @args_strategies.size - @args_strategies.count(&.remove_from_declaration?)
     end
 
-    def skip? : Bool
-      # We don't generate constructors with no arguments since the custom constructor can be called for this.
-      config.ignore?(@method.symbol) ||
-        (@method.flags.constructor? && @method.args.empty?)
+    def ignore?
+      config.ignore?(@method.symbol)
     end
 
     def scope
@@ -40,7 +38,7 @@ module Generator
       identifier = to_identifier(@method.name)
       method_flags = @method.flags
       identifier = if method_flags.constructor?
-                     "self.#{identifier}"
+                     @method.name == "new" ? "initialize" : "self.#{identifier}"
                    elsif identifier.starts_with?("get_") && identifier.size > 4
                      identifier[4..]
                    elsif method_flags.getter? && identifier.starts_with?("is_") && identifier.size > 3
@@ -86,7 +84,13 @@ module Generator
       end
     end
 
+    private def initialize_method? : Bool
+      @method.constructor? && @method.name == "new"
+    end
+
     private def method_return_type_declaration : String
+      return "" if initialize_method?
+
       if @method.flags.constructor?
         return @method.may_return_null? ? ": self?" : ": self"
       end
@@ -174,7 +178,10 @@ module Generator
       return_type = method_return_type
 
       String.build do |s|
-        if @method.constructor?
+        if initialize_method?
+          s << "@pointer = _retval \n" \
+               "LibGObject.g_object_set_qdata(_retval, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))"
+        elsif @method.constructor?
           s << convert_to_crystal("_retval", @method.container.not_nil!, @method.args, :full)
         elsif return_type.is_a?(ArgInfo)
           s << to_identifier(return_type.name)
