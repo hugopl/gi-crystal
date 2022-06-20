@@ -23,9 +23,7 @@ module Generator
     end
 
     def skip? : Bool
-      # We don't generate constructors with no arguments since the custom constructor can be called for this.
-      config.ignore?(@method.symbol) ||
-        (@method.flags.constructor? && @method.args.empty?)
+      config.ignore?(@method.symbol) || (@method.flags.constructor? && @method.args.empty? && object.is_a?(StructInfo))
     end
 
     def scope
