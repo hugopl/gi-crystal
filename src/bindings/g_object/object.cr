@@ -42,7 +42,7 @@ module GObject
         # :nodoc:
         def self._install_ifaces
           {% verbatim do %}
-            {% for ancestor in @type.ancestors %}
+            {% for ancestor in @type.ancestors.uniq %}
               {% if ancestor.module? && ancestor.class.has_method?("g_type") %}
                 closure = ->_install_iface_{{ ancestor.name.gsub(/::/, "__") }}(Pointer(LibGObject::TypeInterface))
                 interface_info = LibGObject::InterfaceInfo.new()
