@@ -2,6 +2,7 @@ namespace: GObject
 version: "2.0"
 
 include_before:
+ - enum.cr
  - lib_g_object.cr
  - type.cr
  - signal.cr

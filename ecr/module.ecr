@@ -40,6 +40,7 @@ module <%= namespace_name %>
         <% render_doc(enum_, value) -%>
         <%= to_type_name(value.name) %> = <%= value.value %>
       <% end %>
+      <% render "ecr/g_type_method.ecr", enum_ %>
     end
   <% end %>
 
