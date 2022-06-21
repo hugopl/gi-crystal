@@ -1,9 +1,9 @@
 @[Flags]
 enum TestFlags
-  A = 1
-  B = 2
-  C = 4
-  D = 8
+  A  = 1
+  B  = 2
+  C  = 4
+  D  = 8
   BC = 6
 end
 
