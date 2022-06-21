@@ -10,16 +10,16 @@ struct <%= signal_type %> < GObject::Signal
 
   def connect(handler : Proc(<%= lean_proc_params %>), *, after : Bool = false) : GObject::SignalConnection
     <% render_box(:lean_signal) %>
-    handler = LibGObject.g_signal_connect_data(@source, name, handler,
+    handler_id = LibGObject.g_signal_connect_data(@source, name, handler,
       GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, after.to_unsafe)
-    GObject::SignalConnection.new(@source, handler)
+    GObject::SignalConnection.new(@source, handler_id)
   end
 
   def connect(handler : Proc(<%= full_proc_params %>), *, after : Bool = false) : GObject::SignalConnection
     <% render_box(:full_signal) %>
-    handler = LibGObject.g_signal_connect_data(@source, name, handler,
+    handler_id = LibGObject.g_signal_connect_data(@source, name, handler,
       GICrystal::ClosureDataManager.register(_box), ->GICrystal::ClosureDataManager.deregister, after.to_unsafe)
-    GObject::SignalConnection.new(@source, handler)
+    GObject::SignalConnection.new(@source, handler_id)
   end
 
   <% render_emit_method %>
