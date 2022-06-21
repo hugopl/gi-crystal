@@ -4,6 +4,9 @@ private class UserObjectWithInterface < GObject::Object
   include Test::IfaceVFuncs
 end
 
+private class UserSubjectWithIface < Test::Subject
+end
+
 describe "GObject interfaces" do
   it "can be included" do
     obj = UserObjectWithInterface.new
@@ -31,5 +34,9 @@ describe "GObject interfaces" do
 
   it "have class methods" do
     Test::Iface.class_method
+  end
+
+  it "doesn't reinclude interfaces" do
+    UserSubjectWithIface.new
   end
 end
