@@ -41,6 +41,18 @@ module GObject
 
         # :nodoc:
         def self._install_ifaces
+          {% verbatim do %}
+            {% for ancestor in @type.ancestors.uniq %}
+              {% if ancestor.module? && ancestor.class.has_method?("g_type") %}
+                closure = ->_install_iface_{{ ancestor.name.gsub(/::/, "__") }}(Pointer(LibGObject::TypeInterface))
+                interface_info = LibGObject::InterfaceInfo.new()
+                interface_info.interface_init = closure.pointer
+                interface_info.interface_finalize = Pointer(Void).null
+                interface_info.interface_data = closure.closure_data
+                LibGObject.g_type_add_interface_static(g_type, {{ ancestor }}.g_type, pointerof(interface_info))
+              {% end %}
+            {% end %}
+          {% end %}
         end
 
         # Cast a `GObject::Object` to this type, returns nil if cast can't be made.
