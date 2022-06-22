@@ -30,6 +30,11 @@ private class UserObjectWithGProperties < GObject::Object
 
   @[GObject::Property]
   property object : UserObject? = nil
+
+  @[GObject::Property]
+  getter signal_test : Bool = true
+  @[GObject::Property]
+  setter signal_test : Bool = true
 end
 
 class User::Class::With::Colons < GObject::Object
@@ -171,5 +176,19 @@ describe "Classes inheriting GObject::Object" do
     LibGObject.g_object_get_property(obj, "object", pointerof(out_object))
     GObject::Value.raw(GObject::TYPE_OBJECT, pointerof(out_object).as(Void*)).should eq(obj.object)
     LibGObject.g_value_unset(pointerof(out_object))
+  end
+
+  it "emits notify signal on GObject properties access" do
+    test_var = 0
+    obj = UserObjectWithGProperties.new
+    signal = obj.notify_signal["signal-test"].connect { test_var += 1 }
+
+    test_var.should eq(0)
+    obj.signal_test = false
+    test_var.should eq(1)
+    obj.signal_test = true
+    test_var.should eq(2)
+
+    signal.disconnect
   end
 end

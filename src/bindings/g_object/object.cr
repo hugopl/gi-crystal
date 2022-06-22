@@ -21,6 +21,9 @@ module GObject
         # GType for the new created type
         @@_g_type : UInt64 = 0
 
+        # ParamSpec pointers for the GObject properties in the object
+        @@_g_param_specs = Pointer(LibGObject::ParamSpec*).null
+
         def self.g_type : UInt64
           if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
             g_type = {{ @type.superclass.id }}._register_derived_type("{{ @type.name.gsub(/::/, "-") }}",
@@ -37,23 +40,27 @@ module GObject
         # :nodoc:
         def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
           {% verbatim do %}
-            {% for var in @type.instance_vars %}
-              {% if property = var.annotation(GObject::Property) %}
+            {% begin %}
+              {% instance_vars = @type.instance_vars.select(&.annotation(GObject::Property)) %}
+
+              @@_g_param_specs = Pointer(LibGObject::ParamSpec*).malloc({{ instance_vars.size }})
+              {% for var, i in instance_vars %}
+                {% property = var.annotation(GObject::Property) %}
                 name = {{ var.name.gsub(/\_/, "-").stringify }}.to_unsafe
                 nick = {{ property["nick"] }}.try(&.to_unsafe) || Pointer(LibC::Char).null
                 blurb = {{ property["blurb"] }}.try(&.to_unsafe) || Pointer(LibC::Char).null
                 {% other_args = property.named_args.to_a.reject { |arg| ["nick", "blurb"].includes?(arg[0].stringify) } %}
 
-                flags = GObject::ParamFlags::StaticName | GObject::ParamFlags::StaticBlurb
+                flags = GObject::ParamFlags::StaticName | GObject::ParamFlags::StaticBlurb | GObject::ParamFlags::ExplicitNotify
                 flags |= GObject::ParamFlags::Deprecated unless {{ !!var.annotation(Deprecated) }}
                 flags |= GObject::ParamFlags::Readable if {{ @type.has_method?(var.name.stringify) }}
                 flags |= GObject::ParamFlags::Writable if {{ @type.has_method?("#{var.name}=") }}
 
                 # Finally register the type to GLib.
                 # The given varible name has its underscores converted to dashes.
-                # To create a unique id for the property, the offset of the variable inside the class is used.
                 pspec = GObject.create_param_spec({{ var.type }}, name, nick, blurb, flags, {{ other_args.map { |tuple| "#{tuple[0]}: #{tuple[1]}".id }.splat }})
-                LibGObject.g_object_class_install_property(klass, offsetof(self, @{{ var }}), pspec)
+                @@_g_param_specs[{{ i }}] = pspec.as(LibGObject::ParamSpec*)
+                LibGObject.g_object_class_install_property(klass, {{ i + 1 }}, pspec)
               {% end %}
             {% end %}
           {% end %}
@@ -63,10 +70,12 @@ module GObject
         def unsafe_do_get_property(property_id : UInt32, gvalue : Void*, param_spec : Void*) : Nil
           {% verbatim do %}
             {% begin %}
+              {% instance_vars = @type.instance_vars.select(&.annotation(GObject::Property)) %}
+
               case property_id
-              {% for var in @type.instance_vars %}
-                {% if property = var.annotation(GObject::Property) && @type.has_method?(var.name.stringify) %}
-                  when offsetof(self, @{{ var }})
+              {% for var, i in instance_vars %}
+                {% if @type.has_method?(var.name.stringify) %}
+                  when {{ i + 1 }}
                     GObject::Value.set_g_value(gvalue.as(LibGObject::Value*), self.{{ var }})
                 {% end %}
               {% end %}
@@ -79,10 +88,12 @@ module GObject
         def unsafe_do_set_property(property_id : UInt32, gvalue : Void*, param_spec : Void*) : Nil
           {% verbatim do %}
             {% begin %}
+              {% instance_vars = @type.instance_vars.select(&.annotation(GObject::Property)) %}
+
               case property_id
-              {% for var in @type.instance_vars %}
-                {% if property = var.annotation(GObject::Property) && @type.has_method?("#{var.name}=") %}
-                  when offsetof(self, @{{ var }})
+              {% for var, i in instance_vars %}
+                {% if @type.has_method?("#{var.name}=") %}
+                  when {{ i + 1 }}
                     raw = GObject::Value.raw(GObject.fundamental_g_type({{ var.type }}), gvalue)
                     {% if var.type < GObject::Object %}
                       self.{{ var }} = raw.as(GObject::Object).cast({{ var.type }})
@@ -98,6 +109,46 @@ module GObject
                 {% end %}
               {% end %}
               end
+            {% end %}
+          {% end %}
+        end
+
+        private macro _emit_notify_signal(arg)
+          {% verbatim do %}
+            {% begin %}
+              {% instance_vars = @type.instance_vars.select(&.annotation(GObject::Property)) %}
+
+              {% for var, i in instance_vars %}
+                {% if var.name == arg.id %}
+                  LibGObject.g_object_notify_by_pspec(self, @@_g_param_specs[{{ i }}])
+                {% end %}
+              {% end %}
+            {% end %}
+          {% end %}
+        end
+
+        # :nodoc:
+        # Mostly copied from crystal source
+        macro setter(*names)
+          {% verbatim do %}
+            {% for name in names %}
+              {% if name.is_a?(TypeDeclaration) %}
+                @{{name}}
+
+                def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
+                  _emit_notify_signal({{name.var.id}})
+                end
+              {% elsif name.is_a?(Assign) %}
+                @{{name}}
+
+                def {{name.target.id}}=(@{{name.target.id}})
+                  _emit_notify_signal({{name.target.id}})
+                end
+              {% else %}
+                def {{name.id}}=(@{{name.id}})
+                  _emit_notify_signal({{name.target.id}})
+                end
+              {% end %}
             {% end %}
           {% end %}
         end
