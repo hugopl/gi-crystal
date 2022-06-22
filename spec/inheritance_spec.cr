@@ -32,9 +32,7 @@ private class UserObjectWithGProperties < GObject::Object
   property object : UserObject? = nil
 
   @[GObject::Property]
-  getter signal_test : Bool = true
-  @[GObject::Property]
-  setter signal_test : Bool = true
+  property signal_test : Bool = true
 end
 
 class User::Class::With::Colons < GObject::Object

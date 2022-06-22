@@ -146,8 +146,178 @@ module GObject
                 end
               {% else %}
                 def {{name.id}}=(@{{name.id}})
-                  _emit_notify_signal({{name.target.id}})
+                  _emit_notify_signal({{name.id}})
                 end
+              {% end %}
+            {% end %}
+          {% end %}
+        end
+
+        macro property(*names, &block)
+          {% verbatim do %}
+            {% if block %}
+              {% if names.size != 1 %}
+                {{ raise "Only one argument can be passed to `property` with a block" }}
+              {% end %}
+
+              {% name = names[0] %}
+
+              {% if name.is_a?(TypeDeclaration) %}
+                @{{name.var.id}} : {{name.type}}?
+
+                def {{name.var.id}} : {{name.type}}
+                  if (value = @{{name.var.id}}).nil?
+                    @{{name.var.id}} = {{yield}}
+                    _emit_notify_signal({{name.var.id}})
+                  else
+                    value
+                  end
+                end
+
+                def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
+                  _emit_notify_signal({{name.var.id}})
+                end
+              {% else %}
+                def {{name.id}}
+                  if (value = @{{name.id}}).nil?
+                    @{{name.id}} = {{yield}}
+                    _emit_notify_signal({{name.id}})
+                  else
+                    value
+                  end
+                end
+
+                def {{name.id}}=(@{{name.id}})
+                  _emit_notify_signal({{name.id}})
+                end
+              {% end %}
+            {% else %}
+              {% for name in names %}
+                {% if name.is_a?(TypeDeclaration) %}
+                  @{{name}}
+
+                  def {{name.var.id}} : {{name.type}}
+                    @{{name.var.id}}
+                  end
+
+                  def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
+                    _emit_notify_signal({{name.var.id}})
+                  end
+                {% elsif name.is_a?(Assign) %}
+                  @{{name}}
+
+                  def {{name.target.id}}
+                    @{{name.target.id}}
+                  end
+
+                  def {{name.target.id}}=(@{{name.target.id}})
+                    _emit_notify_signal({{name.target.id}})
+                  end
+                {% else %}
+                  def {{name.id}}
+                    @{{name.id}}
+                  end
+
+                  def {{name.id}}=(@{{name.id}})
+                    _emit_notify_signal({{name.id}})
+                  end
+                {% end %}
+              {% end %}
+            {% end %}
+          {% end %}
+        end
+
+        # :nodoc:
+        # Mostly copied from crystal source
+        macro property!(*names)
+          {% verbatim do %}
+            getter! {{*names}}
+
+            {% for name in names %}
+              {% if name.is_a?(TypeDeclaration) %}
+                def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
+                  _emit_notify_signal({{name.var.id}})
+                end
+              {% else %}
+                def {{name.id}}=(@{{name.id}})
+                  _emit_notify_signal({{name.id}})
+                end
+              {% end %}
+            {% end %}
+          {% end %}
+        end
+
+        # :nodoc:
+        # Mostly copied from crystal source
+        macro property?(*names, &block)
+          {% verbatim do %}
+            {% if block %}
+              {% if names.size != 1 %}
+                {{ raise "Only one argument can be passed to `property?` with a block" }}
+              {% end %}
+
+              {% name = names[0] %}
+
+              {% if name.is_a?(TypeDeclaration) %}
+                @{{name.var.id}} : {{name.type}}?
+
+                def {{name.var.id}}? : {{name.type}}
+                  if (value = @{{name.var.id}}).nil?
+                    @{{name.var.id}} = {{yield}}
+                    _emit_notify_signal({{name.var.id}})
+                  else
+                    value
+                  end
+                end
+
+                def {{name.var.id}}=(@{{name.var.id}} : \{{name.type}})
+                  _emit_notify_signal({{name.var.id}})
+                end
+              {% else %}
+                def {{name.id}}?
+                  if (value = @{{name.id}}).nil?
+                    @{{name.id}} = {{yield}}
+                    _emit_notify_signal({{name.id}})
+                  else
+                    value
+                  end
+                end
+
+                def {{name.id}}=(@{{name.id}})
+                  _emit_notify_signal({{name.id}})
+                end
+              {% end %}
+            {% else %}
+              {% for name in names %}
+                {% if name.is_a?(TypeDeclaration) %}
+                  @{{name}}
+
+                  def {{name.var.id}}? : {{name.type}}
+                    @{{name.var.id}}
+                  end
+
+                  def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
+                    _emit_notify_signal({{name.var.id}})
+                  end
+                {% elsif name.is_a?(Assign) %}
+                  @{{name}}
+
+                  def {{name.target.id}}?
+                    @{{name.target.id}}
+                  end
+
+                  def {{name.target.id}}=(@{{name.target.id}})
+                    _emit_notify_signal({{name.target.id}})
+                  end
+                {% else %}
+                  def {{name.id}}?
+                    @{{name.id}}
+                  end
+
+                  def {{name.id}}=(@{{name.id}})
+                    _emit_notify_signal({{name.id}})
+                  end
+                {% end %}
               {% end %}
             {% end %}
           {% end %}
