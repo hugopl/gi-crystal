@@ -4,6 +4,9 @@ module GObject
   annotation GeneratedWrapper
   end
 
+  annotation Property
+  end
+
   class Object
     macro inherited
       {% unless @type.annotation(GObject::GeneratedWrapper) %}
@@ -33,6 +36,70 @@ module GObject
 
         # :nodoc:
         def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
+          {% verbatim do %}
+            {% for var in @type.instance_vars %}
+              {% if property = var.annotation(GObject::Property) %}
+                name = {{ var.name.gsub(/\_/, "-").stringify }}.to_unsafe
+                nick = {{ property["nick"] }}.try(&.to_unsafe) || Pointer(LibC::Char).null
+                blurb = {{ property["blurb"] }}.try(&.to_unsafe) || Pointer(LibC::Char).null
+                {% other_args = property.named_args.to_a.reject { |arg| ["nick", "blurb"].includes?(arg[0].stringify) } %}
+
+                flags = GObject::ParamFlags::StaticName | GObject::ParamFlags::StaticBlurb
+                flags |= GObject::ParamFlags::Deprecated unless {{ !!var.annotation(Deprecated) }}
+                flags |= GObject::ParamFlags::Readable if {{ @type.has_method?(var.name.stringify) }}
+                flags |= GObject::ParamFlags::Writable if {{ @type.has_method?("#{var.name}=") }}
+
+                # Finally register the type to GLib.
+                # The given varible name has its underscores converted to dashes.
+                # To create a unique id for the property, the offset of the variable inside the class is used.
+                pspec = GObject.create_param_spec({{ var.type }}, name, nick, blurb, flags, {{ other_args.map { |tuple| "#{tuple[0]}: #{tuple[1]}".id }.splat }})
+                LibGObject.g_object_class_install_property(klass, offsetof(self, @{{ var }}), pspec)
+              {% end %}
+            {% end %}
+          {% end %}
+        end
+
+        # :nodoc:
+        def unsafe_do_get_property(property_id : UInt32, gvalue : Void*, param_spec : Void*) : Nil
+          {% verbatim do %}
+            {% begin %}
+              case property_id
+              {% for var in @type.instance_vars %}
+                {% if property = var.annotation(GObject::Property) && @type.has_method?(var.name.stringify) %}
+                  when offsetof(self, @{{ var }})
+                    GObject::Value.set_g_value(gvalue.as(LibGObject::Value*), self.{{ var }})
+                {% end %}
+              {% end %}
+              end
+            {% end %}
+          {% end %}
+        end
+
+        # :nodoc:
+        def unsafe_do_set_property(property_id : UInt32, gvalue : Void*, param_spec : Void*) : Nil
+          {% verbatim do %}
+            {% begin %}
+              case property_id
+              {% for var in @type.instance_vars %}
+                {% if property = var.annotation(GObject::Property) && @type.has_method?("#{var.name}=") %}
+                  when offsetof(self, @{{ var }})
+                    raw = GObject::Value.raw(GObject.fundamental_g_type({{ var.type }}), gvalue)
+                    {% if var.type < GObject::Object %}
+                      self.{{ var }} = raw.as(GObject::Object).cast({{ var.type }})
+                    {% elsif var.type < Enum %}
+                      {% if var.type.annotation(Flags) %}
+                        self.{{ var }} = raw.as(UInt32).unsafe_as({{ var.type }})
+                      {% else %}
+                        self.{{ var }} = raw.as(Int32).unsafe_as({{ var.type }})
+                      {% end %}
+                    {% else %}
+                      self.{{ var }} = raw.as({{ var.type }})
+                    {% end %}
+                {% end %}
+              {% end %}
+              end
+            {% end %}
+          {% end %}
         end
 
         # :nodoc:

@@ -36,7 +36,12 @@ abstract struct Enum
   end
 
   # :nodoc:
+  def self._is_flags_enum? : Bool
+    {{ !!@type.annotation(Flags) }}
+  end
+
+  # :nodoc:
   def self._raise_invalid_enum_type(i : T) forall T
-    {% raise "Enums used with GLib must use Int32 as their datatype, but #{@type} uses #{T}" unless T == Int32 %}
+    {% raise "Enums used with GLib must use Int32 or UInt32 as their datatype, but #{@type} uses #{T}" unless T == Int32 || T == UInt32 %}
   end
 end

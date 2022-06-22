@@ -22,10 +22,13 @@ module GObject
     # :nodoc:
     def self.init_g_value(ptr : Pointer(LibGObject::Value), value) : Nil
       LibGObject.g_value_init(ptr, Value.g_type_for(value))
+      self.set_g_value(ptr, value)
+    end
 
+    # :nodoc:
+    def self.set_g_value(ptr : Pointer(LibGObject::Value), value) : Nil
       case value
       when Bool          then LibGObject.g_value_set_boolean(ptr, value)
-      when Enum          then LibGObject.g_value_set_enum(ptr, value)
       when Float32       then LibGObject.g_value_set_float(ptr, value)
       when Float64       then LibGObject.g_value_set_double(ptr, value)
       when Int32         then LibGObject.g_value_set_int(ptr, value)
@@ -38,6 +41,12 @@ module GObject
       when UInt8         then LibGObject.g_value_set_uchar(ptr, value)
       when GLib::Variant then LibGObject.g_value_set_variant(ptr, value)
       when ParamSpec     then LibGObject.g_value_set_param(ptr, value)
+      when Enum
+        if value.class._is_flags_enum?
+          LibGObject.g_value_set_flags(ptr, value)
+        else
+          LibGObject.g_value_set_enum(ptr, value)
+        end
       when Enumerable(String)
         array = value.map(&.to_unsafe).to_a << Pointer(UInt8).null
         LibGObject.g_value_set_boxed(ptr, array)
@@ -50,7 +59,6 @@ module GObject
     def self.g_type_for(value)
       case value
       when Bool               then TYPE_BOOL
-      when Enum               then TYPE_ENUM
       when Float32            then TYPE_FLOAT
       when Float64            then TYPE_DOUBLE
       when Int32              then TYPE_INT
@@ -64,6 +72,12 @@ module GObject
       when Enumerable(String) then TYPE_STRV
       when GLib::Variant      then TYPE_VARIANT
       when ParamSpec          then TYPE_PARAM
+      when Enum
+        if value.class._is_flags_enum?
+          TYPE_FLAGS
+        else
+          TYPE_ENUM
+        end
       else
         raise ArgumentError.new("Unable to wrap a #{value.class} into a GValue, probably not implemented.")
       end
@@ -78,24 +92,30 @@ module GObject
       @g_value.g_type
     end
 
-    def raw
+    def self.raw(g_type : UInt64, ptr : Void*)
       case g_type
-      when TYPE_BOOL    then GICrystal.to_bool(LibGObject.g_value_get_boolean(self))
-      when TYPE_CHAR    then LibGObject.g_value_get_schar(self)
-      when TYPE_DOUBLE  then LibGObject.g_value_get_double(self)
-      when TYPE_FLOAT   then LibGObject.g_value_get_float(self)
-      when TYPE_INT     then LibGObject.g_value_get_int(self)
-      when TYPE_INT64   then LibGObject.g_value_get_int64(self)
-      when TYPE_OBJECT  then GObject::Object.new(LibGObject.g_value_get_object(self), :none)
-      when TYPE_STRING  then String.new(LibGObject.g_value_get_string(self))
-      when TYPE_UCHAR   then LibGObject.g_value_get_uchar(self)
-      when TYPE_UINT    then LibGObject.g_value_get_uint(self)
-      when TYPE_UINT64  then LibGObject.g_value_get_uint64(self)
-      when TYPE_VARIANT then GLib::Variant.new(LibGObject.g_value_get_variant(self), :none)
-      when TYPE_PARAM   then ParamSpec.new(LibGObject.g_value_get_param(self), :none)
+      when TYPE_BOOL    then GICrystal.to_bool(LibGObject.g_value_get_boolean(ptr))
+      when TYPE_CHAR    then LibGObject.g_value_get_schar(ptr)
+      when TYPE_DOUBLE  then LibGObject.g_value_get_double(ptr)
+      when TYPE_FLOAT   then LibGObject.g_value_get_float(ptr)
+      when TYPE_INT     then LibGObject.g_value_get_int(ptr)
+      when TYPE_INT64   then LibGObject.g_value_get_int64(ptr)
+      when TYPE_OBJECT  then GObject::Object.new(LibGObject.g_value_get_object(ptr), :none)
+      when TYPE_STRING  then String.new(LibGObject.g_value_get_string(ptr))
+      when TYPE_UCHAR   then LibGObject.g_value_get_uchar(ptr)
+      when TYPE_UINT    then LibGObject.g_value_get_uint(ptr)
+      when TYPE_UINT64  then LibGObject.g_value_get_uint64(ptr)
+      when TYPE_VARIANT then GLib::Variant.new(LibGObject.g_value_get_variant(ptr), :none)
+      when TYPE_PARAM   then ParamSpec.new(LibGObject.g_value_get_param(ptr), :none)
+      when TYPE_ENUM    then LibGObject.g_value_get_enum(ptr)
+      when TYPE_FLAGS   then LibGObject.g_value_get_flags(ptr)
       else
         raise ArgumentError.new("Cannot obtain raw value for g_type #{g_type}")
       end
+    end
+
+    def raw
+      GObject::Value.raw(g_type, to_unsafe)
     end
 
     {% for name, type in {
