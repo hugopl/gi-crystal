@@ -25,6 +25,6 @@ struct <%= signal_type %> < GObject::Signal
   <% render_emit_method %>
 end
 
-def <%= to_method_name(signal.name) %>_signal
+def <%= to_call(signal.name) %>_signal
   <%= signal_type %>.new(self)
 end

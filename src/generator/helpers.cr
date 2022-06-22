@@ -1,5 +1,9 @@
 module Generator::Helpers
-  KEYWORDS = {"abstract", "alias", "begin", "def", "end", "enum", "in", "module", "next", "out", "self", "select", "extend", "initialize"}
+  # Keywords not allowed in identifiers
+  ID_KEYWORDS = {"abstract", "alias", "begin", "def", "end", "enum", "in", "module", "next", "out", "self", "select", "extend"}
+
+  # Keywords not allowed in calls
+  CALL_KEYWORDS = {"initialize", "finalize"}
 
   def to_get_type_function(struct_info : StructInfo)
     "#{struct_info.namespace.name.underscore}_#{struct_info.name.underscore}_get_type"
@@ -11,8 +15,13 @@ module Generator::Helpers
   end
 
   def to_identifier(name : String) : String
-    name = name.tr("-", "_") if name.index("-")
-    KEYWORDS.includes?(name) ? "_#{name}" : name
+    name = name.gsub('-', '_')
+    ID_KEYWORDS.includes?(name) ? "_#{name}" : name
+  end
+
+  def to_call(name : String) : String
+    name = name.gsub('-', '_')
+    CALL_KEYWORDS.includes?(name) ? "_#{name}" : name
   end
 
   def to_type_name(name : String) : String
@@ -25,10 +34,6 @@ module Generator::Helpers
     else
       name
     end
-  end
-
-  def to_method_name(name : String) : String
-    name.tr("-", "_")
   end
 
   def abstract_interface_name(iface : InterfaceInfo, include_namespace : Bool = true)
@@ -146,7 +151,7 @@ module Generator::Helpers
   end
 
   def to_crystal_arg_decl(name : String)
-    if KEYWORDS.includes?(name)
+    if ID_KEYWORDS.includes?(name)
       "#{name} _#{name}"
     else
       to_identifier(name)

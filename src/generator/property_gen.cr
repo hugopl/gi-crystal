@@ -31,7 +31,7 @@ module Generator
     end
 
     private def prop_getter_method_name : String
-      name = to_method_name(@prop.name)
+      name = to_call(@prop.name)
       @prop.type_info.tag.boolean? ? "#{name}?" : name
     end
   end
