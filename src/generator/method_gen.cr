@@ -35,7 +35,7 @@ module Generator
     end
 
     private def method_identifier : String
-      identifier = to_identifier(@method.name)
+      identifier = to_call(@method.name)
       method_flags = @method.flags
       identifier = if method_flags.constructor?
                      "self.#{identifier}"
