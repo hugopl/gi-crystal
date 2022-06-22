@@ -6,6 +6,7 @@
 #include "test_flags.h"
 #include "test_iface.h"
 #include "test_regular_enum.h"
+#include "test_struct.h"
 
 G_BEGIN_DECLS
 
@@ -20,35 +21,6 @@ G_BEGIN_DECLS
  * A constant.
  */
 #define TEST_CONSTANT 123
-
-/**
- * TestPoint:
- * @x: X
- * @y: Y
- *
- * Used to test simple structs
- */
-typedef struct _TestPoint {
-  int x;
-  int y;
-} TestPoint;
-
-/**
- * TestStruct:
- * @in: A attribute using a invalid Crystal keyword.
- * @begin: Another attribute using a invalid Crystal keyword.
- * @point: Another struct member of this struct.
- * @string: A string
- *
- * A plain struct to test stuff
- */
-typedef struct _TestStruct {
-  gint16 in;
-  gint16 begin;
-  TestPoint* point_ptr;
-  TestPoint point;
-  const char* string;
-} TestStruct;
 
 /**
  * TestSubject:

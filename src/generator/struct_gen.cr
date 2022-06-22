@@ -76,12 +76,12 @@ module Generator
       is_pointer = field_type.pointer?
 
       if is_pointer
-        io << "def " << field_name << "!\n"
+        io << "def " << to_call(field_name) << "!\n"
         io << "self." << field_name << ".not_nil!"
         io << "\nend\n"
       end
 
-      io << "def " << field_name << " : "
+      io << "def " << to_call(field_name) << " : "
       field_type_name(io, field)
       io << LF
 
@@ -104,7 +104,7 @@ module Generator
       is_pointer = field_type.pointer?
       field_lib_type = to_lib_type(field_type, structs_as_void: true)
 
-      io << "def " << field_name << "=(value : "
+      io << "def " << to_call(field_name) << "=(value : "
       field_type_name(io, field)
       io << ")\n"
 
