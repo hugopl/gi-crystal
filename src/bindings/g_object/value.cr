@@ -100,7 +100,6 @@ module GObject
       when TYPE_FLOAT   then LibGObject.g_value_get_float(ptr)
       when TYPE_INT     then LibGObject.g_value_get_int(ptr)
       when TYPE_INT64   then LibGObject.g_value_get_int64(ptr)
-      when TYPE_OBJECT  then GObject::Object.new(LibGObject.g_value_get_object(ptr), :none)
       when TYPE_STRING  then String.new(LibGObject.g_value_get_string(ptr))
       when TYPE_UCHAR   then LibGObject.g_value_get_uchar(ptr)
       when TYPE_UINT    then LibGObject.g_value_get_uint(ptr)
@@ -109,6 +108,9 @@ module GObject
       when TYPE_PARAM   then ParamSpec.new(LibGObject.g_value_get_param(ptr), :none)
       when TYPE_ENUM    then LibGObject.g_value_get_enum(ptr)
       when TYPE_FLAGS   then LibGObject.g_value_get_flags(ptr)
+      when TYPE_OBJECT
+        object_ptr = LibGObject.g_value_get_object(ptr)
+        object_ptr.null? ? nil : GObject::Object.new(object_ptr, :none)
       else
         raise ArgumentError.new("Cannot obtain raw value for g_type #{g_type}")
       end
