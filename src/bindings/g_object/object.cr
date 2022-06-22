@@ -153,6 +153,8 @@ module GObject
           {% end %}
         end
 
+        # :nodoc:
+        # Mostly copied from crystal source
         macro property(*names, &block)
           {% verbatim do %}
             {% if block %}
