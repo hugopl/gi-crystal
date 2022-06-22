@@ -1,11 +1,13 @@
 require "./function_info"
 require "./property_info"
+require "./vfunc_info"
 
 module GObjectIntrospection
   class InterfaceInfo < RegisteredTypeInfo
     include FunctionInfoContainer
     include PropertyInfoContainer
     include SignalInfoContainer
+    include VFuncInfoContainer
 
     @prerequisites : Array(InterfaceInfo)?
 
@@ -19,6 +21,10 @@ module GObjectIntrospection
 
     def signals : Array(SignalInfo)
       signals(->LibGIRepository.g_interface_info_get_n_signals, ->LibGIRepository.g_interface_info_get_signal)
+    end
+
+    def vfuncs : Array(VFuncInfo)
+      vfuncs(->LibGIRepository.g_interface_info_get_n_vfuncs, ->LibGIRepository.g_interface_info_get_vfunc)
     end
 
     def prerequisites : Array(InterfaceInfo)

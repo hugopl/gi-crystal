@@ -2,6 +2,7 @@ require "./wrapper_util"
 require "./property_holder"
 require "./method_holder"
 require "./signal_holder"
+require "./vfunc_holder"
 
 module Generator
   class ObjectGen < FileGen
@@ -9,6 +10,7 @@ module Generator
     include PropertyHolder
     include MethodHolder
     include SignalHolder
+    include VFuncHolder
 
     private getter object : ObjectInfo
     @all_properties : Array(PropertyInfo)?

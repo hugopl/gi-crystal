@@ -171,7 +171,7 @@ module Generator
         #        something like we do with transferArray, but need to be a macro since we need more type
         #        information.
         io << convert_to_crystal(ptr_expr, arg_type.param_type, nil, arg.ownership_transfer)
-        io << "end\n"
+        io << "\nend\n"
       else
         io << "raise NotImplementedError.new\n"
       end
@@ -389,12 +389,12 @@ module Generator
       tag = type_info.tag
       if tag.interface?
         if type_info.interface.class.in?(ObjectInfo, InterfaceInfo, StructInfo)
-          io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", :none)"
+          io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", GICrystal::Transfer::" << arg.ownership_transfer << ")"
         else
           io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ")"
         end
       elsif tag.utf8? || tag.filename?
-        io << convert_to_crystal("lib_#{arg_name}", type_info, nil, :none)
+        io << convert_to_crystal("lib_#{arg_name}", type_info, nil, arg.ownership_transfer)
       end
 
       if arg.nullable?

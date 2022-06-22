@@ -7,16 +7,25 @@ module GObject
   class Object
     macro inherited
       {% unless @type.annotation(GObject::GeneratedWrapper) %}
+        macro method_added(method)
+          {% verbatim do %}
+            {% if method.name.starts_with?("do_") %}
+              _register_{{method.name}}
+            {% end %}
+          {% end %}
+        end
+
         # GType for the new created type
         @@_g_type : UInt64 = 0
 
         def self.g_type : UInt64
           if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
-            g_type = {{ @type.superclass.id }}._register_derived_type({{ @type.id }},
+            g_type = {{ @type.superclass.id }}._register_derived_type("{{ @type.name.gsub(/::/, "-") }}",
               ->_class_init(Pointer(LibGObject::TypeClass), Pointer(Void)),
               ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)))
 
             LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
+            self._install_ifaces
           end
 
           @@_g_type
@@ -28,6 +37,22 @@ module GObject
 
         # :nodoc:
         def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
+        end
+
+        # :nodoc:
+        def self._install_ifaces
+          {% verbatim do %}
+            {% for ancestor in @type.ancestors.uniq %}
+              {% if ancestor.module? && ancestor.class.has_method?("g_type") %}
+                closure = ->_install_iface_{{ ancestor.name.gsub(/::/, "__") }}(Pointer(LibGObject::TypeInterface))
+                interface_info = LibGObject::InterfaceInfo.new()
+                interface_info.interface_init = closure.pointer
+                interface_info.interface_finalize = Pointer(Void).null
+                interface_info.interface_data = closure.closure_data
+                LibGObject.g_type_add_interface_static(g_type, {{ ancestor }}.g_type, pointerof(interface_info))
+              {% end %}
+            {% end %}
+          {% end %}
         end
 
         # Cast a `GObject::Object` to this type, returns nil if cast can't be made.

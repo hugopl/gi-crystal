@@ -312,4 +312,28 @@ module Generator::Helpers
       "#{crystal_type}.new(#{var}, GICrystal::Transfer::#{transfer})"
     end
   end
+
+  def args_gi_annotations(io : IO, args : Array(ArgInfo)) : Nil
+    args.each do |arg|
+      io << "# @" << arg.name << ": "
+      io << "(#{arg.direction.to_s.downcase}) " unless arg.direction.in?
+      io << "(transfer #{arg.ownership_transfer.to_s.downcase}) " unless arg.ownership_transfer.none?
+      io << "(nullable) " if arg.nullable?
+      io << "(caller-allocates) " if arg.caller_allocates?
+      io << "(optional) " if arg.optional?
+      type_info_gi_annotations(io, arg.type_info, args)
+      io << LF
+    end
+  end
+
+  def type_info_gi_annotations(io : IO, type_info : TypeInfo, args : Array(ArgInfo)) : Nil
+    return unless type_info.tag.array?
+
+    io << "(array"
+    io << " length=" << args[type_info.array_length].name if type_info.array_length >= 0
+    io << " fixed-size=" << type_info.array_fixed_size if type_info.array_fixed_size > 0
+    io << " zero-terminated=1" if type_info.array_zero_terminated?
+    io << " element-type #{type_info.param_type.tag}"
+    io << ")"
+  end
 end

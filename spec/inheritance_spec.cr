@@ -18,7 +18,14 @@ private class UserSubject < Test::Subject
   end
 end
 
+class User::Class::With::Colons < GObject::Object
+end
+
 describe "Classes inheriting GObject::Object" do
+  it "can register object with complicated class path (issue #29)" do
+    User::Class::With::Colons.g_type.should_not eq(0)
+  end
+
   it "has their own g_type registered on GLib type system" do
     UserObject.g_type.should_not eq(GObject::Object.g_type)
   end
