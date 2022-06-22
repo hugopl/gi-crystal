@@ -64,5 +64,12 @@ module Generator
         args_gi_annotations(io, args)
       end
     end
+
+    private def call_user_method_with_lib_args(io)
+      vfunc.args.join(io, ", ") do |arg|
+        io << "lib_"
+        io << to_identifier(arg.name)
+      end
+    end
   end
 end
