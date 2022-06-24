@@ -77,8 +77,6 @@ module <%= namespace_name %>
       def to_unsafe
         @pointer
       end
-
-      <% render "ecr/cast_methods.ecr" %>
     <% end %>
 
     <% render "ecr/g_type_method.ecr" %>
