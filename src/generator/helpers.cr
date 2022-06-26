@@ -177,6 +177,7 @@ module Generator::Helpers
       io << to_crystal_type(arg_type_info, include_namespace: true) << nullmark << ','
     end
     io << to_crystal_type(info.return_type, include_namespace: true)
+    io << '?' if info.may_return_null?
   end
 
   def to_crystal_type(tag : TypeTag) : String
