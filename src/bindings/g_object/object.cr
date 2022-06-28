@@ -154,6 +154,17 @@ module GObject
       end
     end
 
+    def initialize
+      @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(Void).null)
+      LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
+      LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))
+    end
+
+    def initialize(pointer, transfer : GICrystal::Transfer)
+      @pointer = pointer
+      LibGObject.g_object_ref_sink(self) if transfer.none? || LibGObject.g_object_is_floating(self) == 1
+    end
+
     # Returns GObject reference counter.
     def ref_count : UInt32
       to_unsafe.as(Pointer(LibGObject::Object)).value.ref_count
