@@ -58,13 +58,11 @@ module GObjectIntrospection
       StructInfo.new(ptr) if ptr
     end
 
-    def initially_unowned? : Bool
-      parent = LibGIRepository.g_object_info_get_parent(self)
-      return false if parent.null?
-
+    def inherits?(c_type_name : String) : Bool
+      parent = to_unsafe
       while !parent.null?
         type_name = LibGIRepository.g_object_info_get_type_name(parent)
-        if LibC.strcmp(type_name, "GInitiallyUnowned").zero?
+        if LibC.strcmp(type_name, c_type_name).zero?
           return true
         else
           new_parent = LibGIRepository.g_object_info_get_parent(parent)
