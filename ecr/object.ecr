@@ -5,7 +5,7 @@
 
 module <%= namespace_name %>
   <% render_doc(object) -%>
-  @[GObject::GeneratedWrapper]
+  @[GICrystal::GeneratedWrapper]
   class <%= type_name %> <%= parent_class %>
     <% object.interfaces.each do |interface| -%>
     include <%= to_crystal_type(interface, namespace != interface.namespace) %>
@@ -16,7 +16,7 @@ module <%= namespace_name %>
     <% class_struct = object.class_struct -%>
     <% if class_struct.nil? || object.fundamental? %>
     macro inherited
-      {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GObject::GeneratedWrapper) }}
+      {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GICrystal::GeneratedWrapper) }}
     end
     <% elsif class_struct %>
     # :nodoc:
