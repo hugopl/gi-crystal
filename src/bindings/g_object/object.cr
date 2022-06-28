@@ -46,10 +46,14 @@ module GObject
                 blurb = {{ property["blurb"] }}.try(&.to_unsafe) || Pointer(LibC::Char).null
                 {% other_args = property.named_args.to_a.reject { |arg| ["nick", "blurb"].includes?(arg[0].stringify) } %}
 
+                {% has_getter = @type.has_method?(var.name.stringify) %}
+                {% has_setter = @type.has_method?("#{var.name}=") %}
+                {% raise "GObject properties need to have a getter and/or a setter" unless has_getter || has_setter %}
+
                 flags = GObject::ParamFlags::StaticName | GObject::ParamFlags::StaticBlurb | GObject::ParamFlags::ExplicitNotify
                 flags |= GObject::ParamFlags::Deprecated unless {{ !!var.annotation(Deprecated) }}
-                flags |= GObject::ParamFlags::Readable if {{ @type.has_method?(var.name.stringify) }}
-                flags |= GObject::ParamFlags::Writable if {{ @type.has_method?("#{var.name}=") }}
+                flags |= GObject::ParamFlags::Readable if {{ has_getter }}
+                flags |= GObject::ParamFlags::Writable if {{ has_setter }}
 
                 # Finally register the type to GLib.
                 # The given varible name has its underscores converted to dashes.
