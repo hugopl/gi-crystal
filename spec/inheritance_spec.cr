@@ -111,35 +111,18 @@ describe "Classes inheriting GObject::Object" do
   it "can set GObject properties" do
     obj = UserObjectWithGProperties.new
 
-    out_string = LibGObject::Value.new
-    LibGObject.g_value_init(pointerof(out_string), GObject::TYPE_STRING)
-    LibGObject.g_value_set_string(pointerof(out_string), "test value")
-    LibGObject.g_object_set_property(obj, "str-ing", pointerof(out_string))
-    LibGObject.g_value_unset(pointerof(out_string))
+    LibGObject.g_object_set(obj, "str-ing", "test value", Pointer(Void).null)
     obj.str_ing.should eq("test value")
 
-    out_int = LibGObject::Value.new
-    LibGObject.g_value_init(pointerof(out_int), GObject::TYPE_INT)
-    LibGObject.g_value_set_int(pointerof(out_int), 50)
-    LibGObject.g_object_set_property(obj, "int", pointerof(out_int))
-    LibGObject.g_value_unset(pointerof(out_int))
+    LibGObject.g_object_set(obj, "int", 50, Pointer(Void).null)
     obj.int.should eq(50)
 
-    out_flags = LibGObject::Value.new
-    LibGObject.g_value_init(pointerof(out_flags), GObject::TYPE_FLAGS)
-    LibGObject.g_value_set_flags(pointerof(out_flags), TestFlags::C)
-    LibGObject.g_object_set_property(obj, "flags", pointerof(out_flags))
-    LibGObject.g_value_unset(pointerof(out_flags))
+    LibGObject.g_object_set(obj, "flags", TestFlags::C, Pointer(Void).null)
     obj.flags.should eq(TestFlags::C)
 
     object = UserObject.new
-    out_object = LibGObject::Value.new
-    LibGObject.g_value_init(pointerof(out_object), GObject::TYPE_OBJECT)
-    LibGObject.g_value_set_object(pointerof(out_object), object.to_unsafe)
-    LibGObject.g_object_set_property(obj, "object", pointerof(out_object))
-    LibGObject.g_value_unset(pointerof(out_object))
-    obj.object.should_not eq(nil)
-    obj.object.not_nil!.to_unsafe.should eq(object.to_unsafe)
+    LibGObject.g_object_set(obj, "object", object, Pointer(Void).null)
+    obj.object.should eq(object)
   end
 
   it "can get GObject properties" do
