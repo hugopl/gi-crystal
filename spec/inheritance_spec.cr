@@ -145,35 +145,29 @@ describe "Classes inheriting GObject::Object" do
   it "can get GObject properties" do
     obj = UserObjectWithGProperties.new
 
-    out_string = LibGObject::Value.new
-    LibGObject.g_object_get_property(obj, "str-ing", pointerof(out_string))
-    GObject::Value.raw(GObject::TYPE_STRING, pointerof(out_string).as(Void*)).as(String?).should eq("default")
-    LibGObject.g_value_unset(pointerof(out_string))
+    out_string = uninitialized Pointer(LibC::Char)
+    LibGObject.g_object_get(obj, "str-ing", pointerof(out_string), Pointer(Void).null)
+    String.new(out_string).should eq("default")
     obj.str_ing = "test value"
-    LibGObject.g_object_get_property(obj, "str-ing", pointerof(out_string))
-    GObject::Value.raw(GObject::TYPE_STRING, pointerof(out_string).as(Void*)).as(String?).should eq("test value")
-    LibGObject.g_value_unset(pointerof(out_string))
+    LibGObject.g_object_get(obj, "str-ing", pointerof(out_string), Pointer(Void).null)
+    String.new(out_string).should eq("test value")
 
-    out_int = LibGObject::Value.new
-    LibGObject.g_object_get_property(obj, "int", pointerof(out_int))
-    GObject::Value.raw(GObject::TYPE_INT, pointerof(out_int).as(Void*)).should eq(42)
-    LibGObject.g_value_unset(pointerof(out_int))
+    out_int = uninitialized Int32
+    LibGObject.g_object_get(obj, "int", pointerof(out_int), Pointer(Void).null)
+    out_int.should eq(42)
     obj.int = 50
-    LibGObject.g_object_get_property(obj, "int", pointerof(out_int))
-    GObject::Value.raw(GObject::TYPE_INT, pointerof(out_int).as(Void*)).should eq(50)
-    LibGObject.g_value_unset(pointerof(out_int))
+    LibGObject.g_object_get(obj, "int", pointerof(out_int), Pointer(Void).null)
+    out_int.should eq(50)
 
     obj.flags = TestFlags::A
-    out_flags = LibGObject::Value.new
-    LibGObject.g_object_get_property(obj, "flags", pointerof(out_flags))
-    GObject::Value.raw(GObject::TYPE_FLAGS, pointerof(out_flags).as(Void*)).should eq(TestFlags::A.value)
-    LibGObject.g_value_unset(pointerof(out_flags))
+    out_flags = uninitialized TestFlags
+    LibGObject.g_object_get(obj, "flags", pointerof(out_flags), Pointer(Void).null)
+    out_flags.should eq(TestFlags::A)
 
-    obj.object = UserObject.new
-    out_object = LibGObject::Value.new
-    LibGObject.g_object_get_property(obj, "object", pointerof(out_object))
-    GObject::Value.raw(GObject::TYPE_OBJECT, pointerof(out_object).as(Void*)).should eq(obj.object)
-    LibGObject.g_value_unset(pointerof(out_object))
+    obj.object = user_obj = UserObject.new
+    out_object = uninitialized Pointer(Void)
+    LibGObject.g_object_get(obj, "object", pointerof(out_object), Pointer(Void).null)
+    out_object.should eq(user_obj.to_unsafe)
   end
 
   it "emits notify signal on GObject properties access" do
