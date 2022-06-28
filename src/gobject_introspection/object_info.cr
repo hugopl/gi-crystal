@@ -60,6 +60,8 @@ module GObjectIntrospection
 
     def inherits?(c_type_name : String) : Bool
       parent = to_unsafe
+      LibGIRepository.g_base_info_ref(parent)
+
       while !parent.null?
         type_name = LibGIRepository.g_object_info_get_type_name(parent)
         if LibC.strcmp(type_name, c_type_name).zero?
