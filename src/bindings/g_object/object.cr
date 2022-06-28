@@ -1,15 +1,10 @@
 module GObject
-  # :nodoc:
-  # This annotation is used to identify user types that inherit from GObject from binding types that does the same.
-  annotation GeneratedWrapper
-  end
-
   annotation Property
   end
 
   class Object
     macro inherited
-      {% unless @type.annotation(GObject::GeneratedWrapper) %}
+      {% unless @type.annotation(GICrystal::GeneratedWrapper) %}
         macro method_added(method)
           {% verbatim do %}
             {% if method.name.starts_with?("do_") || method.name.starts_with?("unsafe_do_") %}
@@ -449,9 +444,30 @@ module GObject
       end
     end
 
+    def initialize
+      @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(Void).null)
+      LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
+      LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))
+    end
+
+    def initialize(pointer, transfer : GICrystal::Transfer)
+      @pointer = pointer
+      LibGObject.g_object_ref_sink(self) if transfer.none? || LibGObject.g_object_is_floating(self) == 1
+    end
+
     # Returns GObject reference counter.
     def ref_count : UInt32
       to_unsafe.as(Pointer(LibGObject::Object)).value.ref_count
+    end
+
+    # Cast a `GObject::Object` to `self`, throws a `TypeCastError` if the cast can't be made.
+    def self.cast(obj : GObject::Object) : self
+      cast?(obj) || raise TypeCastError.new("can't cast #{typeof(obj).name} to #{self}")
+    end
+
+    # Cast a `GObject::Object` to `self`, returns nil if the cast can't be made.
+    def self.cast?(obj : GObject::Object) : self?
+      new(obj.to_unsafe, GICrystal::Transfer::None) unless LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
     end
   end
 end

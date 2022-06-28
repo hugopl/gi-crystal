@@ -5,18 +5,20 @@
 
 module <%= namespace_name %>
   <% render_doc(object) -%>
-  @[GObject::GeneratedWrapper]
+  @[GICrystal::GeneratedWrapper]
   class <%= type_name %> <%= parent_class %>
     <% object.interfaces.each do |interface| -%>
     include <%= to_crystal_type(interface, namespace != interface.namespace) %>
     <% end %>
 
+    <% if object.parent.nil? %>
     @pointer : Pointer(Void)
+    <% end %>
 
     <% class_struct = object.class_struct -%>
     <% if class_struct.nil? || object.fundamental? %>
     macro inherited
-      {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GObject::GeneratedWrapper) }}
+      {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GICrystal::GeneratedWrapper) }}
     end
     <% elsif class_struct %>
     # :nodoc:
@@ -29,25 +31,18 @@ module <%= namespace_name %>
 
     GICrystal.declare_new_method(<%= type_name %>, <%= object.qdata_get_func %>, <%= object.qdata_set_func %>)
 
+    <% if object.parent %>
     # Initialize a new `<%= type_name %>`.
     def initialize
-      @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(Void).null)
-      LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
-      LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))
+      super
     end
 
     # :nodoc:
-    def initialize(@pointer, transfer : GICrystal::Transfer)
-      <% if object.parent.nil? %>
-        <% if g_object_type? %>
-          LibGObject.<%= object.ref_function %>(self) if transfer.none? || LibGObject.g_object_is_floating(self) == 1
-        <% else %>
-          LibGObject.<%= object.ref_function %>(self) if transfer.none?
-        <% end %>
-      <% else %>
-        super
-      <% end %>
+    def initialize(pointer, transfer : GICrystal::Transfer)
+      super
     end
+    <% end %>
+
 
     # :nodoc:
     # Code copied from crystal/src/weak_ref.cr
@@ -77,8 +72,6 @@ module <%= namespace_name %>
       def to_unsafe
         @pointer
       end
-
-      <% render "ecr/cast_methods.ecr" %>
     <% end %>
 
     <% render "ecr/g_type_method.ecr" %>
