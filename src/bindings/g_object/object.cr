@@ -1,11 +1,50 @@
 module GObject
+  # Virtual functions must be annotated with this.
+  #
+  # The annotation supports the following attributes:
+  #
+  # - unsafe: true/false.
+  # - name: The name of the virtual function, if not present it's guessed from methods name.
+  #
+  # All the method declaration bellow are equivalent and implement the _snapshot_ virtual method.
+  #
+  # ```Crystal
+  # @[GObject::Virtual]
+  # def do_snapshot(snapshot : Gtk::Snapshot)
+  # end
+  #
+  # @[GObject::Virtual]
+  # def snapshot(snapshot : Gtk::Snapshot)
+  # end
+  #
+  # @[GObject::Virtual(name: "snapshot")]
+  # def heyho(snapshot : Gtk::Snapshot)
+  # end
+  # ```
+  #
+  # If for some reason you want to go bare metal and not have any wrappers involved in your virtual method implementation
+  # you can use the *unsafe* annotation flag, then the implementation will receive the pointers for the Objects and structs
+  # instead of GI::Crystal wrappers. It's up to you to handle the memory and reference count.
+  #
+  # ```Crystal
+  # @[GObject::Virtual(unsafe: true)]
+  # def snapshot(snapshot : Pointer(Void))
+  # end
+  # ```
+  annotation Virtual
+  end
+
   class Object
     macro inherited
       {% unless @type.annotation(GICrystal::GeneratedWrapper) %}
         macro method_added(method)
           {% verbatim do %}
-            {% if method.name.starts_with?("do_") || method.name.starts_with?("unsafe_do_") %}
-              _register_{{method.name}}
+            {% if method.annotation(GObject::Virtual) %}
+              {% vfunc_name = method.annotation(GObject::Virtual)[:name] || method.name.gsub(/^do_/, "") %}
+              {% if method.annotation(GObject::Virtual)[:unsafe] %}
+                {% vfunc_name = "unsafe_#{vfunc_name.id}" %}
+              {% end %}
+              _register_{{ vfunc_name.id }}_vfunc
             {% end %}
           {% end %}
         end

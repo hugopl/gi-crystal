@@ -1,4 +1,4 @@
-    private macro _register_do_<%= vfunc.name %>
+    private macro _register_<%= vfunc.name %>_vfunc
       private def self._vfunc_<%= vfunc.name %>(%this : Pointer(Void), <% generate_lib_args(io, vfunc) %>) : <%= return_type %>
         <%= vfunc_gi_annotations %>
         <%- write_implementations(io) -%>
@@ -22,7 +22,7 @@
       end
     end
 
-    private macro _register_unsafe_do_<%= vfunc.name %>
+    private macro _register_unsafe_<%= vfunc.name %>_vfunc
       private def self._vfunc_unsafe_<%= vfunc.name %>(%this : Pointer(Void), <% generate_lib_args(io, vfunc) %>) : <%= return_type %>
         <%-= vfunc_gi_annotations %>
         %gc_collected = !LibGObject.g_object_get_qdata(%this, GICrystal::GC_COLLECTED_QDATA_KEY).null?
