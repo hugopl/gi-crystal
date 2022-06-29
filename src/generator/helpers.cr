@@ -1,5 +1,9 @@
 module Generator::Helpers
-  KEYWORDS = {"abstract", "alias", "begin", "def", "end", "enum", "in", "module", "next", "out", "self", "select", "extend", "initialize"}
+  # Keywords not allowed in identifiers
+  ID_KEYWORDS = {"abstract", "alias", "begin", "def", "end", "enum", "in", "module", "next", "out", "self", "select", "extend"}
+
+  # Keywords not allowed in calls
+  CALL_KEYWORDS = {"initialize", "finalize"}
 
   def to_get_type_function(struct_info : StructInfo)
     "#{struct_info.namespace.name.underscore}_#{struct_info.name.underscore}_get_type"
@@ -11,8 +15,13 @@ module Generator::Helpers
   end
 
   def to_identifier(name : String) : String
-    name = name.tr("-", "_") if name.index("-")
-    KEYWORDS.includes?(name) ? "_#{name}" : name
+    name = name.gsub('-', '_')
+    ID_KEYWORDS.includes?(name) ? "_#{name}" : name
+  end
+
+  def to_call(name : String) : String
+    name = name.gsub('-', '_')
+    CALL_KEYWORDS.includes?(name) ? "_#{name}" : name
   end
 
   def to_type_name(name : String) : String
@@ -25,10 +34,6 @@ module Generator::Helpers
     else
       name
     end
-  end
-
-  def to_method_name(name : String) : String
-    name.tr("-", "_")
   end
 
   def abstract_interface_name(iface : InterfaceInfo, include_namespace : Bool = true)
@@ -146,7 +151,7 @@ module Generator::Helpers
   end
 
   def to_crystal_arg_decl(name : String)
-    if KEYWORDS.includes?(name)
+    if ID_KEYWORDS.includes?(name)
       "#{name} _#{name}"
     else
       to_identifier(name)
@@ -311,5 +316,29 @@ module Generator::Helpers
                      end
       "#{crystal_type}.new(#{var}, GICrystal::Transfer::#{transfer})"
     end
+  end
+
+  def args_gi_annotations(io : IO, args : Array(ArgInfo)) : Nil
+    args.each do |arg|
+      io << "# @" << arg.name << ": "
+      io << "(#{arg.direction.to_s.downcase}) " unless arg.direction.in?
+      io << "(transfer #{arg.ownership_transfer.to_s.downcase}) " unless arg.ownership_transfer.none?
+      io << "(nullable) " if arg.nullable?
+      io << "(caller-allocates) " if arg.caller_allocates?
+      io << "(optional) " if arg.optional?
+      type_info_gi_annotations(io, arg.type_info, args)
+      io << LF
+    end
+  end
+
+  def type_info_gi_annotations(io : IO, type_info : TypeInfo, args : Array(ArgInfo)) : Nil
+    return unless type_info.tag.array?
+
+    io << "(array"
+    io << " length=" << args[type_info.array_length].name if type_info.array_length >= 0
+    io << " fixed-size=" << type_info.array_fixed_size if type_info.array_fixed_size > 0
+    io << " zero-terminated=1" if type_info.array_zero_terminated?
+    io << " element-type #{type_info.param_type.tag}"
+    io << ")"
   end
 end

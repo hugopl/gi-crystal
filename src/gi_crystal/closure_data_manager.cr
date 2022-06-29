@@ -19,6 +19,9 @@ module GICrystal
     end
 
     def register(data : Pointer(Void)) : Pointer(Void)
+      {% if flag?(:debugmemory) %}
+        puts "Registering #{data} on ClosureDataManager, count: #{@closure_data[data]? || 0}."
+      {% end %}
       @closure_data[data] += 1 if data
       data
     end

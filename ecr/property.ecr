@@ -1,5 +1,5 @@
 <% if prop.flags.writable? -%>
-    def <%= to_method_name(prop.name) %>=(value : <%= prop_type_name %>) : <%= prop_type_name %>
+    def <%= to_call(prop.name) %>=(value : <%= prop_type_name %>) : <%= prop_type_name %>
       <% if prop.type_info.array? -%>
         # handle array
       <% else -%>

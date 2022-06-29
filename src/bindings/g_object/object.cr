@@ -1,22 +1,26 @@
 module GObject
-  # :nodoc:
-  # This annotation is used to identify user types that inherit from GObject from binding types that does the same.
-  annotation GeneratedWrapper
-  end
-
   class Object
     macro inherited
-      {% unless @type.annotation(GObject::GeneratedWrapper) %}
+      {% unless @type.annotation(GICrystal::GeneratedWrapper) %}
+        macro method_added(method)
+          {% verbatim do %}
+            {% if method.name.starts_with?("do_") || method.name.starts_with?("unsafe_do_") %}
+              _register_{{method.name}}
+            {% end %}
+          {% end %}
+        end
+
         # GType for the new created type
         @@_g_type : UInt64 = 0
 
         def self.g_type : UInt64
           if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
-            g_type = {{ @type.superclass.id }}._register_derived_type({{ @type.id }},
+            g_type = {{ @type.superclass.id }}._register_derived_type("{{ @type.name.gsub(/::/, "-") }}",
               ->_class_init(Pointer(LibGObject::TypeClass), Pointer(Void)),
               ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)))
 
             LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
+            self._install_ifaces
           end
 
           @@_g_type
@@ -28,6 +32,22 @@ module GObject
 
         # :nodoc:
         def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
+        end
+
+        # :nodoc:
+        def self._install_ifaces
+          {% verbatim do %}
+            {% for ancestor in @type.ancestors.uniq %}
+              {% if ancestor.module? && ancestor.class.has_method?("g_type") %}
+                closure = ->_install_iface_{{ ancestor.name.gsub(/::/, "__") }}(Pointer(LibGObject::TypeInterface))
+                interface_info = LibGObject::InterfaceInfo.new()
+                interface_info.interface_init = closure.pointer
+                interface_info.interface_finalize = Pointer(Void).null
+                interface_info.interface_data = closure.closure_data
+                LibGObject.g_type_add_interface_static(g_type, {{ ancestor }}.g_type, pointerof(interface_info))
+              {% end %}
+            {% end %}
+          {% end %}
         end
 
         # Cast a `GObject::Object` to this type, returns nil if cast can't be made.
@@ -134,9 +154,30 @@ module GObject
       end
     end
 
+    def initialize
+      @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(Void).null)
+      LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
+      LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))
+    end
+
+    def initialize(pointer, transfer : GICrystal::Transfer)
+      @pointer = pointer
+      LibGObject.g_object_ref_sink(self) if transfer.none? || LibGObject.g_object_is_floating(self) == 1
+    end
+
     # Returns GObject reference counter.
     def ref_count : UInt32
       to_unsafe.as(Pointer(LibGObject::Object)).value.ref_count
+    end
+
+    # Cast a `GObject::Object` to `self`, throws a `TypeCastError` if the cast can't be made.
+    def self.cast(obj : GObject::Object) : self
+      cast?(obj) || raise TypeCastError.new("can't cast #{typeof(obj).name} to #{self}")
+    end
+
+    # Cast a `GObject::Object` to `self`, returns nil if the cast can't be made.
+    def self.cast?(obj : GObject::Object) : self?
+      new(obj.to_unsafe, GICrystal::Transfer::None) unless LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
     end
   end
 end

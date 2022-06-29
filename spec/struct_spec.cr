@@ -25,4 +25,10 @@ describe "Struct bindings" do
     truct = Test::Struct.new(string: "hey")
     truct.string.should eq("hey")
   end
+
+  it "can bind initialize/finalize methods" do
+    truct = Test::Struct.new
+    truct.responds_to?(:_initialize).should eq(true)
+    truct.responds_to?(:_finalize).should eq(true)
+  end
 end

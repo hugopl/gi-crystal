@@ -23,9 +23,7 @@ module Generator
     end
 
     def skip? : Bool
-      # We don't generate constructors with no arguments since the custom constructor can be called for this.
-      config.ignore?(@method.symbol) ||
-        (@method.flags.constructor? && @method.args.empty?)
+      config.ignore?(@method.symbol) || (@method.flags.constructor? && @method.args.empty? && object.is_a?(StructInfo))
     end
 
     def scope
@@ -37,7 +35,7 @@ module Generator
     end
 
     private def method_identifier : String
-      identifier = to_identifier(@method.name)
+      identifier = to_call(@method.name)
       method_flags = @method.flags
       identifier = if method_flags.constructor?
                      "self.#{identifier}"
@@ -109,41 +107,18 @@ module Generator
     end
 
     private def method_gi_annotations : String
-      tags = [] of String
       args = @method.args
       String.build do |io|
         io << "# " << @method.symbol << ": (" << @method.flags.to_s << ")\n"
-        args.each do |arg|
-          tags << "(#{arg.direction.to_s.downcase})" unless arg.direction.in?
-          tags << "(transfer #{arg.ownership_transfer.to_s.downcase})" unless arg.ownership_transfer.none?
-          tags << "(nullable)" if arg.nullable?
-          tags << "(caller-allocates)" if arg.caller_allocates?
-          tags << "(optional)" if arg.optional?
-          type_info_tag = type_info_gi_annotations(args, arg.type_info)
-          tags << type_info_tag if type_info_tag
-
-          io << "# @" << arg.name << ": " << tags.join(" ") << LF if tags.any?
-          tags.clear
-        end
+        args_gi_annotations(io, args)
 
         io << "# Returns: (transfer " << @method.caller_owns.to_s.downcase
         return_type = @method.return_type
         io << ") (filename" if return_type.tag.filename?
         io << ") (nullable" if @method.may_return_null?
-        io << ") " << type_info_gi_annotations(args, @method.return_type) << LF
-      end
-    end
-
-    private def type_info_gi_annotations(args : Array(ArgInfo), type_info : TypeInfo) : String?
-      return unless type_info.tag.array?
-
-      String.build do |s|
-        s << "(array"
-        s << " length=" << args[type_info.array_length].name if type_info.array_length >= 0
-        s << " fixed-size=" << type_info.array_fixed_size if type_info.array_fixed_size > 0
-        s << " zero-terminated=1" if type_info.array_zero_terminated?
-        s << " element-type #{type_info.param_type.tag}"
-        s << ")"
+        io << ") "
+        type_info_gi_annotations(io, @method.return_type, args)
+        io << LF
       end
     end
 

@@ -2,6 +2,7 @@ require "./field_info"
 require "./function_info"
 require "./property_info"
 require "./signal_info"
+require "./vfunc_info"
 
 module GObjectIntrospection
   class ObjectInfo < RegisteredTypeInfo
@@ -9,6 +10,7 @@ module GObjectIntrospection
     include FunctionInfoContainer
     include PropertyInfoContainer
     include SignalInfoContainer
+    include VFuncInfoContainer
 
     @interfaces : Array(InterfaceInfo)?
     @properties : Array(PropertyInfo)?
@@ -56,13 +58,13 @@ module GObjectIntrospection
       StructInfo.new(ptr) if ptr
     end
 
-    def initially_unowned? : Bool
-      parent = LibGIRepository.g_object_info_get_parent(self)
-      return false if parent.null?
+    def inherits?(c_type_name : String) : Bool
+      parent = to_unsafe
+      LibGIRepository.g_base_info_ref(parent)
 
       while !parent.null?
         type_name = LibGIRepository.g_object_info_get_type_name(parent)
-        if LibC.strcmp(type_name, "GInitiallyUnowned").zero?
+        if LibC.strcmp(type_name, c_type_name).zero?
           return true
         else
           new_parent = LibGIRepository.g_object_info_get_parent(parent)
@@ -89,6 +91,10 @@ module GObjectIntrospection
 
     def signals : Array(SignalInfo)
       signals(->LibGIRepository.g_object_info_get_n_signals, ->LibGIRepository.g_object_info_get_signal)
+    end
+
+    def vfuncs : Array(VFuncInfo)
+      vfuncs(->LibGIRepository.g_object_info_get_n_vfuncs, ->LibGIRepository.g_object_info_get_vfunc)
     end
 
     def interfaces : Array(InterfaceInfo)
