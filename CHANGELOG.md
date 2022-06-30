@@ -26,8 +26,6 @@ Changes that change the generated API have a ⚠️.
 - Don't use invalid characters when registering GObject types, thanks @BlobCodes (#30)
 - Allow binding objects with functions named initialize/finalize, thanks @BlobCodes (#42)
 
-cleanup ECR
-
 ## [0.12.0] 2022-06-04
 ### Added
 - Signals can now be disconnected, `connect` method returns a `GObject::SignalConnection` object.
