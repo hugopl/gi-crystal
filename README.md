@@ -125,7 +125,17 @@ implementation that will probably change in the future to just ignore the return
 
 ### After signals
 
-Instead of `widget.focus_signal.connect`, use `widget.focus_signal.connect_after`.
+Use the after keyword argument:
+
+```Crystal
+# Connect to a slot without the sender
+widget.focus_signal.connect(->slot_without_sender(Gtk::Direction, after: true)
+
+# Connect to a block (always without sender parameter)
+widget.focus_signal.connect(after: true) do |direction|
+  # ...
+end
+```
 
 ### Signals with details
 
