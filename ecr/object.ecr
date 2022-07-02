@@ -29,7 +29,7 @@ module <%= namespace_name %>
     end
     <% end %>
 
-    GICrystal.declare_new_method(<%= type_name %>, <%= object.qdata_get_func %>, <%= object.qdata_set_func %>)
+    <% render_qdata_optimized_new_method %>
 
     <% if object.parent %>
     # Initialize a new `<%= type_name %>`.

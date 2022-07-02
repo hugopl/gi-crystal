@@ -125,7 +125,17 @@ implementation that will probably change in the future to just ignore the return
 
 ### After signals
 
-Instead of `widget.focus_signal.connect`, use `widget.focus_signal.connect_after`.
+Use the after keyword argument:
+
+```Crystal
+# Connect to a slot without the sender
+widget.focus_signal.connect(->slot_without_sender(Gtk::Direction, after: true)
+
+# Connect to a block (always without sender parameter)
+widget.focus_signal.connect(after: true) do |direction|
+  # ...
+end
+```
 
 ### Signals with details
 
@@ -188,7 +198,41 @@ Crystal as a `const char*` pointer. This may change in the future.
 
 ### Virtual Methods
 
-- TBD
+Virtual methods must have the `GObject::Virtual` annotation, currently only virtual methods from interfaces are supported.
+
+```Crystal
+class Widget0 < Gtk::Widget
+  # GObject virtual method name is guessed from Crystal method name, that can start with `do_`.
+  @[GObject::Virtual]
+  def do_snapshot(snapshot : Gtk::Snapshot)
+  end
+emd
+
+class Widget1 < Gtk::Widget
+  # If the `do_` prefix annoyes you, just use the same GObject virtual method name.
+  @[GObject::Virtual]
+  def snapshot(snapshot : Gtk::Snapshot)
+  end
+end
+
+class Widget2 < Gtk::Widget
+  # Or you can use whatever name and inform the GObject virtual method name in the annotation.
+  @[GObject::Virtual(name: "snapshot")]
+  def heyho(snapshot : Gtk::Snapshot)
+  end
+end
+```
+
+If for some reason (peformance or GICrystal bugs 🙊️) you don't want wrappers, you can create an unsafe virtual method:
+
+```Crystal
+class Widget3 < Gtk::Widget
+  @[GObject::Virtual(unsafe: true)]
+  def snapshot(snapshot : Pointer(Void))
+    # User is responsible for memory management here, like in C.
+  end
+end
+```
 
 ## GLib GError
 

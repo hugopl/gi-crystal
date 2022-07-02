@@ -6,6 +6,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.13.0] 2022-06-30
+### Added
+- Property constructors can be called in constructor super calls from user classes, e.g. `super(property: value)`.
+- Show if return value is nullable in generated code, helping debug.
+- Implement virtual functions and allow including interfaces, thanks @BlobCodes (#26).
+- Implement unsafe virtual functions, thanks @BlobCodes (#41).
+- Implement user-transparent GObject enums, thanks @BlobCodes
+
+### Changed
+- Use `GC.malloc_atomic` to allocate wrappers to reduce GC work, thanks @BlobCodes (#18).
+- Move struct wrappers data inside struct, reducing 1 malloc call, thanks @BlobCodes (#19).
+- Translate GError in return values or signal parameters to exception objects. (#25)
+- Raise a compile error when using `GObject::ParamSpec.g_type`. (#24)
+- Print info about ClosureDataManager when compiling using -Ddebugmemory.
+- `GObject::GeneratedWrapper` annotation is now `GICrystal::GeneratedWrapper`.
+
+### Fixed
+- Don't use invalid characters when registering GObject types, thanks @BlobCodes (#30)
+- Allow binding objects with functions named initialize/finalize, thanks @BlobCodes (#42)
+
 ## [0.12.0] 2022-06-04
 ### Added
 - Signals can now be disconnected, `connect` method returns a `GObject::SignalConnection` object.
@@ -46,7 +66,7 @@ Changes that change the generated API have a ⚠️.
 - Methods with nilable handmade types (GValue/GVariant) in parameters now works.
 - Strings in structs now works.
 - Signals with return types now works.
-- Methods named `initialize` are now correctly binded to `_initialize` (thanks @GeopJr).
+- Methods named `initialize` are now correctly binded to `_initialize`, thanks @GeopJr.
 - Fixed parameters of fixed size arrays.
 - Fix `make doc`.
 
@@ -84,8 +104,8 @@ Changes that change the generated API have a ⚠️.
 
 ## [0.7.0] 2022-04-03
 ### Added
-- Better code blocks in documentation (thanks @GeopJr).
-- It's possible to add `@[Raises]` annotation on functiosn that can executa a callback (thanks @BlobCodes).
+- Better code blocks in documentation, thanks @GeopJr.
+- It's possible to add `@[Raises]` annotation on functiosn that can executa a callback, thanks @BlobCodes.
 
 ### Fixed
 - Structs with non pointers struct attributes works as expected.
