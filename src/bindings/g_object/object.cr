@@ -1,5 +1,6 @@
 module GObject
   annotation Property
+  end
 
   # Virtual functions must be annotated with this.
   #
