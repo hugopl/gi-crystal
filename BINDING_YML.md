@@ -37,3 +37,13 @@ List of types and/or functions the generator will ignore. For types it does not 
 when some other function uses them. For functions the function/method is just not generated in bindings.
 
 Functions must use the full C function name without arguments, Types must use the type name without the namespace prefix, i.e. `GPrivate` is just `Private`.
+
+The function/type C signature still declared, to avoid this use `lib_ignore`.
+
+## lib_ignore
+
+Same as `ignore`, but also doesn't generate the C signature in the Crystal `lib` block.
+
+## execute_callback
+
+List of functions that may execute a callback, so the generator adds a `@[Raises]` annotation to it.

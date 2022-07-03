@@ -8,6 +8,7 @@ module Generator
     getter includes_before : Set(Path)
     getter handmade : Set(String)
     getter ignore : Set(String)
+    getter lib_ignore : Set(String)
     getter execute_callback : Set(String)
 
     getter base_path : Path
@@ -34,13 +35,14 @@ module Generator
 
       @handmade = read_list(data, "handmade")
       @ignore = read_list(data, "ignore")
+      @lib_ignore = read_list(data, "lib_ignore")
       @execute_callback = read_list(data, "execute_callback")
     end
 
     # Constructs an empty binding config
     def initialize(@namespace, @version)
       @includes_before = @includes = Set(Path).new
-      @execute_callback = @handmade = @ignore = Set(String).new
+      @lib_ignore = @execute_callback = @handmade = @ignore = Set(String).new
       @base_path = Path.new(".")
     end
 
@@ -66,7 +68,11 @@ module Generator
     end
 
     def ignore?(name : String) : Bool
-      @ignore.includes?(name)
+      @ignore.includes?(name) || lib_ignore?(name)
+    end
+
+    def lib_ignore?(name : String) : Bool
+      @lib_ignore.includes?(name)
     end
 
     def handmade?(name : String) : Bool

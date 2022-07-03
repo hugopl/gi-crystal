@@ -21,13 +21,13 @@ module Generator
       {% for attr in %w(objects interfaces structs) %}
         namespace.{{ attr.id }}.each do |obj|
           obj.methods.each do |func|
-            all << generate_c_function(func)
+            all << generate_c_function(func) unless config.lib_ignore?(func.symbol)
           end
           all << type_init_func(obj) if obj.type_init
         end
       {% end %}
       namespace.functions.each do |func|
-        all << generate_c_function(func)
+        all << generate_c_function(func) unless config.lib_ignore?(func.symbol)
       end
       all.sort_by!(&.lines.last)
     end
