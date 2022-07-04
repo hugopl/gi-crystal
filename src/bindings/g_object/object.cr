@@ -44,7 +44,7 @@ module GObject
               {% if method.annotation(GObject::Virtual)[:unsafe] %}
                 {% vfunc_name = "unsafe_#{vfunc_name.id}" %}
               {% end %}
-              _register_{{ vfunc_name.id }}_vfunc
+              _register_{{ vfunc_name.id }}_vfunc({{ method.name }})
             {% end %}
           {% end %}
         end
