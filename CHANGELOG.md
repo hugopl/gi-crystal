@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.13.1] 2022-07-04
+### Added
+- Added option to complete ignore functions (i.e. ignore new added HarfBuzz functions that broke the generator).
+
+## Fixed
+- Fixed naming of virtual functions, now they can have any name.
+- Correct generate code for structs with static array of structs, thanks @BlobCodes.
+
 ## [0.13.0] 2022-06-30
 ### Added
 - Property constructors can be called in constructor super calls from user classes, e.g. `super(property: value)`.
