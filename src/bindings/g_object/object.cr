@@ -139,9 +139,9 @@ module GObject
                     {% end %}
 
                     {% var_type = var.type.union_types.reject { |t| t == Nil }.first %}
-                    raw = GObject::Value.raw(GObject.fundamental_g_type({{ var_type }}), gvalue)
 
                     {% if var_type < GObject::Object %}
+                      raw = GObject::Value.raw(GObject::TYPE_OBJECT, gvalue)
                       {% if var.type.nilable? %}
                         raw_obj = raw.as?(GObject::Object)
                         self.{{ var }} = raw_obj.nil? ? nil : {{ var_type }}.cast(raw_obj)
@@ -150,11 +150,14 @@ module GObject
                       {% end %}
                     {% elsif var_type < Enum %}
                       {% if var_type.annotation(Flags) %}
+                        raw = GObject::Value.raw(GObject::TYPE_FLAGS, gvalue)
                         self.{{ var }} = raw.as(UInt32).unsafe_as({{ var_type }})
                       {% else %}
+                        raw = GObject::Value.raw(GObject::TYPE_ENUM, gvalue)
                         self.{{ var }} = raw.as(Int32).unsafe_as({{ var_type }})
                       {% end %}
                     {% else %}
+                      raw = GObject::Value.raw({{ var_type }}.g_type, gvalue)
                       self.{{ var }} = raw.as({{ var_type }})
                     {% end %}
                 {% end %}
