@@ -134,17 +134,28 @@ module GObject
               {% for var, i in instance_vars %}
                 {% if @type.has_method?("#{var.name}=") %}
                   when {{ i + 1 }}
-                    raw = GObject::Value.raw(GObject.fundamental_g_type({{ var.type }}), gvalue)
-                    {% if var.type < GObject::Object %}
-                      self.{{ var }} = raw.as(GObject::Object).cast({{ var.type }})
-                    {% elsif var.type < Enum %}
-                      {% if var.type.annotation(Flags) %}
-                        self.{{ var }} = raw.as(UInt32).unsafe_as({{ var.type }})
+                    {% if var.type.nilable? && var.type.union_types.size > 2 %}
+                      {% raise "Union types are not supported in GObject properties" %}
+                    {% end %}
+
+                    {% var_type = var.type.union_types.reject { |t| t == Nil }.first %}
+                    raw = GObject::Value.raw(GObject.fundamental_g_type({{ var_type }}), gvalue)
+
+                    {% if var_type < GObject::Object %}
+                      {% if var.type.nilable? %}
+                        raw_obj = raw.as?(GObject::Object)
+                        self.{{ var }} = raw_obj.nil? ? nil : {{ var_type }}.cast(raw_obj)
                       {% else %}
-                        self.{{ var }} = raw.as(Int32).unsafe_as({{ var.type }})
+                        self.{{ var }} = {{ var_type }}.cast(raw.as(GObject::Object))
+                      {% end %}
+                    {% elsif var_type < Enum %}
+                      {% if var_type.annotation(Flags) %}
+                        self.{{ var }} = raw.as(UInt32).unsafe_as({{ var_type }})
+                      {% else %}
+                        self.{{ var }} = raw.as(Int32).unsafe_as({{ var_type }})
                       {% end %}
                     {% else %}
-                      self.{{ var }} = raw.as({{ var.type }})
+                      self.{{ var }} = raw.as({{ var_type }})
                     {% end %}
                 {% end %}
               {% end %}
