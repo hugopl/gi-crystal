@@ -23,9 +23,16 @@ module Generator
           obj.methods.each do |func|
             all << generate_c_function(func) unless config.lib_ignore?(func.symbol)
           end
+        end
+      {% end %}
+
+      # Type init functions
+      {% for attr in %w(objects interfaces structs enums flags) %}
+        namespace.{{ attr.id }}.each do |obj|
           all << type_init_func(obj) if obj.type_init
         end
       {% end %}
+
       namespace.functions.each do |func|
         all << generate_c_function(func) unless config.lib_ignore?(func.symbol)
       end
