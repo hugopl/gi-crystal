@@ -114,7 +114,7 @@ module Generator::Helpers
                 raise Error.new("Unknown lib representation for #{iface.class.name}.")
               end
             elsif tag.array?
-              array_type_name = to_lib_type(type.param_type, include_namespace)
+              array_type_name = to_lib_type(type.param_type, include_namespace: include_namespace)
               if is_arg
                 array_type_name
               else

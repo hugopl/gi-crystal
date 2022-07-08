@@ -10,7 +10,7 @@ private class IfaceVFuncImpl < GObject::Object
   getter obj : GObject::Object?
 
   @[GObject::Virtual]
-  def do_vfunc_basic(@int32, @float32, @float64, @string, @obj)
+  def vfunc_basic(@int32, @float32, @float64, @string, @obj)
   end
 end
 
@@ -24,7 +24,7 @@ private class UnsafeIfaceVFuncImpl < GObject::Object
   getter obj : GObject::Object?
 
   @[GObject::Virtual(unsafe: true, name: "vfunc_basic")]
-  def unsafe_do_vfunc_basic(@int32, @float32, @float64, c_string : Pointer(UInt8), obj : Pointer(Void))
+  def do_it(@int32, @float32, @float64, c_string : Pointer(UInt8), obj : Pointer(Void))
     @string = String.new(c_string) if c_string
     @obj = GObject::Object.new(obj, :full)
   end

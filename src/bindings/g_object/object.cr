@@ -47,7 +47,7 @@ module GObject
               {% if method.annotation(GObject::Virtual)[:unsafe] %}
                 {% vfunc_name = "unsafe_#{vfunc_name.id}" %}
               {% end %}
-              _register_{{ vfunc_name.id }}_vfunc
+              _register_{{ vfunc_name.id }}_vfunc({{ method.name }})
             {% end %}
           {% end %}
         end
@@ -490,7 +490,7 @@ module GObject
     end
 
     def initialize
-      @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(Void).null)
+      @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(LibGObject::Parameter).null)
       LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
       LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))
     end
