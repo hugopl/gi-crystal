@@ -1,10 +1,15 @@
 require "./spec_helper"
 
 describe "Enums" do
-  it "registers valid gtypes" do
+  it "registers valid gtypes for user enum/flags" do
     TestFlags.g_type.should_not eq(0)
     TestEnum.g_type.should_not eq(0)
     TestEnum.g_type.should_not eq(TestFlags.g_type)
+  end
+
+  it "registers valid gtypes for generated enum/flags" do
+    Test::RegularEnum.g_type.should_not eq(0)
+    Test::FlagFlags.g_type.should_not eq(0)
   end
 
   it "allows retrieving values by name" do
