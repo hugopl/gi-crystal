@@ -29,7 +29,7 @@ private class UserObjectWithGProperties < GObject::Object
   property flags = TestFlags::BC
 
   @[GObject::Property]
-  property object : UserObject? = nil
+  property object : UserObject
 
   @[GObject::Property]
   property signal_test : Bool = true
@@ -37,6 +37,14 @@ private class UserObjectWithGProperties < GObject::Object
   # This declaration tests if the property is created as readonly if it only have getter?
   @[GObject::Property]
   getter? readonly_bool : Bool = true
+
+  @[GObject::Property]
+  property nilable_object : UserObject?
+
+  def initialize
+    super
+    @object = UserObject.new
+  end
 end
 
 class User::Class::With::Colons < GObject::Object
@@ -127,6 +135,9 @@ describe "Classes inheriting GObject::Object" do
     object = UserObject.new
     LibGObject.g_object_set(obj, "object", object, Pointer(Void).null)
     obj.object.should eq(object)
+
+    LibGObject.g_object_set(obj, "nilable-object", Pointer(Void).null, Pointer(Void).null)
+    obj.nilable_object.should eq(nil)
   end
 
   it "can get GObject properties" do
