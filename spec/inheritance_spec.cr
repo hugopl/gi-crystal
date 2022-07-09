@@ -33,6 +33,14 @@ private class UserObjectWithGProperties < GObject::Object
 
   @[GObject::Property]
   property signal_test : Bool = true
+
+  @[GObject::Property]
+  getter readonly_property = 0
+
+  def change_readonly_property!
+    @readonly_property += 1
+    notify("readonly-property")
+  end
 end
 
 class User::Class::With::Colons < GObject::Object
@@ -165,5 +173,13 @@ describe "Classes inheriting GObject::Object" do
     test_var.should eq(2)
 
     signal.disconnect
+  end
+
+  it "emits notify manually for readonly properties" do
+    obj = UserObjectWithGProperties.new
+    test_var = 0
+    signal = obj.notify_signal["readonly-property"].connect { test_var += 1 }
+    obj.change_readonly_property!
+    test_var.should eq(1)
   end
 end

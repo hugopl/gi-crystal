@@ -153,15 +153,29 @@ module GObject
           {% end %}
         end
 
-        private macro _emit_notify_signal(arg)
+        # Emits a "notify" signal for the property *property_name* on self.
+        #
+        # This is the macro version of `Object::notify`, faster, meant to be used when subclassing
+        # a `Object`.
+        private macro notify(property_name)
           {% verbatim do %}
             {% begin %}
-              {% instance_vars = @type.instance_vars.select(&.annotation(GObject::Property)) %}
+              {% unless property_name.is_a?(StringLiteral) %}
+                {% raise "GObject::Object#notify macro can only be used with string literals." %}
+              {% end %}
 
+              {% instance_vars = @type.instance_vars.select(&.annotation(GObject::Property)) %}
+              {% property_var_name = property_name.tr("-", "_") %}
+
+              {% found = false %}
               {% for var, i in instance_vars %}
-                {% if var.name == arg.id %}
+                {% if var.name == property_var_name %}
+                {% found = true %}
                   LibGObject.g_object_notify_by_pspec(self, @@_g_param_specs[{{ i }}])
                 {% end %}
+              {% end %}
+              {% if found == false %}
+                {% raise "Unknown property #{property_name} for #{@type}" %}
               {% end %}
             {% end %}
           {% end %}
@@ -176,17 +190,17 @@ module GObject
                 @{{name}}
 
                 def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
-                  _emit_notify_signal({{name.var.id}})
+                  notify({{name.var.stringify}})
                 end
               {% elsif name.is_a?(Assign) %}
                 @{{name}}
 
                 def {{name.target.id}}=(@{{name.target.id}})
-                  _emit_notify_signal({{name.target.id}})
+                  notify({{name.target.stringify}})
                 end
               {% else %}
                 def {{name.id}}=(@{{name.id}})
-                  _emit_notify_signal({{name.id}})
+                  notify({{name.stringify}})
                 end
               {% end %}
             {% end %}
@@ -210,27 +224,27 @@ module GObject
                 def {{name.var.id}} : {{name.type}}
                   if (value = @{{name.var.id}}).nil?
                     @{{name.var.id}} = {{yield}}
-                    _emit_notify_signal({{name.var.id}})
+                    notify({{name.var.stringify}})
                   else
                     value
                   end
                 end
 
                 def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
-                  _emit_notify_signal({{name.var.id}})
+                  notify({{name.var.stringify}})
                 end
               {% else %}
                 def {{name.id}}
                   if (value = @{{name.id}}).nil?
                     @{{name.id}} = {{yield}}
-                    _emit_notify_signal({{name.id}})
+                    notify({{name.stringify}})
                   else
                     value
                   end
                 end
 
                 def {{name.id}}=(@{{name.id}})
-                  _emit_notify_signal({{name.id}})
+                  notify({{name.stringify}})
                 end
               {% end %}
             {% else %}
@@ -243,7 +257,7 @@ module GObject
                   end
 
                   def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
-                    _emit_notify_signal({{name.var.id}})
+                    notify({{name.var.stringify}})
                   end
                 {% elsif name.is_a?(Assign) %}
                   @{{name}}
@@ -253,7 +267,7 @@ module GObject
                   end
 
                   def {{name.target.id}}=(@{{name.target.id}})
-                    _emit_notify_signal({{name.target.id}})
+                    notify({{name.target.stringify}})
                   end
                 {% else %}
                   def {{name.id}}
@@ -261,7 +275,7 @@ module GObject
                   end
 
                   def {{name.id}}=(@{{name.id}})
-                    _emit_notify_signal({{name.id}})
+                    notify({{name.stringify}})
                   end
                 {% end %}
               {% end %}
