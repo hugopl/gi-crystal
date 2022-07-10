@@ -33,6 +33,10 @@ private class UserObjectWithGProperties < GObject::Object
 
   @[GObject::Property]
   property signal_test : Bool = true
+
+  # This declaration tests if the property is created as readonly if it only have getter?
+  @[GObject::Property]
+  getter? readonly_bool : Bool = true
 end
 
 class User::Class::With::Colons < GObject::Object
