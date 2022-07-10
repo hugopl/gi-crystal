@@ -70,8 +70,6 @@ where `GLib` and `Gtk` are modules.
 GObject interfaces are mapped to Crystal modules + a dummy class that only implements this module, used when there's some
 function returning the interface.
 
-Currently isn't possible to include a GObject interface on your objects, see [issue 10](https://github.com/hugopl/gi-crystal/issues/10).
-
 ### Down Casts
 
 If the object was created by Crystal code you can cast it like you do with any Crystal object instance, using `.as?` and `.as`.
@@ -194,7 +192,7 @@ Crystal as a `const char*` pointer. This may change in the future.
 
 ## Declaring GObject properties
 
-- TBD
+GObject Properties are declared using the `GObject::Property` annotation on the instance variable.
 
 ### Virtual Methods
 
