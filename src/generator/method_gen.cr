@@ -22,10 +22,6 @@ module Generator
       @crystal_arg_count = @args_strategies.size - @args_strategies.count(&.remove_from_declaration?)
     end
 
-    def skip? : Bool
-      config.ignore?(@method.symbol) || (@method.flags.constructor? && @method.args.empty? && object.is_a?(StructInfo))
-    end
-
     def scope
       @method.symbol
     end

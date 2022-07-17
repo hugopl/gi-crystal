@@ -27,10 +27,6 @@ module Generator
       @object.name
     end
 
-    def generate
-      generate(filename) unless skip?
-    end
-
     private def parent_class
       parent = @object.parent
       return if parent.nil?

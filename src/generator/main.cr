@@ -3,9 +3,9 @@ require "log"
 require "option_parser"
 require "version_from_shard"
 
-require "./module_gen"
 require "./binding_config"
 require "./error"
+require "./module_gen"
 
 VersionFromShard.declare
 
@@ -100,9 +100,10 @@ private def main(argv)
   Generator::DocRepo.disable! unless options[:doc_gen]
 
   binding_yamls = find_bindings.concat(options[:extra_bindings])
-  binding_yamls.each { |file| Log.info { "Using binding config at #{file}" } }
-
-  Generator::BindingConfig.load(binding_yamls)
+  binding_yamls.each do |file|
+    Log.info { "Using binding config at #{file}" }
+    Generator::BindingConfig.load(file)
+  end
 
   generate_all
 rescue e : Generator::Error | GObjectIntrospection::Error | File::NotFoundError

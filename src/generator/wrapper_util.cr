@@ -19,7 +19,7 @@ module Generator
       tag = param_type.tag
 
       io << identifier << ".to_a"
-      if BindingConfig.handmade?(param_type)
+      if handmade_type?(param_type)
         ptype_name = to_crystal_type(param_type)
         if param_type.pointer?
           io << ".map { |_i| " << ptype_name << ".new(_i).to_unsafe }"

@@ -21,10 +21,6 @@ module Generator
       @struct.name
     end
 
-    def skip?(key : String = subject) : Bool
-      super || @struct.g_type_struct? || @struct.g_error?
-    end
-
     def type_name
       to_crystal_type(@struct, false)
     end

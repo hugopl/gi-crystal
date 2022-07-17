@@ -6,7 +6,7 @@ require "../<%= dep.module_dir %>/<%= dep.filename%>"
 # C lib declaration
 require "./<%= @lib.filename %>"
 
-<% config.includes_before.each do |inc| -%>
+<% config.require_before.each do |inc| -%>
 require "<%= inc.relative_to("#{output_dir}/#{module_dir}") %>"
 <% end %>
 
@@ -102,7 +102,6 @@ module <%= namespace_name %>
   extend self
 end
 
-# Extra includes
-<% config.includes.each do |inc| -%>
+<% config.require_after.each do |inc| -%>
 require "<%= inc.relative_to("#{output_dir}/#{module_dir}") %>"
 <% end %>

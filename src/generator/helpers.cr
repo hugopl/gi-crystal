@@ -205,9 +205,19 @@ module Generator::Helpers
     end
   end
 
+  def handmade_type?(type : TypeInfo) : Bool
+    return false unless type.tag.interface?
+
+    iface = type.interface
+    return false if iface.nil?
+
+    BindingConfig.for(iface.namespace).type_config(iface.name).handmade?
+  end
+
   # @is_arg: The type is means to be used in a argument list for some method
   def to_crystal_type(type : TypeInfo, include_namespace : Bool = true, is_arg : Bool = false) : String
-    return "_" if is_arg && BindingConfig.handmade?(type)
+    # Check if the type is handmade used in a argument
+    return "_" if is_arg && handmade_type?(type)
 
     tag = type.tag
     case tag

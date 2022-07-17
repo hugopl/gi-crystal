@@ -60,10 +60,6 @@ module Generator
       Generator.output_dir
     end
 
-    def skip?(key : String = subject) : Bool
-      config.ignore?(key) || config.handmade?(key)
-    end
-
     def module_dir(namespace : Namespace = @namespace)
       "#{namespace.name.underscore}-#{namespace.version}"
     end
