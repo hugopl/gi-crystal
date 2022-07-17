@@ -191,7 +191,7 @@ module Generator
       return false unless arg.nullable?
 
       arg_type = arg.type_info
-      return false if BindingConfig.handmade?(arg_type)
+      return false if handmade_type?(arg_type)
 
       true
     end
@@ -276,7 +276,7 @@ module Generator
       return false if strategy.remove_from_declaration?
 
       arg_type = strategy.arg_type
-      return false unless BindingConfig.handmade?(arg_type)
+      return false unless handmade_type?(arg_type)
 
       true
     end
@@ -366,7 +366,7 @@ module Generator
       return false if strategy.remove_from_declaration?
 
       arg_type = strategy.arg.type_info
-      return false if BindingConfig.handmade?(arg_type)
+      return false if handmade_type?(arg_type)
 
       case arg_type.tag
       when .interface?, .utf8?, .filename?

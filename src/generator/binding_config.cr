@@ -1,106 +1,100 @@
 require "yaml"
 
+require "./error"
+require "./generator"
+
+# This exists due to https://github.com/crystal-lang/crystal/issues/12290
 module Generator
+  alias BindingConfig = GeneratorNamespaceRenamedDueToACrystalBug::BindingConfig
+end
+
+module GeneratorNamespaceRenamedDueToACrystalBug
+  alias Error = ::Generator::Error
+  alias Namespace = ::Generator::Namespace
+
+  enum BindingStrategy
+    Auto
+    # Bind the type as a Crystal struct
+    StackStruct
+    # Bind the type as a Crystal class with the lib struct as attribute.
+    HeapStruct
+    # Bind the type as a Crystal class with a pointer to the object.
+    HeapWrapper
+  end
+
+  class TypeConfig
+    include YAML::Serializable
+    include YAML::Serializable::Strict
+
+    def initialize
+    end
+
+    getter binding_strategy : BindingStrategy = BindingStrategy::Auto
+    @ignore_methods : Set(String)?
+    @ignore_fields : Set(String)?
+    getter? readonly = false
+    getter? handmade = false
+    getter? ignore = false
+
+    def ignore_method?(name : String) : Bool
+      ignore_methods = @ignore_methods
+      return false if ignore_methods.nil?
+
+      ignore_methods.includes?(name)
+    end
+  end
+
   class BindingConfig
+    include YAML::Serializable
+    include YAML::Serializable::Strict
+
     getter namespace : String
     getter version : String
-    getter includes : Set(Path)
-    getter includes_before : Set(Path)
-    getter handmade : Set(String)
-    getter ignore : Set(String)
-    getter lib_ignore : Set(String)
-    getter execute_callback : Set(String)
-
-    getter base_path : Path
+    getter require_before = Set(Path).new
+    getter require_after = Set(Path).new
+    getter types = Hash(String, TypeConfig).new
+    getter lib_ignore = Set(String).new
+    getter execute_callback = Set(String).new
 
     class_getter loaded_configs = Hash(String, BindingConfig).new
 
-    # Constructs a binding config object from a yaml file
-    def initialize(file : Path)
-      file = file.expand
-      data = YAML.parse(File.read(file))
-      @base_path = file.parent
-      @namespace = data["namespace"].as_s? || raise Error.new("namespace must be a string.")
-      @version = data["version"].as_s? || raise Error.new("version must be a string.")
-
-      @includes = Set(Path).new
-      read_list(data, "include").each do |i|
-        @includes << @base_path.join(i)
-      end
-
-      @includes_before = Set(Path).new
-      read_list(data, "include_before").each do |i|
-        @includes_before << @base_path.join(i)
-      end
-
-      @handmade = read_list(data, "handmade")
-      @ignore = read_list(data, "ignore")
-      @lib_ignore = read_list(data, "lib_ignore")
-      @execute_callback = read_list(data, "execute_callback")
-    end
+    @@empty_type_config = TypeConfig.new
 
     # Constructs an empty binding config
     def initialize(@namespace, @version)
-      @includes_before = @includes = Set(Path).new
-      @lib_ignore = @execute_callback = @handmade = @ignore = Set(String).new
-      @base_path = Path.new(".")
     end
 
-    private def read_list(data : YAML::Any, key : String) : Nil
-      value = data[key]?
-      return Set(String).new if value.nil?
-      raise Error.new("'#{key}' value must be a list of strings.") unless value.as_a?
-
-      value.as_a.each do |item|
-        value = item.to_s
-        yield(value)
-      end
+    def adjust_paths(path : Path)
+      {% for ivar in %w(@require_before @require_after) %}
+        tmp = {{ ivar.id }}
+        {{ ivar.id }} = Set(Path).new
+        tmp.each do |p|
+          {{ ivar.id }} << path.join(p)
+        end
+      {% end %}
     end
 
-    private def read_list(data : YAML::Any, key : String) : Set(String)
-      list = Set(String).new
-      read_list(data, key) do |value|
-        raise Error.new("duplicated item '#{value}' on '#{key}'") if list.includes?(value)
-
-        list << value
-      end
-      list
+    def type_config(type : String) : TypeConfig
+      @types[type]? || @@empty_type_config
     end
 
-    def ignore?(name : String) : Bool
-      @ignore.includes?(name) || lib_ignore?(name)
-    end
-
-    def lib_ignore?(name : String) : Bool
-      @lib_ignore.includes?(name)
-    end
-
-    def handmade?(name : String) : Bool
-      @handmade.includes?(name)
-    end
-
-    def self.handmade?(type_info : TypeInfo) : Bool
-      return false unless type_info.tag.interface?
-
-      iface = type_info.interface
-      return false if iface.nil?
-
-      namespace = iface.namespace
-      for(namespace.name, namespace.version).handmade?(iface.name)
-    end
-
-    def self.load(files : Enumerable(String))
-      files.each { |file| load(file) }
+    def lib_ignore?(symbol : String) : Bool
+      @lib_ignore.includes?(symbol)
     end
 
     def self.load(file : String)
-      conf = BindingConfig.new(Path.new(file))
-      namespace = conf.namespace
-      raise Error.new("binding config already loaded for #{namespace} namespace.") if @@loaded_configs.has_key?(namespace)
-      @@loaded_configs[namespace] = conf
-    rescue e : Error
-      raise Error.new("Error loading #{file}: #{e.message}")
-    rescue e : KeyError
+      load(Path.new(file))
+    end
+
+    def self.load(file : Path)
+      File.open(file) do |fp|
+        conf = from_yaml(fp)
+        conf.adjust_paths(file.parent)
+        namespace = conf.namespace
+        raise Error.new("Binding config already loaded for #{namespace} namespace.") if @@loaded_configs.has_key?(namespace)
+        @@loaded_configs[namespace] = conf
+      end
+    rescue e : YAML::ParseException
       raise Error.new("Error loading #{file}: #{e.message}")
     end
 
