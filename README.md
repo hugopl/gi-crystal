@@ -259,6 +259,19 @@ So if you want to rescue from this specific error you must `rescue e : GLib::Fil
 error in this domain you must `rescue e : GLib::FileError`, and finally if you want to rescue from any GLib errors you do
 `rescue e : GLib::GLibError`.
 
+## Raw C Structs
+
+At [binding.yml](BINDING_YML.md) file you can define the strategy used to bind the structs, if set to `auto`it will behave
+like lsited bellow:
+
+- If the struct have no pointer attributes it's mapped to a Crystal struct with the same memory layout of the C struct
+  (`stack_struct` binding strategy).
+- If the struct have pointer attributes it's mapped to a Crystal class with the same memory layout of the C struct, so a
+  `finalize` method can be implemented to free the resources. Not that no setters are generated to pointer attributes, since
+  we can't guess how this memory must be handled (`heap_struct` binding strategy).
+- If the struct is a opaque pointer it's mapped to a Crystal class with a pointer to the C object, it's assumed that the
+  object is a GObject Box, so the `g_boxed_*` family of functions are used to handle the memory (`heap_wrapper_struct`
+  binding strategy).
 
 ## Contributing
 
