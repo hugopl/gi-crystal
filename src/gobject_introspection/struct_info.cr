@@ -27,6 +27,18 @@ module GObjectIntrospection
       bytesize.zero? && !type_init.nil?
     end
 
+    def pod_type? : Bool
+      fields.each do |field|
+        type_info = field.type_info
+        tag = type_info.tag
+        return false if type_info.pointer?
+        return false unless (tag.boolean? || tag.int8? || tag.u_int8? || tag.int16? || tag.u_int16? || tag.int32? ||
+                            tag.u_int32? || tag.int64? || tag.u_int64? || tag.float? || tag.double? || tag.gtype? ||
+                            tag.unichar?)
+      end
+      true
+    end
+
     def g_type_struct?
       GICrystal.to_bool(LibGIRepository.g_struct_info_is_gtype_struct(self))
     end

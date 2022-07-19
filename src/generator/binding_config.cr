@@ -19,7 +19,7 @@ module GeneratorNamespaceRenamedDueToACrystalBug
     # Bind the type as a Crystal class with the lib struct as attribute.
     HeapStruct
     # Bind the type as a Crystal class with a pointer to the object.
-    HeapWrapper
+    HeapWrapperStruct
   end
 
   class TypeConfig
