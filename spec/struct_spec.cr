@@ -16,6 +16,14 @@ describe "Struct bindings" do
     truct.point.y.should eq(2)
   end
 
+  it "binds POD structs with other POD structs as a Crystal struct" do
+    rect = Test::Rect.new
+    rect.is_a?(Value).should eq(true)
+
+    two_points = Test::TwoPoints.new
+    two_points.is_a?(Value).should eq(true)
+  end
+
   it "can have nullable string attributes" do
     truct = Test::Struct.new
     truct.string.should eq(nil)

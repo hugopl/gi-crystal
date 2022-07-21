@@ -32,9 +32,19 @@ module GObjectIntrospection
         type_info = field.type_info
         tag = type_info.tag
         return false if type_info.pointer?
-        return false unless (tag.boolean? || tag.int8? || tag.u_int8? || tag.int16? || tag.u_int16? || tag.int32? ||
-                            tag.u_int32? || tag.int64? || tag.u_int64? || tag.float? || tag.double? || tag.gtype? ||
-                            tag.unichar?)
+
+        is_pod = if (tag.boolean? || tag.int8? || tag.u_int8? || tag.int16? || tag.u_int16? || tag.int32? || tag.u_int32? ||
+                    tag.int64? || tag.u_int64? || tag.float? || tag.double? || tag.gtype? || tag.unichar?)
+                   true
+                 elsif tag.interface?
+                   iface = type_info.interface.not_nil!
+                   iface.is_a?(StructInfo) && iface.pod_type?
+                 elsif tag.array? && type_info.array_type.c? && type_info.array_fixed_size > 0
+                   true
+                 else
+                   false
+                 end
+        return false unless is_pod
       end
       true
     end
