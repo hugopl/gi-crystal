@@ -35,12 +35,14 @@ module GeneratorNamespaceRenamedDueToACrystalBug
     getter? handmade = false
     getter? ignore = false
 
-    def ignore_method?(name : String) : Bool
-      ignore_methods = @ignore_methods
-      return false if ignore_methods.nil?
+    {% for attr in %w(ignore_method ignore_field) %}
+    def {{ attr.id }}?(name : String) : Bool
+      {{ attr.id }} = @{{ attr.id }}s
+      return false if {{ attr.id }}.nil?
 
-      ignore_methods.includes?(name)
+      {{ attr.id }}.includes?(name)
     end
+    {% end %}
   end
 
   class BindingConfig

@@ -76,8 +76,6 @@ This is valid only for structs.
 
 A list of fields in the structs that you don't want to create access for.
 
-⚠️ Not yet implemented.
-
 ## binding_strategy (auto | stack_struct | heap_struct | heap_wrapper)
 
 This is valid only for structs.

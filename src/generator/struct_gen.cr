@@ -55,6 +55,7 @@ module Generator
       String.build do |s|
         s << "def self.new("
         @struct.fields.each do |field|
+          next if ignore_field?(field)
           next if field.type_info.pointer?
 
           s << "#{to_crystal_arg_decl(field.name)} : #{to_crystal_type(field.type_info)}? = nil, "
@@ -70,6 +71,7 @@ module Generator
 
     private def generate_ctor_fields_assignment(io : IO, var : String = "_instance")
       @struct.fields.each do |field|
+        next if ignore_field?(field)
         next if field.type_info.pointer?
 
         field_name = to_identifier(field.name)
@@ -90,6 +92,19 @@ module Generator
       is_pointer = field_type.pointer?
       io << to_crystal_type(field_type)
       io << "?" if is_pointer
+    end
+
+    private def ignore_field?(field : FieldInfo) : Bool
+      config.type_config(@struct.name).ignore_field?(field.name)
+    end
+
+    private def render_getters_and_setters(io : IO)
+      foreach_field do |field|
+        next if ignore_field?(field)
+
+        generate_getter(io, field)
+        generate_setter(io, field)
+      end
     end
 
     private def generate_getter(io : IO, field : FieldInfo)

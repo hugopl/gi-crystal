@@ -1,2 +1,7 @@
 namespace: Test
 version: "1.0"
+
+types:
+  Struct:
+    ignore_fields:
+    - ignored_field

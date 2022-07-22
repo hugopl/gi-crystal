@@ -51,6 +51,7 @@ typedef struct _TestStruct {
   TestPoint* point_ptr;
   TestPoint point;
   const char* string;
+  int ignored_field;
 } TestStruct;
 
 /**
