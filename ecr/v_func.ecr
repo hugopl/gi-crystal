@@ -8,7 +8,8 @@
         %instance = LibGObject.g_object_get_qdata(%this, GICrystal::INSTANCE_QDATA_KEY)
         raise GICrystal::ObjectCollectedError.new if %gc_collected || %instance.null?
 
-        %instance.as(self).{{ impl_method_name.id }}(<% call_user_method(io) %>)
+        %retval = %instance.as(self).{{ impl_method_name.id }}(<% call_user_method(io) %>)
+        <%= convert_to_lib("%retval", vfunc.return_type, vfunc.caller_owns) %>
       end
 
     <%- if object.is_a?(InterfaceInfo) -%>

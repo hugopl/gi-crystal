@@ -143,10 +143,37 @@ module Generator::Helpers
   def convert_to_lib(var : String, type : TypeInfo, _transfer : Transfer) : String
     tag = type.tag
     case tag
-    when .interface?, .utf8?, .filename?
+    when .utf8?, .filename?
       "#{var}.to_unsafe"
+    when .interface?
+      iface = type.interface.not_nil!
+      if iface.is_a?(EnumInfo)
+        "#{var}.#{tag_conversion_function(iface.storage_type)}"
+      else
+        "#{var}.to_unsafe"
+      end
     else
       var
+    end
+  end
+
+  def tag_conversion_function(tag : TypeTag)
+    case tag
+    when .boolean? then "to_i"
+    when .int8?    then "to_i8"
+    when .u_int8?  then "to_u8"
+    when .int16?   then "to_i16"
+    when .u_int16? then "to_u16"
+    when .int32?   then "to_i32"
+    when .u_int32? then "to_u32"
+    when .int64?   then "to_i64"
+    when .u_int64? then "to_u64"
+    when .float?   then "to_f32"
+    when .double?  then "to_f64"
+    when .gtype?   then "to_u64"
+    when .unichar? then "to_u32"
+    else
+      "to_unsafe"
     end
   end
 
