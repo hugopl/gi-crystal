@@ -23,7 +23,7 @@ module Generator
           HeapWrapperStructGen.new(info)
         end
       in .stack_struct?
-        raise Error.new("Not implemented yet 😁️")
+        StackStructGen.new(info)
       in .heap_struct?
         HeapStructGen.new(info)
       in .heap_wrapper_struct?

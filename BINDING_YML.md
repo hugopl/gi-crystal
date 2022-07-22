@@ -89,5 +89,3 @@ values are:
 - `heap_struct`: Bind this as a Crystal class with the C struct as attribute, so the struct is allocated on the heap and the
    memory is always copied to Crystal.
 - `heap_wrapper`: Bind this as a Crystal class with a pointer to the C struct, like it's done got GObject types.
-
-⚠️ Not yet implemented.
