@@ -12,6 +12,16 @@ private class IfaceVFuncImpl < GObject::Object
   @[GObject::Virtual]
   def vfunc_basic(@int32, @float32, @float64, @string, @obj)
   end
+
+  @[GObject::Virtual]
+  def vfunc_return_string
+    "string returned from vfunc!"
+  end
+
+  @[GObject::Virtual]
+  def vfunc_return_enum
+    Test::RegularEnum::Value2
+  end
 end
 
 private class UnsafeIfaceVFuncImpl < GObject::Object
@@ -55,6 +65,15 @@ describe "GObject vfuncs" do
     subject.string.should eq("hey")
   end
 
-  pending "can have return values"
+  it "can have return a string" do
+    obj = IfaceVFuncImpl.new
+    obj.call_vfunc("vfunc_return_string").should eq("string returned from vfunc!")
+  end
+
+  it "can have return an enum" do
+    obj = IfaceVFuncImpl.new
+    obj.call_vfunc("vfunc_return_enum").should eq("TEST_VALUE2")
+  end
+
   pending "can be from objects, not interfaces"
 end
