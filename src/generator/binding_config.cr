@@ -32,7 +32,6 @@ module GeneratorNamespaceRenamedDueToACrystalBug
     getter binding_strategy : BindingStrategy = BindingStrategy::Auto
     @ignore_methods : Set(String)?
     @ignore_fields : Set(String)?
-    getter? readonly = false
     getter? handmade = false
     getter? ignore = false
 
