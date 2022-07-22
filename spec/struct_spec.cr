@@ -24,6 +24,12 @@ describe "Struct bindings" do
     two_points.is_a?(Value).should eq(true)
   end
 
+  it "ignore fields according to binding.yml" do
+    truct = Test::Struct.new
+    truct.responds_to?(:ignored_field).should eq(false)
+    truct.responds_to?(:ignored_field=).should eq(false)
+  end
+
   it "can have nullable string attributes" do
     truct = Test::Struct.new
     truct.string.should eq(nil)

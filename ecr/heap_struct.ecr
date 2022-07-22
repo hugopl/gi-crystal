@@ -20,11 +20,7 @@ module <%= namespace_name %>
       LibC.memcmp(self, other.to_unsafe, sizeof(<%= to_lib_type(object) %>)).zero?
     end
 
-    <% foreach_field do |field| %>
-      <% generate_getter(io, field) -%>
-      <% generate_setter(io, field) -%>
-    <% end %>
-
+    <% render_getters_and_setters(io) %>
     <% render "ecr/g_type_method.ecr" %>
     <% render_methods %>
 
