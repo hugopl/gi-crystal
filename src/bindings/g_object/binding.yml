@@ -2,6 +2,7 @@ namespace: GObject
 version: "2.0"
 
 require_before:
+ - gc.cr
  - enum.cr
  - lib_g_object.cr
  - type.cr
