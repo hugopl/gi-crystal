@@ -46,6 +46,10 @@ G_BEGIN_DECLS
  * }
  * ```
  *
+ * Others:
+ * %NULL %TRUE %FALSE
+ * `GdkVulkanContext` AdwComboRow
+ *
  */
 #define TEST_TYPE_SUBJECT test_subject_get_type()
 G_DECLARE_DERIVABLE_TYPE(TestSubject, test_subject, TEST, SUBJECT, GObject)
