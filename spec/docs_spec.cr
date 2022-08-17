@@ -8,6 +8,8 @@ describe "Docs conversion" do
       "# is: `Test::Subject#is_bool?`",
       "# initializer: `Test::Subject.new`",
       "# WARNING: **⚠️ The following code is in c ⚠️**",
+      "# `nil` `true` `false`",
+      "# `Gdk::VulkanContext` Adw::ComboRow",
     ]
     test_subject = File.read("./src/auto/test-1.0/subject.cr")
 
