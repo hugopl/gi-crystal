@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.14.0] 2022-09-02
+### Added
+- Added support to declare GObject properties in Crystal classes 🎉️, thanks @BlobCodes (#44).
+- Added possibility to ignore some struct fields in binding generation (#58).
+- Crystalize even more docs, thanks @GeopJr. (#62).
+
+### Fixed
+- Enum and flags `#g_type` method now works (#56).
+- Convert return values of vfuncs (#60).
+
+### Changed
+- Changed format of `binding.yml` file for better flexibility.
+- Generate bindings for POD structs as Crystal structs (#58).
+- Doc comments generation is now disabled by default (#59).
+
 ## [0.13.1] 2022-07-04
 ### Added
 - Added option to complete ignore functions (i.e. ignore new added HarfBuzz functions that broke the generator).
