@@ -7,15 +7,16 @@ private class UserFloatRefObject < Test::FloatRef
 end
 
 private class UserObjectWithCtor < GObject::Object
-  def initialize(@string : String)
-    super()
-  end
+  property string : String = "not hey"
+  # def initialize(@string : String)
+  #   super()
+  # end
 end
 
 private class UserSubject < Test::Subject
-  def initialize(string : String)
-    super(string: string)
-  end
+  # def initialize(string : String)
+  #   super(string: string)
+  # end
 end
 
 private class UserObjectWithGProperties < GObject::Object
@@ -29,7 +30,7 @@ private class UserObjectWithGProperties < GObject::Object
   property flags = TestFlags::BC
 
   @[GObject::Property]
-  property object : UserObject
+  property object : UserObject? = nil
 
   @[GObject::Property]
   property signal_test : Bool = true
@@ -40,11 +41,6 @@ private class UserObjectWithGProperties < GObject::Object
 
   @[GObject::Property]
   property nilable_object : UserObject?
-
-  def initialize
-    super
-    @object = UserObject.new
-  end
 end
 
 class User::Class::With::Colons < GObject::Object
@@ -106,7 +102,8 @@ describe "Classes inheriting GObject::Object" do
   end
 
   it "can have any constructors" do
-    obj = UserObjectWithCtor.new("hey")
+    obj = UserObjectWithCtor.new
+    obj.string = "hey"
     obj.ref_count.should eq(1)
     obj_wrapper = GObject::Object.new(obj.to_unsafe, :full)
     obj_wrapper.class.should eq(UserObjectWithCtor)
@@ -115,13 +112,15 @@ describe "Classes inheriting GObject::Object" do
   end
 
   it "can call parent generic constructors" do
-    obj = UserSubject.new("hey")
+    obj = UserSubject.new
+    obj.string = "hey"
     LibGObject.g_type_check_instance_is_a(obj, UserSubject.g_type).should eq(1)
     obj.string.should eq("hey")
   end
 
   it "can set GObject properties" do
     obj = UserObjectWithGProperties.new
+    obj.object = UserObject.new
 
     LibGObject.g_object_set(obj, "str-ing", "test value", Pointer(Void).null)
     obj.str_ing.should eq("test value")
@@ -142,6 +141,7 @@ describe "Classes inheriting GObject::Object" do
 
   it "can get GObject properties" do
     obj = UserObjectWithGProperties.new
+    obj.object = UserObject.new
 
     out_string = uninitialized Pointer(LibC::Char)
     LibGObject.g_object_get(obj, "str-ing", pointerof(out_string), Pointer(Void).null)
@@ -171,6 +171,7 @@ describe "Classes inheriting GObject::Object" do
   it "emits notify signal on GObject properties access" do
     test_var = 0
     obj = UserObjectWithGProperties.new
+    obj.object = UserObject.new
     signal = obj.notify_signal["signal-test"].connect { test_var += 1 }
 
     test_var.should eq(0)
