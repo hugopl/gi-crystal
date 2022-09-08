@@ -89,7 +89,7 @@ module GObject
                 {% has_setter = @type.has_method?("#{var.name}=") %}
                 {% raise "GObject properties need to have a getter and/or a setter" unless has_getter || has_setter %}
 
-                flags = GObject::ParamFlags::StaticName | GObject::ParamFlags::StaticBlurb | GObject::ParamFlags::ExplicitNotify
+                flags = GObject::ParamFlags::StaticName | GObject::ParamFlags::StaticNick | GObject::ParamFlags::StaticBlurb | GObject::ParamFlags::ExplicitNotify
                 flags |= GObject::ParamFlags::Deprecated unless {{ !!var.annotation(Deprecated) }}
                 flags |= GObject::ParamFlags::Readable if {{ has_getter }}
                 flags |= GObject::ParamFlags::Writable if {{ has_setter }}
