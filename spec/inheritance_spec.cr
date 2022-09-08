@@ -123,6 +123,7 @@ describe "Classes inheriting GObject::Object" do
     obj = UserObjectWithCtor.new
     obj.string = "hey"
     obj.ref_count.should eq(1)
+    LibGObject.g_object_ref(obj)
     obj_wrapper = GObject::Object.new(obj.to_unsafe, :full)
     obj_wrapper.class.should eq(UserObjectWithCtor)
     obj2 = UserObjectWithCtor.cast(obj)
