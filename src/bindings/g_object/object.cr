@@ -405,7 +405,7 @@ module GObject
           return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
 
           # If the object was collected by Crystal GC but still alive in C world we can't bring
-          # the crystal object form the dead.
+          # the crystal object from the dead.
           gc_collected = GICrystal.gc_collected?(obj)
           instance = GICrystal.instance_pointer(obj)
           raise GICrystal::ObjectCollectedError.new if gc_collected || instance.null?
