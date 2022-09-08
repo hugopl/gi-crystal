@@ -19,13 +19,13 @@ private class UserSubject < Test::Subject
 end
 
 private class UserObjectWithGProperties < GObject::Object
-  @[GObject::Property(nick: "STRING", blurb: "A string without meaning", default: "default")]
+  @[GObject::Property(nick: "STRING", blurb: "A string without meaning")]
   property str_ing : String = "default"
 
-  @[GObject::Property(nick: "INTEGER", blurb: "An Int32", default: 42, min: 40, max: 50)]
+  @[GObject::Property(nick: "INTEGER", blurb: "An Int32", min: 40, max: 50)]
   property int : Int32 = 42
 
-  @[GObject::Property(default: TestFlags::BC)]
+  @[GObject::Property]
   property flags = TestFlags::BC
 
   @[GObject::Property]
