@@ -107,7 +107,7 @@ module GICrystal
     end
   end
 
-  # This declare the `new` method on a instance of type *type*, *qdata_get_func* and *qdata_set_func* are functions used
+  # This declare the `new` method on a instance of type *self*, *qdata_get_func* and *qdata_set_func* are functions used
   # to set/get qdata on objects, e.g. `g_object_get_qdata`/`g_object_set_qdata` for GObjects.
   #
   # GICrystal stores two qdatas in objects on following keys:
@@ -120,7 +120,7 @@ module GICrystal
   # `GC_COLLECTED_QDATA_KEY` is used to avoid to restore a wrapper that was already collected by GC.
   #
   # This is mainly used for `GObject::Object`, since `GObject::ParamSpec` doesn't support casts on GICrystal.
-  macro declare_new_method(type, qdata_get_func, qdata_set_func)
+  macro declare_new_method(qdata_get_func, qdata_set_func)
     # :nodoc:
     def self.new(pointer : Pointer(Void), transfer : GICrystal::Transfer) : self
       # Try to recover the Crystal instance if any
