@@ -11,6 +11,14 @@ private class UserObjectWithCtor < GObject::Object
   # def initialize(@string : String)
   #   super()
   # end
+
+  @[NoInline]
+  def self.new_to_unsafe(string : String) : Void*
+    obj = self.new
+    LibGObject.g_object_ref(obj.to_unsafe)
+    obj.string = string
+    obj.to_unsafe
+  end
 end
 
 private class UserSubject < Test::Subject
@@ -74,6 +82,16 @@ describe "Classes inheriting GObject::Object" do
     expect_raises(GICrystal::ObjectCollectedError) do
       UserObject.cast(subject.gobj.not_nil!)
     end
+  end
+
+  # Note that this test is not deterministic.
+  # Calling GC.collect will only perform a full collection on high GC pressure.
+  # A passing test does not mean it necessarily works.
+  it "survive garbage collections" do
+    unsafe = UserObjectWithCtor.new_to_unsafe("super random test string")
+    GC.collect
+    reincarnated_subject = UserObjectWithCtor.new(unsafe, :full)
+    reincarnated_subject.string.should eq("super random test string")
   end
 
   it "create a crystal instance if the object was born on C world" do
