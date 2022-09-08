@@ -83,6 +83,7 @@ module GObject
                 name = {{ var.name.gsub(/\_/, "-").stringify }}.to_unsafe
                 nick = {{ property["nick"] }}.try(&.to_unsafe) || Pointer(LibC::Char).null
                 blurb = {{ property["blurb"] }}.try(&.to_unsafe) || Pointer(LibC::Char).null
+                default = {{ var.default_value }}
                 {% other_args = property.named_args.to_a.reject { |arg| ["nick", "blurb"].includes?(arg[0].stringify) } %}
 
                 {% has_getter = @type.has_method?(var.name.stringify) || @type.has_method?(var.name.stringify + "?") %}
@@ -96,7 +97,7 @@ module GObject
 
                 # Finally register the type to GLib.
                 # The given varible name has its underscores converted to dashes.
-                pspec = GObject.create_param_spec({{ var.type }}, name, nick, blurb, flags, {{ other_args.map { |tuple| "#{tuple[0]}: #{tuple[1]}".id }.splat }})
+                pspec = GObject.create_param_spec({{ var.type }}, name, nick, blurb, flags, default, {{ other_args.map { |tuple| "#{tuple[0]}: #{tuple[1]}".id }.splat }})
                 @@_g_param_specs[{{ i }}] = pspec.as(LibGObject::ParamSpec*)
                 LibGObject.g_object_class_install_property(klass, {{ i + 1 }}, pspec)
               {% end %}
