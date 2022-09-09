@@ -13,7 +13,7 @@
       end
 
     <%- if object.is_a?(InterfaceInfo) -%>
-      def self._install_iface_<%= namespace_name %>__<%= type_name %>(type_struct : Pointer(LibGObject::TypeInterface)) : Nil
+      private def self._install_iface_<%= namespace_name %>__<%= type_name %>(type_struct : Pointer(LibGObject::TypeInterface)) : Nil
     <%- else -%>
       def self._class_init(type_struct : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
     <%- end -%>
@@ -34,7 +34,7 @@
       end
 
     <%- if object.is_a?(InterfaceInfo) -%>
-      def self._install_iface_<%= namespace_name %>__<%= type_name %>(type_struct : Pointer(LibGObject::TypeInterface)) : Nil
+      private def self._install_iface_<%= namespace_name %>__<%= type_name %>(type_struct : Pointer(LibGObject::TypeInterface)) : Nil
     <%- else -%>
       def self._class_init(type_struct : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
     <%- end -%>

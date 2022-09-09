@@ -10,7 +10,7 @@ module <%= namespace_name %>
       end
 
       {% unless @type.annotation(GICrystal::GeneratedWrapper) %}
-        def self._install_iface_<%= namespace_name %>__<%= type_name %>(interface : Pointer(LibGObject::TypeInterface)) : Nil
+        private def self._install_iface_<%= namespace_name %>__<%= type_name %>(interface : Pointer(LibGObject::TypeInterface)) : Nil
         end
       {% end %}
     end
