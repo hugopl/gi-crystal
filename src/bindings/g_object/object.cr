@@ -480,6 +480,10 @@ module GObject
         end
 
         def finalize
+          {% if flag?(:debugmemory) %}
+            LibC.printf("~%s at %p - ref count: %d\n", self.class.name.to_unsafe, self, ref_count)
+          {% end %}
+
           LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).null)
           LibGObject.g_object_set_qdata(self, GICrystal::GC_COLLECTED_QDATA_KEY, Pointer(Void).new(0x1))
           LibGObject.g_object_remove_toggle_ref(self, G_TOGGLE_NOTIFY__, pointerof(@_g_retainer).as(Void*))
