@@ -435,7 +435,7 @@ module GObject
             data.value = GICrystal::ToggleRefManager.register(data.as(Void*))
           end
         end
-        G_TOGGLE_NOTIFY__ = ->_g_toggle_notify(Void*, Void*, Int32)
+        private G_TOGGLE_NOTIFY__ = ->_g_toggle_notify(Void*, Void*, Int32)
 
         # :nodoc:
         def self._install_ifaces
