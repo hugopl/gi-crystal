@@ -24,6 +24,11 @@ module GObject
   TYPE_STRV      = LibGObject.g_strv_get_type
 
   # :nodoc:
+  def self.create_param_spec(klass : String.class, name, nick, blurb, flags, default)
+    {% raise "GObject properties cannot be defined as non-nil strings.\nIn most cases, you can use the following definition:\nproperty! var : String?" %}
+  end
+
+  # :nodoc:
   def self.create_param_spec(klass : String?.class, name, nick, blurb, flags, default : String? = nil) : Void*
     LibGObject.g_param_spec_string(name, nick, blurb, default, flags)
   end
@@ -71,6 +76,11 @@ module GObject
   # :nodoc:
   def self.create_param_spec(klass : Float64.class, name, nick, blurb, flags, default : Float64? = nil, *, min : Float64 = Float64::MIN, max : Float64 = Float64::MAX) : Void*
     LibGObject.g_param_spec_double(name, nick, blurb, min, max, default || 0_f64, flags)
+  end
+
+  # :nodoc:
+  def self.create_param_spec(klass : GObject::Object.class, name, nick, blurb, flags, default)
+    {% raise "GObject properties cannot be defined as non-nil GObjects.\nIn most cases, you can use the following definition:\nproperty! var : Some::GObject?" %}
   end
 
   # :nodoc:

@@ -7,7 +7,7 @@ private class UserFloatRefObject < Test::FloatRef
 end
 
 private class UserObjectWithCtor < GObject::Object
-  property string : String = "not hey"
+  property string : String? = "not hey"
   # def initialize(@string : String)
   #   super()
   # end
@@ -29,7 +29,7 @@ end
 
 private class UserObjectWithGProperties < GObject::Object
   @[GObject::Property(nick: "STRING", blurb: "A string without meaning")]
-  property str_ing : String = "default"
+  property str_ing : String? = "default"
 
   @[GObject::Property(nick: "INTEGER", blurb: "An Int32", min: 40, max: 50)]
   property int : Int32 = 42
