@@ -28,14 +28,15 @@ module GObject
     # :nodoc:
     def self.set_g_value(ptr : Pointer(LibGObject::Value), value) : Nil
       case value
+      when Nil              then # skip
       when Bool             then LibGObject.g_value_set_boolean(ptr, value)
       when Float32          then LibGObject.g_value_set_float(ptr, value)
       when Float64          then LibGObject.g_value_set_double(ptr, value)
       when Int32            then LibGObject.g_value_set_int(ptr, value)
       when Int64            then LibGObject.g_value_set_int64(ptr, value)
       when Int8             then LibGObject.g_value_set_schar(ptr, value)
-      when GObject::Object? then LibGObject.g_value_set_object(ptr, value.try(&.to_unsafe) || Pointer(Void).null)
-      when String?          then LibGObject.g_value_set_string(ptr, value)
+      when GObject::Object  then LibGObject.g_value_set_object(ptr, value)
+      when String           then LibGObject.g_value_set_string(ptr, value)
       when UInt32           then LibGObject.g_value_set_uint(ptr, value)
       when UInt64           then LibGObject.g_value_set_uint64(ptr, value)
       when UInt8            then LibGObject.g_value_set_uchar(ptr, value)
@@ -64,7 +65,7 @@ module GObject
       when Int32              then TYPE_INT
       when Int64              then TYPE_INT64
       when Int8               then TYPE_CHAR
-      when GObject::Object?   then TYPE_OBJECT
+      when GObject::Object    then TYPE_OBJECT
       when String             then TYPE_STRING
       when UInt32             then TYPE_UINT
       when UInt64             then TYPE_UINT64
