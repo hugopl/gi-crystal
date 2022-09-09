@@ -35,7 +35,7 @@ module GObject
       when Int64            then LibGObject.g_value_set_int64(ptr, value)
       when Int8             then LibGObject.g_value_set_schar(ptr, value)
       when GObject::Object? then LibGObject.g_value_set_object(ptr, value.try(&.to_unsafe) || Pointer(Void).null)
-      when String           then LibGObject.g_value_set_string(ptr, value)
+      when String?          then LibGObject.g_value_set_string(ptr, value)
       when UInt32           then LibGObject.g_value_set_uint(ptr, value)
       when UInt64           then LibGObject.g_value_set_uint64(ptr, value)
       when UInt8            then LibGObject.g_value_set_uchar(ptr, value)
@@ -100,7 +100,6 @@ module GObject
       when TYPE_FLOAT   then LibGObject.g_value_get_float(ptr)
       when TYPE_INT     then LibGObject.g_value_get_int(ptr)
       when TYPE_INT64   then LibGObject.g_value_get_int64(ptr)
-      when TYPE_STRING  then String.new(LibGObject.g_value_get_string(ptr))
       when TYPE_UCHAR   then LibGObject.g_value_get_uchar(ptr)
       when TYPE_UINT    then LibGObject.g_value_get_uint(ptr)
       when TYPE_UINT64  then LibGObject.g_value_get_uint64(ptr)
@@ -111,6 +110,9 @@ module GObject
       when TYPE_OBJECT
         object_ptr = LibGObject.g_value_get_object(ptr)
         object_ptr.null? ? nil : GObject::Object.new(object_ptr, :none)
+      when TYPE_STRING
+        ptr = LibGObject.g_value_get_string(ptr)
+        ptr.null? ? nil : String.new(ptr)
       else
         raise ArgumentError.new("Cannot obtain raw value for g_type #{g_type}")
       end

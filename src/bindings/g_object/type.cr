@@ -24,8 +24,8 @@ module GObject
   TYPE_STRV      = LibGObject.g_strv_get_type
 
   # :nodoc:
-  def self.create_param_spec(klass : String.class, name, nick, blurb, flags, default : String? = nil) : Void*
-    LibGObject.g_param_spec_string(name, nick, blurb, default || "", flags)
+  def self.create_param_spec(klass : String?.class, name, nick, blurb, flags, default : String? = nil) : Void*
+    LibGObject.g_param_spec_string(name, nick, blurb, default, flags)
   end
 
   # :nodoc:
