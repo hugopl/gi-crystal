@@ -419,7 +419,7 @@ module GObject
           end
         end
 
-        def self._g_toggle_notify(data : Void*, _gobject : Void*, is_last_ref : Int32) : Nil
+        private def self._g_toggle_notify(data : Void*, _gobject : Void*, is_last_ref : Int32) : Nil
           data = data.as(Void**)
           is_last_ref = GICrystal.to_bool(is_last_ref)
 
