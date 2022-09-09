@@ -118,7 +118,10 @@ module GObject
 
               case property_id
               {% for var, i in instance_vars %}
-                {% if @type.has_method?(var.name.stringify) %}
+                {% if @type.has_method?(var.name.stringify + "?") %}
+                  when {{ i + 1 }}
+                    GObject::Value.set_g_value(gvalue.as(LibGObject::Value*), self.{{ var }}?)
+                {% elsif @type.has_method?(var.name.stringify) %}
                   when {{ i + 1 }}
                     GObject::Value.set_g_value(gvalue.as(LibGObject::Value*), self.{{ var }})
                 {% end %}
