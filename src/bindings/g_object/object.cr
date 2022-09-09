@@ -479,6 +479,7 @@ module GObject
           instance.as(self)
         end
 
+        # :nodoc:
         def finalize
           {% if flag?(:debugmemory) %}
             LibC.printf("~%s at %p - ref count: %d\n", self.class.name.to_unsafe, self, ref_count)
