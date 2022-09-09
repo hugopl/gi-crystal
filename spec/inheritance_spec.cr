@@ -84,14 +84,20 @@ describe "Classes inheriting GObject::Object" do
     end
   end
 
-  # Note that this test is not deterministic.
-  # Calling GC.collect will only perform a full collection on high GC pressure.
-  # A passing test does not mean it necessarily works.
   it "survive garbage collections" do
     unsafe = UserObjectWithCtor.new_to_unsafe("super random test string")
     GC.collect
     reincarnated_subject = UserObjectWithCtor.new(unsafe, :full)
     reincarnated_subject.string.should eq("super random test string")
+  end
+
+  it "do not leak ram" do
+    unsafe = UserObjectWithCtor.new_to_unsafe("super random test string")
+    success = false
+    LibGObject.g_object_weak_ref(unsafe, ->(data, _oldref) { data.as(Bool*).value = true }, pointerof(success))
+    LibGObject.g_object_unref(unsafe)
+    GC.collect
+    success.should eq(true)
   end
 
   it "create a crystal instance if the object was born on C world" do

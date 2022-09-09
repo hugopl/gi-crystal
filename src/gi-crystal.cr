@@ -1,4 +1,5 @@
 require "./gi_crystal/closure_data_manager"
+require "./gi_crystal/toggle_ref_manager"
 require "./gi_crystal/util"
 
 module GICrystal

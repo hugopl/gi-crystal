@@ -392,7 +392,7 @@ module GObject
           # Set default values of non-gobject-properties or non-writable gobject-properties
           {% verbatim do %}
             {% for var in @type.instance_vars %}
-              {% if var.has_default_value? && var.name != "pointer" && (!var.annotation(GObject::Property) || !@type.has_method?("#{var.name}=")) %}
+              {% if var.has_default_value? && var.name != "pointer" && var.name != "_g_retainer" && (!var.annotation(GObject::Property) || !@type.has_method?("#{var.name}=")) %}
                 @{{var.name}} = {{var.default_value}}
               {% end %}
             {% end %}
@@ -410,6 +410,7 @@ module GObject
             this = this_ptr.as(self)
             set_crystal_type_id(this_ptr)
             GC.add_finalizer(this)
+            _g_toggle_notify(pointerof(this.@_g_retainer).as(Void*), instance.as(Void*), 0)
             LibGObject.g_object_add_toggle_ref(instance, G_TOGGLE_NOTIFY__, pointerof(this.@_g_retainer).as(Void*))
 
             # Set @pointer and INSTANCE_QDATA
@@ -425,10 +426,13 @@ module GObject
           if is_last_ref
             # This crystal proxy object is the last reference to the the GObject in C-world.
             # If there are no references to this crystal object, it can be garbage collected
-            GICrystal::ClosureDataManager.deregister(data.value)
+            return if data.value.null?
+            GICrystal::ToggleRefManager.deregister(data.value)
+            data.value = Pointer(Void).null
           else
             # Other references to this GObject have been established, it may not be garbage collected.
-            data.value = GICrystal::ClosureDataManager.register(data.as(Void*))
+            return unless data.value.null?
+            data.value = GICrystal::ToggleRefManager.register(data.as(Void*))
           end
         end
         G_TOGGLE_NOTIFY__ = ->_g_toggle_notify(Void*, Void*, Int32)
