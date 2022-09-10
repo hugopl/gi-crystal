@@ -135,7 +135,7 @@ module GObject
         # ParamSpec pointers for the GObject properties in the object
         @@_g_param_specs = Pointer(LibGObject::ParamSpec*).null
 
-        # A state storing the return value of ClosureDataManager::Register
+        # A state storing the return value of ToggleRefManager.register
         @_g_retainer = Pointer(Void*).null
 
         # C object
