@@ -84,6 +84,11 @@ module GObject
   end
 
   # :nodoc:
+  def self.create_param_spec(klass : GObject::Object?.class, name, nick, blurb, flags, default : GObject::Object)
+    {% raise "GObject properties holding GObjects cannot hold default values" %}
+  end
+
+  # :nodoc:
   def self.create_param_spec(klass : GObject::Object?.class, name, nick, blurb, flags, default : Nil = nil) : Void*
     LibGObject.g_param_spec_object(name, nick, blurb, type_not_nil!(klass).g_type, flags)
   end
