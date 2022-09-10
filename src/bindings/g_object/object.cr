@@ -38,6 +38,78 @@ module GObject
   end
 
   class Object
+    # :nodoc:
+    # Module included in every GObject subclass, makes compile-time errors much more readable
+    # because otherwise the whole "macro inherited" is shown in every error trace.
+    module Subclass
+      def self.new(**args : **ARGS) : self forall ARGS
+        {% verbatim do %}
+          {% begin %}
+            {% crystal_properties = @type.instance_vars.select { |var| var.annotation(GObject::Property) && @type.has_method?(var.name.stringify + "=") } %}
+            {% crystal_properties_keys = crystal_properties.map { |prop| prop.name } %}
+
+            {% c_type_properties = @type.constant("C_TYPE_PROPERTIES").resolve %}
+            {% c_type_properties_keys = c_type_properties.map { |prop| prop["identifier"].id } %}
+
+            {% all_keys = (crystal_properties_keys + c_type_properties_keys) %}
+
+            {% error = false %}
+
+            # Check for unused keys
+            {% error = true unless (ARGS.keys.reject { |key| all_keys.includes?(key) }).empty? %}
+
+            _names = uninitialized Pointer(LibC::Char)[{{ ARGS.size }}]
+            _values = StaticArray(LibGObject::Value, {{ ARGS.size }}).new(LibGObject::Value.new)
+            _n = 0
+
+            # Handle properties of last non-crystal superclass
+            {% for prop in c_type_properties %}
+              {% error = true if ARGS[prop["identifier"].id] && !(ARGS[prop["identifier"].id] <= prop["type"].resolve) %}
+              if args.has_key?({{ prop["identifier"] }}) && !args[{{ prop["identifier"] }}]?.nil?
+                (_names.to_unsafe + _n).value = {{ prop["name"] }}.to_unsafe
+                GObject::Value.init_g_value(_values.to_unsafe + _n, args[{{ prop["identifier"] }}]?.not_nil!)
+                _n += 1
+              end
+            {% end %}
+
+            # Handle GObject properties defined in crystal
+            {% for prop in crystal_properties %}
+              {% error = true if ARGS[prop.name] && !(ARGS[prop.name] <= prop.type) %}
+              if args.has_key?({{ prop.name.stringify }}) && !args[{{ prop.name.stringify }}]?.nil?
+                (_names.to_unsafe + _n).value = {{ prop.name.gsub(/\_/, "-").stringify }}.to_unsafe
+                GObject::Value.init_g_value(_values.to_unsafe + _n, args[{{ prop.name.stringify }}]?.not_nil!)
+                _n += 1
+              end
+            {% end %}
+
+            # Show "no overload matches" error replica if there are unused variables or type mismatches
+            {%
+              if error
+                other_overloads = @type.class.methods.select { |method| method.name == "new" && method.visibility == :public && method != @def }
+                c_type_properties_args = c_type_properties.map { |prop| "#{prop["identifier"].id} : #{(prop["type"].resolve.union_types.reject { |type| type == Nil }.sort << Nil).join(" | ").id} = nil".id }
+                crystal_properties_args = crystal_properties.map { |prop| "#{prop.name} : #{(prop.type.union_types.reject { |type| type == Nil }.sort << Nil).join(" | ").id} = nil".id }
+                all_args = c_type_properties_args + crystal_properties_args
+
+                raise "no overload matches '#{@type}.new', #{ ARGS.keys.map { |key| "#{key}: #{ARGS[key]}".id }.splat }\n\
+                       Overloads are:\n\
+                      \ - #{@type}.new(#{ "*, ".id unless all_args.empty? }#{ all_args.splat })\n\
+                       #{ other_overloads.map { |method| method.id.lines.first.gsub(/^def self/, " - #{@type}") }.join("\n").id }"
+              end
+            %}
+
+            ptr = LibGObject.g_object_new_with_properties(self.g_type, _n, _names, _values)
+            ret = self.new(ptr, :full)
+
+            _n.times do |i|
+              LibGObject.g_value_unset(_values.to_unsafe + i)
+            end
+
+            ret
+          {% end %}
+        {% end %}
+      end
+    end
+
     macro inherited
       {% unless @type.annotation(GICrystal::GeneratedWrapper) %}
         macro method_added(method)
@@ -51,6 +123,11 @@ module GObject
             {% end %}
           {% end %}
         end
+
+        include GObject::Object::Subclass
+
+        # :nodoc:
+        C_TYPE_PROPERTIES = {{ @type.superclass }}::C_TYPE_PROPERTIES
 
         # GType for the new created type
         @@_g_type : UInt64 = 0
@@ -464,11 +541,6 @@ module GObject
           raise GICrystal::ObjectCollectedError.new if gc_collected || instance.null?
 
           instance.as(self)
-        end
-
-        def self.new : self
-          pointer = LibGObject.g_object_newv(self.g_type, 0, Pointer(LibGObject::Parameter).null)
-          self.new(pointer, :full)
         end
 
         def self.new(pointer, transfer : GICrystal::Transfer) : self

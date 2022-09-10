@@ -56,6 +56,8 @@ module <%= namespace_name %>
 
     <% if all_properties.any? -%>
       <% render "ecr/gobject_constructor.ecr" %>
+    <% else %>
+      C_TYPE_PROPERTIES = [] of String
     <% end %>
 
     <% if object.parent.nil? %>
