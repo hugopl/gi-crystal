@@ -243,7 +243,7 @@ module GObject
                       {% end %}
                     {% else %}
                       raw = GObject::Value.raw({{ var_type }}.g_type, gvalue)
-                      self.{{ var }} = raw.as({{ var_type }})
+                      self.{{ var }} = raw.as({{ var.type }})
                     {% end %}
                 {% end %}
               {% end %}
