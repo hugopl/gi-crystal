@@ -138,6 +138,9 @@ module GObject
         # A state storing the return value of ClosureDataManager::Register
         @_g_retainer = Pointer(Void*).null
 
+        # C object
+        @pointer = Pointer(Void).null
+
         def self.g_type : UInt64
           if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
             g_type = {{ @type.superclass.id }}._register_derived_type("{{ @type.name.gsub(/::/, "-") }}",
