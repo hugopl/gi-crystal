@@ -28,20 +28,21 @@ module GObject
     # :nodoc:
     def self.set_g_value(ptr : Pointer(LibGObject::Value), value) : Nil
       case value
-      when Nil              then # skip
-      when Bool             then LibGObject.g_value_set_boolean(ptr, value)
-      when Float32          then LibGObject.g_value_set_float(ptr, value)
-      when Float64          then LibGObject.g_value_set_double(ptr, value)
-      when Int32            then LibGObject.g_value_set_int(ptr, value)
-      when Int64            then LibGObject.g_value_set_int64(ptr, value)
-      when Int8             then LibGObject.g_value_set_schar(ptr, value)
-      when GObject::Object  then LibGObject.g_value_set_object(ptr, value)
-      when String           then LibGObject.g_value_set_string(ptr, value)
-      when UInt32           then LibGObject.g_value_set_uint(ptr, value)
-      when UInt64           then LibGObject.g_value_set_uint64(ptr, value)
-      when UInt8            then LibGObject.g_value_set_uchar(ptr, value)
-      when GLib::Variant    then LibGObject.g_value_set_variant(ptr, value)
-      when ParamSpec        then LibGObject.g_value_set_param(ptr, value)
+      when Nil             then nil
+      when Bool            then LibGObject.g_value_set_boolean(ptr, value)
+      when Float32         then LibGObject.g_value_set_float(ptr, value)
+      when Float64         then LibGObject.g_value_set_double(ptr, value)
+      when Int32           then LibGObject.g_value_set_int(ptr, value)
+      when Int64           then LibGObject.g_value_set_int64(ptr, value)
+      when Int8            then LibGObject.g_value_set_schar(ptr, value)
+      when GObject::Object then LibGObject.g_value_set_object(ptr, value)
+      when String          then LibGObject.g_value_set_string(ptr, value)
+      when UInt32          then LibGObject.g_value_set_uint(ptr, value)
+      when UInt64          then LibGObject.g_value_set_uint64(ptr, value)
+      when UInt8           then LibGObject.g_value_set_uchar(ptr, value)
+      when GLib::Variant   then LibGObject.g_value_set_variant(ptr, value)
+      when ParamSpec       then LibGObject.g_value_set_param(ptr, value)
+      when Pointer(Void)   then LibGObject.g_value_set_pointer(ptr, value)
       when Enum
         if value.class._is_flags_enum?
           LibGObject.g_value_set_flags(ptr, value)
@@ -73,6 +74,7 @@ module GObject
       when Enumerable(String) then TYPE_STRV
       when GLib::Variant      then TYPE_VARIANT
       when ParamSpec          then TYPE_PARAM
+      when Pointer(Void)      then TYPE_POINTER
       when Enum
         if value.class._is_flags_enum?
           TYPE_FLAGS
@@ -108,6 +110,7 @@ module GObject
       when TYPE_PARAM   then ParamSpec.new(LibGObject.g_value_get_param(ptr), :none)
       when TYPE_ENUM    then LibGObject.g_value_get_enum(ptr)
       when TYPE_FLAGS   then LibGObject.g_value_get_flags(ptr)
+      when TYPE_POINTER then LibGObject.g_value_get_pointer(ptr)
       when TYPE_OBJECT
         object_ptr = LibGObject.g_value_get_object(ptr)
         object_ptr.null? ? nil : GObject::Object.new(object_ptr, :none)
