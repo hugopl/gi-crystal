@@ -37,21 +37,40 @@ module GObject
   annotation Property
   end
 
+  # :nodoc:
+  annotation RefProp
+  end
+
+  # :nodoc:
+  annotation HiddenMethod
+  end
+
   class Object
     # :nodoc:
     # Module included in every GObject subclass, makes compile-time errors much more readable
     # because otherwise the whole "macro inherited" is shown in every error trace.
     module Subclass
-      def self.new(**args : **ARGS) : self forall ARGS
+      # :nodoc:
+      private def new_from_params(**args : **ARGS) forall ARGS
         {% verbatim do %}
           {% begin %}
+            {% initialize = @type.methods.find { |method| method.name == "initialize" } %}
+            {% if initialize %}
+              {% construct_only_properties = initialize.args %}
+              {% construct_only_properties_keys = construct_only_properties.map { |prop| prop.name } %}
+              {% construct_only_properties_splat_index = initialize.splat_index %}
+            {% else %}
+              {% construct_only_properties = construct_only_properties_keys = [] of String %}
+              {% construct_only_properties_splat_index = nil %}
+            {% end %}
+
             {% crystal_properties = @type.instance_vars.select { |var| var.annotation(GObject::Property) && @type.has_method?(var.name.stringify + "=") } %}
             {% crystal_properties_keys = crystal_properties.map { |prop| prop.name } %}
 
             {% c_type_properties = @type.constant("C_TYPE_PROPERTIES").resolve %}
             {% c_type_properties_keys = c_type_properties.map { |prop| prop["identifier"].id } %}
 
-            {% all_keys = (crystal_properties_keys + c_type_properties_keys) %}
+            {% all_keys = (construct_only_properties_keys + crystal_properties_keys + c_type_properties_keys) %}
 
             {% error = false %}
 
@@ -82,18 +101,45 @@ module GObject
               end
             {% end %}
 
+            # Handle GObject construct-only properties
+            {% for prop in construct_only_properties.reject { |prop| prop.name == "" } %}
+              {% error = true if (ARGS[prop.name] && !(ARGS[prop.name] <= prop.restriction.resolve)) || (!prop.default_value && !ARGS[prop.name]) %}
+              if args.has_key?({{ prop.name.stringify }}) && !args[{{ prop.name.stringify }}]?.nil?
+                {% if prop.annotation(GObject::RefProp) %}
+                  valueof_{{ prop.name.id }} : {{ prop.restriction }} = args[{{ prop.name.stringify }}]?.as({{prop.restriction}})
+                  (_names.to_unsafe + _n).value = {{ prop.name.gsub(/\_/, "-").stringify }}.to_unsafe
+                  GObject::Value.init_g_value(_values.to_unsafe + _n, pointerof(valueof_{{ prop.name.id }}).as(Void*))
+                {% else %}
+                  (_names.to_unsafe + _n).value = {{ prop.name.gsub(/\_/, "-").stringify }}.to_unsafe
+                  GObject::Value.init_g_value(_values.to_unsafe + _n, args[{{ prop.name.stringify }}]?.not_nil!)
+                {% end %}
+                _n += 1
+              end
+            {% end %}
+
             # Show "no overload matches" error replica if there are unused variables or type mismatches
             {%
               if error
-                other_overloads = @type.class.methods.select { |method| method.name == "new" && method.visibility == :public && method != @def }
-                c_type_properties_args = c_type_properties.map { |prop| "#{prop["identifier"].id} : #{(prop["type"].resolve.union_types.reject { |type| type == Nil }.sort << Nil).join(" | ").id} = nil".id }
-                crystal_properties_args = crystal_properties.map { |prop| "#{prop.name} : #{(prop.type.union_types.reject { |type| type == Nil }.sort << Nil).join(" | ").id} = nil".id }
-                all_args = c_type_properties_args + crystal_properties_args
+                other_overloads = @type.class.methods.select { |method| method.name == "new" && method.visibility == :public && method != @def && !method.annotation(GObject::HiddenMethod) }
+                c_type_properties_args = c_type_properties.map { |prop| "#{prop["identifier"].id} : #{(prop["type"].resolve.union_types.reject { |type| type == Nil }.sort_by(&.name) << Nil).join(" | ").id} = nil".id }
+                crystal_properties_args = crystal_properties.map { |prop| "#{prop.name} : #{(prop.type.union_types.reject { |type| type == Nil }.sort_by(&.name) << Nil).join(" | ").id} = nil".id }
+                construct_only_properties_args = construct_only_properties.map do |prop|
+                  if prop.name == ""
+                    "*".id
+                  else
+                    if prop.default_value
+                      "#{prop.name} : #{(prop.restriction.resolve.union_types.reject { |type| type == Nil }.sort_by(&.name) << Nil).join(" | ").id} = nil".id
+                    else
+                      "#{prop.name} : #{prop.restriction.resolve.union_types.sort_by { |arg| arg.name == "Nil" ? "~" : arg.name }.join(" | ").id}".id
+                    end
+                  end
+                end
+                all_args = construct_only_properties_args + crystal_properties_args + c_type_properties_args
 
-                raise "no overload matches '#{@type}.new', #{ ARGS.keys.map { |key| "#{key}: #{ARGS[key]}".id }.splat }\n\
-                       Overloads are:\n\
-                      \ - #{@type}.new(#{ "*, ".id unless all_args.empty? }#{ all_args.splat })\n\
-                       #{ other_overloads.map { |method| method.id.lines.first.gsub(/^def self/, " - #{@type}") }.join("\n").id }"
+                raise "no overload matches '#{@type}.new', #{ARGS.keys.map { |key| "#{key}: #{ARGS[key]}".id }.splat}\
+                    \n Overloads are:\
+                    \n - #{@type}.new(#{"*, ".id unless all_args.empty? || construct_only_properties_splat_index}#{all_args.splat})\
+                    \n #{other_overloads.map { |method| method.id.lines.first.gsub(/^def self/, " - #{@type}") }.join("\n").id}"
               end
             %}
 
@@ -121,10 +167,43 @@ module GObject
               {% end %}
               _register_{{ vfunc_name.id }}_vfunc({{ method.name }})
             {% end %}
+            {% if method.name == "initialize" %}
+              {% raise "GObject initialize method must be private!" unless method.visibility == :private %}
+              {% raise "GObject initialize method cannot accept block!" if method.accepts_block? %}
+              {% raise "GObject initialize method cannot have a double splat argument!" if method.double_splat %}
+              {% raise "GObject initialize method cannot have a splat argument!" if method.splat_index && method.args[method.splat_index].name != "" %}
+              {% raise "GObject initialize method arguments must have restrictions!" if method.args.any? { |arg| !arg.restriction && arg.name != "" } %}
+
+              {% if !method.args.empty? %}
+                struct GI_INITIALIZE_ARGS
+                  {% for arg in method.args.reject { |arg| arg.name == "" } %}
+                    property {{arg.name}} : {{arg.restriction}} = nil.unsafe_as({{arg.restriction}})
+                    {% if arg.annotation(GObject::RefProp) %}
+                      property _gi_set_{{arg.name}} : Bool = false
+                    {% end %}
+                  {% end %}
+                end
+
+                @_gi_initialize_args : Void* = Pointer(Void).null
+
+                # :nodoc:
+                @[GObject::HiddenMethod]
+                def self.new({{ method.args.map { |arg| arg.name == "" ? "*".id : "#{arg.name} : #{arg.restriction}#{" = #{arg.default_value}".id if arg.default_value}".id }.splat }}) : self
+                  new_from_params({{ method.args.reject { |arg| arg.name == "" }.map { |arg| "#{arg.name}: #{arg.name}".id }.splat }})
+                end
+              {% end %}
+            {% end %}
           {% end %}
         end
 
-        include GObject::Object::Subclass
+        macro finished
+          {% verbatim do %}
+            {% initialize_candidates = @type.methods.select { |method| method.name == "initialize" } %}
+            {% raise "GObject subclasses cannot have multiple initialize methods, use self.new instead" unless initialize_candidates.size <= 1 %}
+          {% end %}
+        end
+
+        extend GObject::Object::Subclass
 
         # :nodoc:
         C_TYPE_PROPERTIES = {{ @type.superclass }}::C_TYPE_PROPERTIES
@@ -158,9 +237,10 @@ module GObject
         def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
           {% verbatim do %}
             {% begin %}
+              {% initialize = @type.methods.find { |method| method.name == "initialize" } %}
               {% instance_vars = @type.instance_vars.select(&.annotation(GObject::Property)) %}
 
-              @@_g_param_specs = Pointer(LibGObject::ParamSpec*).malloc({{ instance_vars.size }})
+              @@_g_param_specs = Pointer(LibGObject::ParamSpec*).malloc({{ instance_vars.size + (initialize ? initialize.args.size : 0) }})
               {% for var, i in instance_vars %}
                 {% property = var.annotation(GObject::Property) %}
                 name = {{ var.name.gsub(/\_/, "-").stringify }}.to_unsafe
@@ -184,6 +264,25 @@ module GObject
                 pspec = GObject.create_param_spec({{ var.type }}, name, nick, blurb, flags, default, {{ other_args.map { |tuple| "#{tuple[0]}: #{tuple[1]}".id }.splat }})
                 @@_g_param_specs[{{ i }}] = pspec.as(LibGObject::ParamSpec*)
                 LibGObject.g_object_class_install_property(klass, {{ i + 1 }}, pspec)
+              {% end %}
+              {% if initialize %}
+                {% for arg, i in initialize.args.reject { |arg| arg.name == "" } %}
+                  name = {{ arg.name.gsub(/\_/, "-").stringify }}.to_unsafe
+                  nick = Pointer(LibC::Char).null
+                  blurb = Pointer(LibC::Char).null
+                  flags = GObject::ParamFlags::StaticName | GObject::ParamFlags::StaticNick | GObject::ParamFlags::StaticBlurb | GObject::ParamFlags::ConstructOnly | GObject::ParamFlags::Writable
+
+                  # Finally register the type to GLib.
+                  # The given varible name has its underscores converted to dashes.
+                  {% if arg.annotation(GObject::RefProp) %}
+                    pspec = LibGObject.g_param_spec_pointer(name, nick, blurb, flags)
+                  {% else %}
+                    default = {{ arg.default_value || nil }}
+                    pspec = GObject.create_param_spec({{ arg.restriction }}, name, nick, blurb, flags, default)
+                  {% end %}
+                  @@_g_param_specs[{{ instance_vars.size + i }}] = pspec.as(LibGObject::ParamSpec*)
+                  LibGObject.g_object_class_install_property(klass, {{ instance_vars.size + i + 1 }}, pspec)
+                {% end %}
               {% end %}
             {% end %}
           {% end %}
@@ -217,6 +316,7 @@ module GObject
           {% verbatim do %}
             {% begin %}
               {% instance_vars = @type.instance_vars.select(&.annotation(GObject::Property)) %}
+              {% initialize = @type.methods.find { |method| method.name == "initialize" } %}
 
               case property_id
               {% for var, i in instance_vars %}
@@ -247,6 +347,45 @@ module GObject
                     {% else %}
                       raw = GObject::Value.raw({{ var_type }}.g_type, gvalue)
                       self.{{ var }} = raw.as({{ var.type }})
+                    {% end %}
+                {% end %}
+              {% end %}
+              {% if initialize %}
+                {% for arg, i in initialize.args.reject { |arg| arg.name == "" } %}
+                  when {{ instance_vars.size + i + 1 }}
+                    {% if arg.annotation(GObject::RefProp) %}
+                      raw = GObject::Value.raw(GObject::TYPE_POINTER, gvalue)
+                      raise TypeCastError.new unless raw.is_a?(Void*)
+                      return if raw.as(Void*).null?
+                      tmp = @_gi_initialize_args.as(GI_INITIALIZE_ARGS*).value
+                      tmp.{{arg.name}} = raw.as(Void*).as(Pointer({{arg.restriction}})).value
+                      tmp._gi_set_{{arg.name}} = true
+                      @_gi_initialize_args.as(GI_INITIALIZE_ARGS*).value = tmp
+                    {% else %}
+                      {% arg_type = arg.restriction.resolve.union_types.reject { |t| t == Nil }.first %}
+
+                      tmp = @_gi_initialize_args.as(GI_INITIALIZE_ARGS*).value
+                      {% if arg_type < GObject::Object %}
+                        raw = GObject::Value.raw(GObject::TYPE_OBJECT, gvalue)
+                        {% if arg.type.nilable? %}
+                          raw_obj = raw.as?(GObject::Object)
+                          tmp.{{arg.name}} = raw_obj.nil? ? nil : {{ arg_type }}.cast(raw_obj)
+                        {% else %}
+                          tmp.{{arg.name}} = {{ arg_type }}.cast(raw.as(GObject::Object))
+                        {% end %}
+                      {% elsif arg_type < Enum %}
+                        {% if arg_type.annotation(Flags) %}
+                          raw = GObject::Value.raw(GObject::TYPE_FLAGS, gvalue)
+                          tmp.{{arg.name}} = raw.as(UInt32).unsafe_as({{ arg_type }})
+                        {% else %}
+                          raw = GObject::Value.raw(GObject::TYPE_ENUM, gvalue)
+                          tmp.{{arg.name}} = raw.as(Int32).unsafe_as({{ arg_type }})
+                        {% end %}
+                      {% else %}
+                        raw = GObject::Value.raw({{ arg_type }}.g_type, gvalue)
+                        tmp.{{arg.name}} = raw.as({{ arg.restriction.resolve }})
+                      {% end %}
+                      @_gi_initialize_args.as(GI_INITIALIZE_ARGS*).value = tmp
                     {% end %}
                 {% end %}
               {% end %}
@@ -469,16 +608,40 @@ module GObject
 
         @[GObject::Virtual(unsafe: true, name: "constructed")]
         protected def _constructed : Nil
-          # Set default values of non-gobject-properties or non-writable gobject-properties
           {% verbatim do %}
-            {% for var in @type.instance_vars %}
-              {% if var.has_default_value? && var.name != "pointer" && var.name != "_g_retainer" && (!var.annotation(GObject::Property) || !@type.has_method?("#{var.name}=")) %}
-                @{{var.name}} = {{var.default_value}}
+            {% begin %}
+              # Set default values of non-gobject-properties or non-writable gobject-properties
+              {% for var in @type.instance_vars %}
+                {% if var.has_default_value? && var.name != "pointer" && var.name != "_g_retainer" && var.name != "_gi_initialize_args" && (!var.annotation(GObject::Property) || !@type.has_method?("#{var.name}=")) %}
+                  @{{var.name}} = {{var.default_value}}
+                {% end %}
+              {% end %}
+
+              {% initialize = @type.methods.find { |method| method.name == "initialize" } %}
+              {% if initialize %}
+                {% initialize_args = initialize.args.reject { |arg| arg.name == "" } %}
+
+                {% if !initialize_args.empty? %}
+                  _gi_initialize_args = @_gi_initialize_args.as(GI_INITIALIZE_ARGS*).value
+
+                  {% for arg in initialize_args.select { |arg| arg.annotation(GObject::RefProp) } %}
+                    {% if arg.default_value %}
+                      _gi_initialize_args.{{arg.name}} = {{arg.default_value}} unless _gi_initialize_args._gi_set_{{arg.name}}
+                    {% else %}
+                      raise ArgumentError.new("Required property {{arg.name}} was not provided during initialization") unless _gi_initialize_args._gi_set_{{arg.name}}
+                    {% end %}
+                  {% end %}
+                {% end %}
+
+                self.initialize({{ initialize_args.map { |arg| "#{arg.name}: _gi_initialize_args.#{arg.name}".id }.splat }})
+
+                {% if !initialize_args.empty? %}
+                  GC.free(@_gi_initialize_args)
+                  @_gi_initialize_args = Pointer(Void).null
+                {% end %}
               {% end %}
             {% end %}
           {% end %}
-
-          # TODO: Handle user constructors
         end
 
         # :nodoc:
@@ -496,6 +659,13 @@ module GObject
             # Set @pointer and INSTANCE_QDATA
             (this_ptr + offsetof(self, @pointer)).as(Void**).value = instance.as(Void*)
             LibGObject.g_object_set_qdata(instance, GICrystal::INSTANCE_QDATA_KEY, this_ptr)
+
+            {% verbatim do %}
+              {% if (initialize = @type.methods.find { |method| method.name == "initialize" }) && !initialize.args.empty? %}
+                gi_initialize_args_ptr = GC.malloc(sizeof(GI_INITIALIZE_ARGS))
+                (this_ptr + offsetof(self, @_gi_initialize_args)).as(Void**).value = gi_initialize_args_ptr
+              {% end %}
+            {% end %}
           end
         end
 
@@ -552,6 +722,11 @@ module GObject
           LibGObject.g_object_ref_sink(pointer) if transfer.none? || LibGObject.g_object_is_floating(pointer) == 1
           LibGObject.g_object_unref(pointer) # Unref object because we still have our crystal object holding a reference
           instance.as(self)
+        end
+
+        @[GObject::HiddenMethod]
+        def self.new(**args)
+          new_from_params(**args)
         end
 
         # :nodoc:

@@ -7,10 +7,11 @@ private class UserFloatRefObject < Test::FloatRef
 end
 
 private class UserObjectWithCtor < GObject::Object
-  property string : String? = "not hey"
-  # def initialize(@string : String)
-  #   super()
-  # end
+  getter string : String?
+  getter test_union : Int32 | Bool
+
+  private def initialize(*, @string : String?, @[GObject::RefProp] @test_union : Int32 | Bool = true)
+  end
 end
 
 private class UserSubject < Test::Subject
@@ -99,14 +100,15 @@ describe "Classes inheriting GObject::Object" do
   end
 
   it "can have any constructors" do
-    obj = UserObjectWithCtor.new
-    obj.string = "hey"
+    obj = UserObjectWithCtor.new(string: "hey", test_union: true)
     obj.ref_count.should eq(1)
     LibGObject.g_object_ref(obj)
     obj_wrapper = GObject::Object.new(obj.to_unsafe, :full)
     obj_wrapper.class.should eq(UserObjectWithCtor)
     obj2 = UserObjectWithCtor.cast(obj)
     obj2.should eq(obj)
+    obj2.string.should eq("hey")
+    obj2.test_union.should eq(true)
   end
 
   it "can call parent generic constructors" do
