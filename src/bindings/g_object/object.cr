@@ -46,116 +46,6 @@ module GObject
   end
 
   class Object
-    # :nodoc:
-    # Module included in every GObject subclass, makes compile-time errors much more readable
-    # because otherwise the whole "macro inherited" is shown in every error trace.
-    module Subclass
-      # :nodoc:
-      private def new_from_params(**args : **ARGS) forall ARGS
-        {% verbatim do %}
-          {% begin %}
-            {% initialize = @type.methods.find { |method| method.name == "initialize" } %}
-            {% if initialize %}
-              {% construct_only_properties = initialize.args %}
-              {% construct_only_properties_keys = construct_only_properties.map { |prop| prop.name } %}
-              {% construct_only_properties_splat_index = initialize.splat_index %}
-            {% else %}
-              {% construct_only_properties = construct_only_properties_keys = [] of String %}
-              {% construct_only_properties_splat_index = nil %}
-            {% end %}
-
-            {% crystal_properties = @type.instance_vars.select { |var| var.annotation(GObject::Property) && @type.has_method?(var.name.stringify + "=") } %}
-            {% crystal_properties_keys = crystal_properties.map { |prop| prop.name } %}
-
-            {% c_type_properties = @type.constant("C_TYPE_PROPERTIES").resolve %}
-            {% c_type_properties_keys = c_type_properties.map { |prop| prop["identifier"].id } %}
-
-            {% all_keys = (construct_only_properties_keys + crystal_properties_keys + c_type_properties_keys) %}
-
-            {% error = false %}
-
-            # Check for unused keys
-            {% error = true unless (ARGS.keys.reject { |key| all_keys.includes?(key) }).empty? %}
-
-            _names = uninitialized Pointer(LibC::Char)[{{ ARGS.size }}]
-            _values = StaticArray(LibGObject::Value, {{ ARGS.size }}).new(LibGObject::Value.new)
-            _n = 0
-
-            # Handle properties of last non-crystal superclass
-            {% for prop in c_type_properties %}
-              {% error = true if ARGS[prop["identifier"].id] && !(ARGS[prop["identifier"].id] <= prop["type"].resolve) %}
-              if args.has_key?({{ prop["identifier"] }}) && !args[{{ prop["identifier"] }}]?.nil?
-                (_names.to_unsafe + _n).value = {{ prop["name"] }}.to_unsafe
-                GObject::Value.init_g_value(_values.to_unsafe + _n, args[{{ prop["identifier"] }}]?.not_nil!)
-                _n += 1
-              end
-            {% end %}
-
-            # Handle GObject properties defined in crystal
-            {% for prop in crystal_properties %}
-              {% error = true if ARGS[prop.name] && !(ARGS[prop.name] <= prop.type) %}
-              if args.has_key?({{ prop.name.stringify }}) && !args[{{ prop.name.stringify }}]?.nil?
-                (_names.to_unsafe + _n).value = {{ prop.name.gsub(/\_/, "-").stringify }}.to_unsafe
-                GObject::Value.init_g_value(_values.to_unsafe + _n, args[{{ prop.name.stringify }}]?.not_nil!)
-                _n += 1
-              end
-            {% end %}
-
-            # Handle GObject construct-only properties
-            {% for prop in construct_only_properties.reject { |prop| prop.name == "" } %}
-              {% error = true if (ARGS[prop.name] && !(ARGS[prop.name] <= prop.restriction.resolve)) || (!prop.default_value && !ARGS[prop.name]) %}
-              if args.has_key?({{ prop.name.stringify }}) && !args[{{ prop.name.stringify }}]?.nil?
-                {% if prop.annotation(GObject::RefProp) %}
-                  valueof_{{ prop.name.id }} : {{ prop.restriction }} = args[{{ prop.name.stringify }}]?.as({{prop.restriction}})
-                  (_names.to_unsafe + _n).value = {{ prop.name.gsub(/\_/, "-").stringify }}.to_unsafe
-                  GObject::Value.init_g_value(_values.to_unsafe + _n, pointerof(valueof_{{ prop.name.id }}).as(Void*))
-                {% else %}
-                  (_names.to_unsafe + _n).value = {{ prop.name.gsub(/\_/, "-").stringify }}.to_unsafe
-                  GObject::Value.init_g_value(_values.to_unsafe + _n, args[{{ prop.name.stringify }}]?.not_nil!)
-                {% end %}
-                _n += 1
-              end
-            {% end %}
-
-            # Show "no overload matches" error replica if there are unused variables or type mismatches
-            {%
-              if error
-                other_overloads = @type.class.methods.select { |method| method.name == "new" && method.visibility == :public && method != @def && !method.annotation(GObject::HiddenMethod) }
-                c_type_properties_args = c_type_properties.map { |prop| "#{prop["identifier"].id} : #{(prop["type"].resolve.union_types.reject { |type| type == Nil }.sort_by(&.name) << Nil).join(" | ").id} = nil".id }
-                crystal_properties_args = crystal_properties.map { |prop| "#{prop.name} : #{(prop.type.union_types.reject { |type| type == Nil }.sort_by(&.name) << Nil).join(" | ").id} = nil".id }
-                construct_only_properties_args = construct_only_properties.map do |prop|
-                  if prop.name == ""
-                    "*".id
-                  else
-                    if prop.default_value
-                      "#{prop.name} : #{(prop.restriction.resolve.union_types.reject { |type| type == Nil }.sort_by(&.name) << Nil).join(" | ").id} = nil".id
-                    else
-                      "#{prop.name} : #{prop.restriction.resolve.union_types.sort_by { |arg| arg.name == "Nil" ? "~" : arg.name }.join(" | ").id}".id
-                    end
-                  end
-                end
-                all_args = construct_only_properties_args + crystal_properties_args + c_type_properties_args
-
-                raise "no overload matches '#{@type}.new', #{ARGS.keys.map { |key| "#{key}: #{ARGS[key]}".id }.splat}\
-                    \n Overloads are:\
-                    \n - #{@type}.new(#{"*, ".id unless all_args.empty? || construct_only_properties_splat_index}#{all_args.splat})\
-                    \n #{other_overloads.map { |method| method.id.lines.first.gsub(/^def self/, " - #{@type}") }.join("\n").id}"
-              end
-            %}
-
-            ptr = LibGObject.g_object_new_with_properties(self.g_type, _n, _names, _values)
-            ret = self.new(ptr, :full)
-
-            _n.times do |i|
-              LibGObject.g_value_unset(_values.to_unsafe + i)
-            end
-
-            ret
-          {% end %}
-        {% end %}
-      end
-    end
-
     macro inherited
       {% unless @type.annotation(GICrystal::GeneratedWrapper) %}
         macro method_added(method)
@@ -169,7 +59,7 @@ module GObject
             {% end %}
             {% if method.name == "initialize" %}
               {% raise "GObject initialize method must be private!" unless method.visibility == :private %}
-              {% raise "GObject initialize method cannot accept block!" if method.accepts_block? %}
+              {% raise "GObject initialize method must accept block!" unless method.accepts_block? %}
               {% raise "GObject initialize method cannot have a double splat argument!" if method.double_splat %}
               {% raise "GObject initialize method cannot have a splat argument!" if method.splat_index && method.args[method.splat_index].name != "" %}
               {% raise "GObject initialize method arguments must have restrictions!" if method.args.any? { |arg| !arg.restriction && arg.name != "" } %}
@@ -185,12 +75,6 @@ module GObject
                 end
 
                 @_gi_initialize_args : Void* = Pointer(Void).null
-
-                # :nodoc:
-                @[GObject::HiddenMethod]
-                def self.new({{ method.args.map { |arg| arg.name == "" ? "*".id : "#{arg.name} : #{arg.restriction}#{" = #{arg.default_value}".id if arg.default_value}".id }.splat }}) : self
-                  new_from_params({{ method.args.reject { |arg| arg.name == "" }.map { |arg| "#{arg.name}: #{arg.name}".id }.splat }})
-                end
               {% end %}
             {% end %}
           {% end %}
@@ -203,7 +87,110 @@ module GObject
           {% end %}
         end
 
-        extend GObject::Object::Subclass
+        # :nodoc:
+        protected def self.new_from_params(**args : **ARGS) forall ARGS
+          {% verbatim do %}
+            {% begin %}
+              {% initialize = @type.methods.find { |method| method.name == "initialize" } %}
+              {% if initialize %}
+                {% construct_only_properties = initialize.args %}
+                {% construct_only_properties_keys = construct_only_properties.map { |prop| prop.name } %}
+                {% construct_only_properties_splat_index = initialize.splat_index %}
+              {% else %}
+                {% construct_only_properties = construct_only_properties_keys = [] of String %}
+                {% construct_only_properties_splat_index = nil %}
+              {% end %}
+
+              {% crystal_properties = @type.instance_vars.select { |var| var.annotation(GObject::Property) && @type.has_method?(var.name.stringify + "=") } %}
+              {% crystal_properties_keys = crystal_properties.map { |prop| prop.name } %}
+
+              {% c_type_properties = @type.constant("C_TYPE_PROPERTIES").resolve %}
+              {% c_type_properties_keys = c_type_properties.map { |prop| prop["identifier"].id } %}
+
+              {% all_keys = (construct_only_properties_keys + crystal_properties_keys + c_type_properties_keys) %}
+
+              {% error = false %}
+
+              # Check for unused keys
+              {% error = true unless (ARGS.keys.reject { |key| all_keys.includes?(key) }).empty? %}
+
+              _names = uninitialized Pointer(LibC::Char)[{{ ARGS.size }}]
+              _values = StaticArray(LibGObject::Value, {{ ARGS.size }}).new(LibGObject::Value.new)
+              _n = 0
+
+              # Handle properties of last non-crystal superclass
+              {% for prop in c_type_properties %}
+                {% error = true if ARGS[prop["identifier"].id] && !(ARGS[prop["identifier"].id] <= prop["type"].resolve) %}
+                if args.has_key?({{ prop["identifier"] }}) && !args[{{ prop["identifier"] }}]?.nil?
+                  (_names.to_unsafe + _n).value = {{ prop["name"] }}.to_unsafe
+                  GObject::Value.init_g_value(_values.to_unsafe + _n, args[{{ prop["identifier"] }}]?.not_nil!)
+                  _n += 1
+                end
+              {% end %}
+
+              # Handle GObject properties defined in crystal
+              {% for prop in crystal_properties %}
+                {% error = true if ARGS[prop.name] && !(ARGS[prop.name] <= prop.type) %}
+                if args.has_key?({{ prop.name.stringify }}) && !args[{{ prop.name.stringify }}]?.nil?
+                  (_names.to_unsafe + _n).value = {{ prop.name.gsub(/\_/, "-").stringify }}.to_unsafe
+                  GObject::Value.init_g_value(_values.to_unsafe + _n, args[{{ prop.name.stringify }}]?.not_nil!)
+                  _n += 1
+                end
+              {% end %}
+
+              # Handle GObject construct-only properties
+              {% for prop in construct_only_properties.reject { |prop| prop.name == "" } %}
+                {% error = true if (ARGS[prop.name] && !(ARGS[prop.name] <= prop.restriction.resolve)) || (!prop.default_value && !ARGS[prop.name]) %}
+                if args.has_key?({{ prop.name.stringify }}) && !args[{{ prop.name.stringify }}]?.nil?
+                  {% if prop.annotation(GObject::RefProp) %}
+                    valueof_{{ prop.name.id }} : {{ prop.restriction }} = args[{{ prop.name.stringify }}]?.as({{prop.restriction}})
+                    (_names.to_unsafe + _n).value = {{ prop.name.gsub(/\_/, "-").stringify }}.to_unsafe
+                    GObject::Value.init_g_value(_values.to_unsafe + _n, pointerof(valueof_{{ prop.name.id }}).as(Void*))
+                  {% else %}
+                    (_names.to_unsafe + _n).value = {{ prop.name.gsub(/\_/, "-").stringify }}.to_unsafe
+                    GObject::Value.init_g_value(_values.to_unsafe + _n, args[{{ prop.name.stringify }}]?.not_nil!)
+                  {% end %}
+                  _n += 1
+                end
+              {% end %}
+
+              # Show "no overload matches" error replica if there are unused variables or type mismatches
+              {%
+                if error
+                  other_overloads = @type.class.methods.select { |method| method.name == "new" && method.visibility == :public && method != @def && !method.annotation(GObject::HiddenMethod) }
+                  c_type_properties_args = c_type_properties.map { |prop| "#{prop["identifier"].id} : #{(prop["type"].resolve.union_types.reject { |type| type == Nil }.sort_by(&.name) << Nil).join(" | ").id} = nil".id }
+                  crystal_properties_args = crystal_properties.map { |prop| "#{prop.name} : #{(prop.type.union_types.reject { |type| type == Nil }.sort_by(&.name) << Nil).join(" | ").id} = nil".id }
+                  construct_only_properties_args = construct_only_properties.map do |prop|
+                    if prop.name == ""
+                      "*".id
+                    else
+                      if prop.default_value
+                        "#{prop.name} : #{(prop.restriction.resolve.union_types.reject { |type| type == Nil }.sort_by(&.name) << Nil).join(" | ").id} = nil".id
+                      else
+                        "#{prop.name} : #{prop.restriction.resolve.union_types.sort_by { |arg| arg.name == "Nil" ? "~" : arg.name }.join(" | ").id}".id
+                      end
+                    end
+                  end
+                  all_args = construct_only_properties_args + crystal_properties_args + c_type_properties_args
+
+                  raise "no overload matches '#{@type}.new', #{ARGS.keys.map { |key| "#{key}: #{ARGS[key]}".id }.splat}\
+                      \n Overloads are:\
+                      \n - #{@type}.new(#{"*, ".id unless all_args.empty? || construct_only_properties_splat_index}#{all_args.splat})\
+                      \n #{other_overloads.map { |method| method.id.lines.first.gsub(/^def self/, " - #{@type}") }.join("\n").id}"
+                end
+              %}
+
+              ptr = LibGObject.g_object_new_with_properties(self.g_type, _n, _names, _values)
+              ret = self.new(ptr, :full)
+
+              _n.times do |i|
+                LibGObject.g_value_unset(_values.to_unsafe + i)
+              end
+
+              ret
+            {% end %}
+          {% end %}
+        end
 
         # :nodoc:
         C_TYPE_PROPERTIES = {{ @type.superclass }}::C_TYPE_PROPERTIES
@@ -408,204 +395,6 @@ module GObject
           {% end %}
         end
 
-        # :nodoc:
-        # Mostly copied from crystal source
-        macro setter(*names)
-          {% verbatim do %}
-            {% for name in names %}
-              {% if name.is_a?(TypeDeclaration) %}
-                @{{name}}
-
-                def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
-                  _emit_notify_signal({{name.var.id}})
-                end
-              {% elsif name.is_a?(Assign) %}
-                @{{name}}
-
-                def {{name.target.id}}=(@{{name.target.id}})
-                  _emit_notify_signal({{name.target.id}})
-                end
-              {% else %}
-                def {{name.id}}=(@{{name.id}})
-                  _emit_notify_signal({{name.id}})
-                end
-              {% end %}
-            {% end %}
-          {% end %}
-        end
-
-        # :nodoc:
-        # Mostly copied from crystal source
-        macro property(*names, &block)
-          {% verbatim do %}
-            {% if block %}
-              {% if names.size != 1 %}
-                {{ raise "Only one argument can be passed to `property` with a block" }}
-              {% end %}
-
-              {% name = names[0] %}
-
-              {% if name.is_a?(TypeDeclaration) %}
-                @{{name.var.id}} : {{name.type}}?
-
-                def {{name.var.id}} : {{name.type}}
-                  if (value = @{{name.var.id}}).nil?
-                    @{{name.var.id}} = {{yield}}
-                    _emit_notify_signal({{name.var.id}})
-                  else
-                    value
-                  end
-                end
-
-                def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
-                  _emit_notify_signal({{name.var.id}})
-                end
-              {% else %}
-                def {{name.id}}
-                  if (value = @{{name.id}}).nil?
-                    @{{name.id}} = {{yield}}
-                    _emit_notify_signal({{name.id}})
-                  else
-                    value
-                  end
-                end
-
-                def {{name.id}}=(@{{name.id}})
-                  _emit_notify_signal({{name.id}})
-                end
-              {% end %}
-            {% else %}
-              {% for name in names %}
-                {% if name.is_a?(TypeDeclaration) %}
-                  @{{name}}
-
-                  def {{name.var.id}} : {{name.type}}
-                    @{{name.var.id}}
-                  end
-
-                  def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
-                    _emit_notify_signal({{name.var.id}})
-                  end
-                {% elsif name.is_a?(Assign) %}
-                  @{{name}}
-
-                  def {{name.target.id}}
-                    @{{name.target.id}}
-                  end
-
-                  def {{name.target.id}}=(@{{name.target.id}})
-                    _emit_notify_signal({{name.target.id}})
-                  end
-                {% else %}
-                  def {{name.id}}
-                    @{{name.id}}
-                  end
-
-                  def {{name.id}}=(@{{name.id}})
-                    _emit_notify_signal({{name.id}})
-                  end
-                {% end %}
-              {% end %}
-            {% end %}
-          {% end %}
-        end
-
-        # :nodoc:
-        # Mostly copied from crystal source
-        macro property!(*names)
-          {% verbatim do %}
-            getter! {{*names}}
-
-            {% for name in names %}
-              {% if name.is_a?(TypeDeclaration) %}
-                def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
-                  _emit_notify_signal({{name.var.id}})
-                end
-              {% else %}
-                def {{name.id}}=(@{{name.id}})
-                  _emit_notify_signal({{name.id}})
-                end
-              {% end %}
-            {% end %}
-          {% end %}
-        end
-
-        # :nodoc:
-        # Mostly copied from crystal source
-        macro property?(*names, &block)
-          {% verbatim do %}
-            {% if block %}
-              {% if names.size != 1 %}
-                {{ raise "Only one argument can be passed to `property?` with a block" }}
-              {% end %}
-
-              {% name = names[0] %}
-
-              {% if name.is_a?(TypeDeclaration) %}
-                @{{name.var.id}} : {{name.type}}?
-
-                def {{name.var.id}}? : {{name.type}}
-                  if (value = @{{name.var.id}}).nil?
-                    @{{name.var.id}} = {{yield}}
-                    _emit_notify_signal({{name.var.id}})
-                  else
-                    value
-                  end
-                end
-
-                def {{name.var.id}}=(@{{name.var.id}} : \{{name.type}})
-                  _emit_notify_signal({{name.var.id}})
-                end
-              {% else %}
-                def {{name.id}}?
-                  if (value = @{{name.id}}).nil?
-                    @{{name.id}} = {{yield}}
-                    _emit_notify_signal({{name.id}})
-                  else
-                    value
-                  end
-                end
-
-                def {{name.id}}=(@{{name.id}})
-                  _emit_notify_signal({{name.id}})
-                end
-              {% end %}
-            {% else %}
-              {% for name in names %}
-                {% if name.is_a?(TypeDeclaration) %}
-                  @{{name}}
-
-                  def {{name.var.id}}? : {{name.type}}
-                    @{{name.var.id}}
-                  end
-
-                  def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
-                    _emit_notify_signal({{name.var.id}})
-                  end
-                {% elsif name.is_a?(Assign) %}
-                  @{{name}}
-
-                  def {{name.target.id}}?
-                    @{{name.target.id}}
-                  end
-
-                  def {{name.target.id}}=(@{{name.target.id}})
-                    _emit_notify_signal({{name.target.id}})
-                  end
-                {% else %}
-                  def {{name.id}}?
-                    @{{name.id}}
-                  end
-
-                  def {{name.id}}=(@{{name.id}})
-                    _emit_notify_signal({{name.id}})
-                  end
-                {% end %}
-              {% end %}
-            {% end %}
-          {% end %}
-        end
-
         @[GObject::Virtual(unsafe: true, name: "constructed")]
         protected def _constructed : Nil
           {% verbatim do %}
@@ -633,7 +422,7 @@ module GObject
                   {% end %}
                 {% end %}
 
-                self.initialize({{ initialize_args.map { |arg| "#{arg.name}: _gi_initialize_args.#{arg.name}".id }.splat }})
+                self.initialize({{ initialize_args.map { |arg| "#{arg.name}: _gi_initialize_args.#{arg.name}".id }.splat }}) {}
 
                 {% if !initialize_args.empty? %}
                   GC.free(@_gi_initialize_args)
@@ -829,6 +618,196 @@ module GObject
         Pointer(Void).null)
         previous_def
       end
+    end
+
+    # :nodoc:
+    # Mostly copied from crystal source
+    macro setter(*names)
+      {% for name in names %}
+        {% if name.is_a?(TypeDeclaration) %}
+          @{{name}}
+
+          def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
+            _emit_notify_signal({{name.var.id}})
+          end
+        {% elsif name.is_a?(Assign) %}
+          @{{name}}
+
+          def {{name.target.id}}=(@{{name.target.id}})
+            _emit_notify_signal({{name.target.id}})
+          end
+        {% else %}
+          def {{name.id}}=(@{{name.id}})
+            _emit_notify_signal({{name.id}})
+          end
+        {% end %}
+      {% end %}
+    end
+
+    # :nodoc:
+    # Mostly copied from crystal source
+    macro property(*names, &block)
+      {% if block %}
+        {% if names.size != 1 %}
+          {{ raise "Only one argument can be passed to `property` with a block" }}
+        {% end %}
+
+        {% name = names[0] %}
+
+        {% if name.is_a?(TypeDeclaration) %}
+          @{{name.var.id}} : {{name.type}}?
+
+          def {{name.var.id}} : {{name.type}}
+            if (value = @{{name.var.id}}).nil?
+              @{{name.var.id}} = {{yield}}
+              _emit_notify_signal({{name.var.id}})
+            else
+              value
+            end
+          end
+
+          def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
+            _emit_notify_signal({{name.var.id}})
+          end
+        {% else %}
+          def {{name.id}}
+            if (value = @{{name.id}}).nil?
+              @{{name.id}} = {{yield}}
+              _emit_notify_signal({{name.id}})
+            else
+              value
+            end
+          end
+
+          def {{name.id}}=(@{{name.id}})
+            _emit_notify_signal({{name.id}})
+          end
+        {% end %}
+      {% else %}
+        {% for name in names %}
+          {% if name.is_a?(TypeDeclaration) %}
+            @{{name}}
+
+            def {{name.var.id}} : {{name.type}}
+              @{{name.var.id}}
+            end
+
+            def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
+              _emit_notify_signal({{name.var.id}})
+            end
+          {% elsif name.is_a?(Assign) %}
+            @{{name}}
+
+            def {{name.target.id}}
+              @{{name.target.id}}
+            end
+
+            def {{name.target.id}}=(@{{name.target.id}})
+              _emit_notify_signal({{name.target.id}})
+            end
+          {% else %}
+            def {{name.id}}
+              @{{name.id}}
+            end
+
+            def {{name.id}}=(@{{name.id}})
+              _emit_notify_signal({{name.id}})
+            end
+          {% end %}
+        {% end %}
+      {% end %}
+    end
+
+    # :nodoc:
+    # Mostly copied from crystal source
+    macro property!(*names)
+      getter! {{*names}}
+
+      {% for name in names %}
+        {% if name.is_a?(TypeDeclaration) %}
+          def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
+            _emit_notify_signal({{name.var.id}})
+          end
+        {% else %}
+          def {{name.id}}=(@{{name.id}})
+            _emit_notify_signal({{name.id}})
+          end
+        {% end %}
+      {% end %}
+    end
+
+    # :nodoc:
+    # Mostly copied from crystal source
+    macro property?(*names, &block)
+      {% if block %}
+        {% if names.size != 1 %}
+          {{ raise "Only one argument can be passed to `property?` with a block" }}
+        {% end %}
+
+        {% name = names[0] %}
+
+        {% if name.is_a?(TypeDeclaration) %}
+          @{{name.var.id}} : {{name.type}}?
+
+          def {{name.var.id}}? : {{name.type}}
+            if (value = @{{name.var.id}}).nil?
+              @{{name.var.id}} = {{yield}}
+              _emit_notify_signal({{name.var.id}})
+            else
+              value
+            end
+          end
+
+          def {{name.var.id}}=(@{{name.var.id}} : \{{name.type}})
+            _emit_notify_signal({{name.var.id}})
+          end
+        {% else %}
+          def {{name.id}}?
+            if (value = @{{name.id}}).nil?
+              @{{name.id}} = {{yield}}
+              _emit_notify_signal({{name.id}})
+            else
+              value
+            end
+          end
+
+          def {{name.id}}=(@{{name.id}})
+            _emit_notify_signal({{name.id}})
+          end
+        {% end %}
+      {% else %}
+        {% for name in names %}
+          {% if name.is_a?(TypeDeclaration) %}
+            @{{name}}
+
+            def {{name.var.id}}? : {{name.type}}
+              @{{name.var.id}}
+            end
+
+            def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
+              _emit_notify_signal({{name.var.id}})
+            end
+          {% elsif name.is_a?(Assign) %}
+            @{{name}}
+
+            def {{name.target.id}}?
+              @{{name.target.id}}
+            end
+
+            def {{name.target.id}}=(@{{name.target.id}})
+              _emit_notify_signal({{name.target.id}})
+            end
+          {% else %}
+            def {{name.id}}?
+              @{{name.id}}
+            end
+
+            def {{name.id}}=(@{{name.id}})
+              _emit_notify_signal({{name.id}})
+            end
+          {% end %}
+        {% end %}
+      {% end %}
     end
 
     def initialize

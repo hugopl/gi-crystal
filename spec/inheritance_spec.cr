@@ -10,7 +10,7 @@ private class UserObjectWithCtor < GObject::Object
   getter string : String?
   getter test_union : Int32 | Bool
 
-  private def initialize(*, @string : String?, @[GObject::RefProp] @test_union : Int32 | Bool = true)
+  private def initialize(*, @string : String?, @[GObject::RefProp] @test_union : Int32 | Bool = true, @[GObject::RefProp] @private_class : UserObject? = nil, &)
   end
 end
 
@@ -100,7 +100,7 @@ describe "Classes inheriting GObject::Object" do
   end
 
   it "can have any constructors" do
-    obj = UserObjectWithCtor.new(string: "hey", test_union: true)
+    obj = UserObjectWithCtor.new(string: "hey", test_union: true, private_class: UserObject.new)
     obj.ref_count.should eq(1)
     LibGObject.g_object_ref(obj)
     obj_wrapper = GObject::Object.new(obj.to_unsafe, :full)
