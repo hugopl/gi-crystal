@@ -58,7 +58,6 @@ module Generator
         # they are structs
         arg_type = to_lib_type(arg.type_info, structs_as_void: true)
         arg_type = "Pointer(#{arg_type})" if is_signal && arg_type == "Void"
-        arg_name = to_identifier(arg.name)
         io << arg_type << ", "
       end
     end
