@@ -39,7 +39,10 @@
       def self._class_init(type_struct : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
     <%- end -%>
         vfunc_ptr = (type_struct.as(Pointer(Void)) + <%= @byte_offset %>).as(Pointer(Pointer(Void)))
+        @@_gi_parent_vfunc_<%= vfunc.name %> = Proc(Pointer(Void), <% generate_lib_types(io, vfunc) %><%= return_type %>).new(vfunc_ptr.value, Pointer(Void).null) unless vfunc_ptr.value.null?
         vfunc_ptr.value = (->_vfunc_unsafe_<%= vfunc.name %>(Pointer(Void)<% proc_args(io) %>)).pointer
         previous_def
       end
+
+      @@_gi_parent_vfunc_<%= vfunc.name %> : Proc(Pointer(Void), <% generate_lib_types(io, vfunc) %><%= return_type %>)? = nil
     end
