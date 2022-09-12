@@ -399,36 +399,42 @@ module GObject
         protected def _constructed : Nil
           {% verbatim do %}
             {% begin %}
-              # Set default values of non-gobject-properties or non-writable gobject-properties
-              {% for var in @type.instance_vars %}
-                {% if var.has_default_value? && var.name != "pointer" && var.name != "_g_retainer" && var.name != "_gi_initialize_args" && (!var.annotation(GObject::Property) || !@type.has_method?("#{var.name}=")) %}
-                  @{{var.name}} = {{var.default_value}}
-                {% end %}
-              {% end %}
-
-              {% initialize = @type.methods.find { |method| method.name == "initialize" } %}
-              {% if initialize %}
-                {% initialize_args = initialize.args.reject { |arg| arg.name == "" } %}
-
-                {% if !initialize_args.empty? %}
-                  _gi_initialize_args = @_gi_initialize_args.as(GI_INITIALIZE_ARGS*).value
-
-                  {% for arg in initialize_args.select { |arg| arg.annotation(GObject::RefProp) } %}
-                    {% if arg.default_value %}
-                      _gi_initialize_args.{{arg.name}} = {{arg.default_value}} unless _gi_initialize_args._gi_set_{{arg.name}}
-                    {% else %}
-                      raise ArgumentError.new("Required property {{arg.name}} was not provided during initialization") unless _gi_initialize_args._gi_set_{{arg.name}}
-                    {% end %}
+              if @pointer.as(LibGObject::TypeInstance*).value.g_class.value.g_type == @@_g_type
+                # Set default values of non-gobject-properties or non-writable gobject-properties
+                {% for var in @type.instance_vars %}
+                  {% if var.has_default_value? && var.name != "pointer" && var.name != "_g_retainer" && var.name != "_gi_initialize_args" && (!var.annotation(GObject::Property) || !@type.has_method?("#{var.name}=")) %}
+                    @{{var.name}} = {{var.default_value}}
                   {% end %}
                 {% end %}
+              end
 
-                self.initialize({{ initialize_args.map { |arg| "#{arg.name}: _gi_initialize_args.#{arg.name}".id }.splat }}) {}
+              previous_vfunc
 
-                {% if !initialize_args.empty? %}
-                  GC.free(@_gi_initialize_args)
-                  @_gi_initialize_args = Pointer(Void).null
+              if @pointer.as(LibGObject::TypeInstance*).value.g_class.value.g_type == @@_g_type
+                {% initialize = @type.methods.find { |method| method.name == "initialize" } %}
+                {% if initialize %}
+                  {% initialize_args = initialize.args.reject { |arg| arg.name == "" } %}
+
+                  {% if !initialize_args.empty? %}
+                    _gi_initialize_args = @_gi_initialize_args.as(GI_INITIALIZE_ARGS*).value
+
+                    {% for arg in initialize_args.select { |arg| arg.annotation(GObject::RefProp) } %}
+                      {% if arg.default_value %}
+                        _gi_initialize_args.{{arg.name}} = {{arg.default_value}} unless _gi_initialize_args._gi_set_{{arg.name}}
+                      {% else %}
+                        raise ArgumentError.new("Required property {{arg.name}} was not provided during initialization") unless _gi_initialize_args._gi_set_{{arg.name}}
+                      {% end %}
+                    {% end %}
+                  {% end %}
+
+                  self.initialize({{ initialize_args.map { |arg| "#{arg.name}: _gi_initialize_args.#{arg.name}".id }.splat }}) {}
+
+                  {% if !initialize_args.empty? %}
+                    GC.free(@_gi_initialize_args)
+                    @_gi_initialize_args = Pointer(Void).null
+                  {% end %}
                 {% end %}
-              {% end %}
+              end
             {% end %}
           {% end %}
         end
