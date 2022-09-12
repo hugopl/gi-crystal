@@ -5,7 +5,17 @@
 
 G_DEFINE_INTERFACE(TestIfaceVFuncs, test_iface_vfuncs, G_TYPE_OBJECT)
 
+static guint32 test_iface_vfuncs_default_vfunc_bubble_up(TestIfaceVFuncs* iface) {
+  return 0xDEADBEEF;
+}
+
+static guint32 test_iface_vfuncs_default_vfunc_bubble_up_with_args(TestIfaceVFuncs* iface, guint32 a) {
+  return a + 1;
+}
+
 static void test_iface_vfuncs_default_init(TestIfaceVFuncsInterface* iface) {
+  iface->vfunc_bubble_up = test_iface_vfuncs_default_vfunc_bubble_up;
+  iface->vfunc_bubble_up_with_args = test_iface_vfuncs_default_vfunc_bubble_up_with_args;
 }
 
 gchar* test_iface_vfuncs_call_vfunc(TestIfaceVFuncs* self, const char* name) {
@@ -30,6 +40,16 @@ gchar* test_iface_vfuncs_call_vfunc(TestIfaceVFuncs* self, const char* name) {
 
     TestRegularEnum enum_retval = iface->vfunc_return_enum(self);
     buffer = g_enum_to_string(TEST_TYPE_REGULAR_ENUM, enum_retval);
+  } else if (!strcmp(name, "vfunc_bubble_up")) {
+    g_return_val_if_fail(iface->vfunc_bubble_up, NULL);
+
+    iface->vfunc_bubble_up(self);
+    buffer = g_strdup("success");
+  } else if (!strcmp(name, "vfunc_bubble_up_with_args")) {
+    g_return_val_if_fail(iface->vfunc_bubble_up_with_args, NULL);
+
+    iface->vfunc_bubble_up_with_args(self, 5);
+    buffer = g_strdup("success");
   } else
     g_warning("bad vfunc name: %s", name);
 

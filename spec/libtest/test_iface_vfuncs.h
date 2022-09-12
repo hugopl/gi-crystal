@@ -31,6 +31,19 @@ struct _TestIfaceVFuncsInterface {
   char* (*vfunc_return_string)(TestIfaceVFuncs* self);
 
   /**
+   * TestIfaceVFuncsInterface::vfunc_bubble_up
+   * @self: Self
+   */
+  guint32 (*vfunc_bubble_up)(TestIfaceVFuncs* self);
+
+  /**
+   * TestIfaceVFuncsInterface::vfunc_bubble_up_with_args
+   * @self: Self
+   * @a: A uint32
+   */
+  guint32 (*vfunc_bubble_up_with_args)(TestIfaceVFuncs* self, guint32 a);
+
+  /**
    * TestIfaceVFuncsInterface::vfunc_return_enum
    * @self: Self
    */

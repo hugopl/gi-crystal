@@ -38,6 +38,20 @@ private class UnsafeIfaceVFuncImpl < GObject::Object
     @string = String.new(c_string) if c_string
     @obj = GObject::Object.new(obj, :full)
   end
+
+  @[GObject::Virtual(unsafe: true, name: "vfunc_bubble_up")]
+  def vfunc_bubble_up : UInt32
+    ret = previous_vfunc!
+    raise "Funny number not found" unless ret == 0xDEADBEEF
+    ret
+  end
+
+  @[GObject::Virtual(unsafe: true, name: "vfunc_bubble_up_with_args")]
+  def vfunc_bubble_up_with_args(a : UInt32) : UInt32
+    ret = previous_vfunc!(a + 1)
+    raise "Wrong number returned" unless ret == 7
+    ret
+  end
 end
 
 describe "GObject vfuncs" do
@@ -73,6 +87,15 @@ describe "GObject vfuncs" do
   it "can have return an enum" do
     obj = IfaceVFuncImpl.new
     obj.call_vfunc("vfunc_return_enum").should eq("TEST_VALUE2")
+  end
+
+  it "can chain vfuncs up" do
+    obj = UnsafeIfaceVFuncImpl.new
+    ret = obj.call_vfunc("vfunc_bubble_up")
+    ret.should eq("success")
+
+    ret = obj.call_vfunc("vfunc_bubble_up_with_args")
+    ret.should eq("success")
   end
 
   pending "can be from objects, not interfaces"
