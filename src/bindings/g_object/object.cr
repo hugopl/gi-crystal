@@ -531,6 +531,28 @@ module GObject
       {% end %}
     end
 
+    macro previous_vfunc(*args)
+      \{% begin %}
+        %func = @@_gi_parent_vfunc_\{{ (@def.annotation(GObject::Virtual)[:name] || @def.name.gsub(/^do_/, "")).id }}
+        {% if args.empty? %}
+          %func.try &.call(self.to_unsafe, \{{ @def.args.map { |arg| arg.internal_name || arg.name }.splat }})
+        {% else %}
+          %func.try &.call(self.to_unsafe, {{ *args }})
+        {% end %}
+      \{% end %}
+    end
+
+    macro previous_vfunc!(*args)
+      \{% begin %}
+        %func = @@_gi_parent_vfunc_\{{ (@def.annotation(GObject::Virtual)[:name] || @def.name.gsub(/^do_/, "")).id }}.not_nil!
+        {% if args.empty? %}
+          %func.call(self.to_unsafe, \{{ @def.args.map { |arg| arg.internal_name || arg.name }.splat }})
+        {% else %}
+          %func.call(self.to_unsafe, {{ *args }})
+        {% end %}
+      \{% end %}
+    end
+
     # Declares a GObject signal.
     #
     # Supported signal parameter types are:
