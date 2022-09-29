@@ -71,6 +71,13 @@ typedef struct _TestSubjectClass {
 typedef void (*TestSubjectSimpleFunc)(TestSubject* subject, int number, gpointer user_data);
 
 /**
+ * TestSubjectCallbackWithPointer:
+ *
+ * Used to test callbacks with pointer parameters
+ */
+typedef void (*TestSubjectCallbackWithPointer) (gpointer data, GObject* object, gboolean boolean);
+
+/**
  * test_subject_new_from_whatever:
  * @value:
  * Returns: (transfer full): Obj instance with value set on string property

@@ -193,14 +193,23 @@ module Generator::Helpers
     end
   end
 
+  def remove_callable_last_parameter?(info : CallableInfo) : Bool
+    return false unless info.is_a?(CallbackInfo)
+
+    last_arg = info.args.last?
+    return false if last_arg.nil?
+
+    last_arg.type_info.tag.void?
+  end
+
   def callable_to_crystal_types(io : IO, info : CallableInfo) : Nil
     # He must hide the user_data arg from CallbackInfo
-    stop_at = info.is_a?(CallbackInfo) ? info.args.size - 1 : -1
+    stop_at = remove_callable_last_parameter?(info) ? info.args.size - 1 : -1
     info.args.each_with_index do |arg, i|
       break if i == stop_at
 
       arg_type_info = arg.type_info
-      nullmark = '?' if arg.nullable?
+      nullmark = '?' if arg.nullable? && !arg_type_info.tag.void?
       io << to_crystal_type(arg_type_info, include_namespace: true) << nullmark << ','
     end
     io << to_crystal_type(info.return_type, include_namespace: true)
