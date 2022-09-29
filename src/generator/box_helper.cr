@@ -27,6 +27,7 @@ module Generator
         if arg_strategy.has_implementation?
           arg_strategy.write_implementation(io)
         elsif !arg_strategy.remove_from_declaration?
+          io << "# NoStrategy\n"
           arg_name = arg_strategy.arg.name
           io << to_identifier(arg_name) << '=' << "lib_" << arg_name << LF
         end
