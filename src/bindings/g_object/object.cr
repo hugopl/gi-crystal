@@ -436,6 +436,7 @@ module GObject
           if type.value.g_type == @@_g_type
             # Allocate crystal proxy object and add toggle reference to keep it and the c object alive
             this = self.allocate
+            this_ptr = this.as(Void*)
             _g_toggle_notify(pointerof(this.@_g_retainer).as(Void*), instance.as(Void*), 0)
             LibGObject.g_object_add_toggle_ref(instance, G_TOGGLE_NOTIFY__, pointerof(this.@_g_retainer).as(Void*))
 
