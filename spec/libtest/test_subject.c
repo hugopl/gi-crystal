@@ -209,6 +209,21 @@ static void test_subject_class_init(TestSubjectClass* klass) {
                0, // n_params
                NULL);
   /**
+   * TestSubject::return-bool:
+   * @subject: the subject
+   * @boolean: A boolean value
+   *
+   * Used to test bool return values and parameters.
+   */
+  g_signal_new("return-bool", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+               0, // class_offset
+               NULL, // accumulator
+               NULL, // accumulator data
+               NULL, // C marshaller
+               G_TYPE_BOOLEAN, // return_type
+               1, // n_params
+               G_TYPE_BOOLEAN, NULL);
+  /**
    * TestSubject::array-of-gobj:
    * @self: the subject who sent the signal.
    * @objs: (array length=n_objs) (element-type TestSubject): an array of TestSubject.

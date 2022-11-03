@@ -81,6 +81,14 @@ describe "GObject signals" do
     # subject.return_int_signal.emit
   end
 
+  it "can have boolean parameters and return value" do
+    subject = Test::Subject.new
+    subject.return_bool_signal.connect do |value|
+      typeof(value).should be_a(Bool)
+      value
+    end
+  end
+
   pending "test emit signals with return values"
 
   it "can have array GObject as parameter" do

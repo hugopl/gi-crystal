@@ -369,7 +369,7 @@ module Generator
       return false if handmade_type?(arg_type)
 
       case arg_type.tag
-      when .interface?, .utf8?, .filename?
+      when .interface?, .utf8?, .filename?, .boolean?
         true
       else
         false
@@ -393,7 +393,7 @@ module Generator
         else
           io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ")"
         end
-      elsif tag.utf8? || tag.filename?
+      else
         io << convert_to_crystal("lib_#{arg_name}", type_info, nil, arg.ownership_transfer)
       end
 
