@@ -399,15 +399,6 @@ module GObject
         protected def _constructed : Nil
           {% verbatim do %}
             {% begin %}
-              if @pointer.as(LibGObject::TypeInstance*).value.g_class.value.g_type == @@_g_type
-                # Set default values of non-gobject-properties or non-writable gobject-properties
-                {% for var in @type.instance_vars %}
-                  {% if var.has_default_value? && var.name != "pointer" && var.name != "_g_retainer" && var.name != "_gi_initialize_args" && (!var.annotation(GObject::Property) || !@type.has_method?("#{var.name}=")) %}
-                    @{{var.name}} = {{var.default_value}}
-                  {% end %}
-                {% end %}
-              end
-
               previous_vfunc
 
               if @pointer.as(LibGObject::TypeInstance*).value.g_class.value.g_type == @@_g_type
@@ -444,10 +435,7 @@ module GObject
           # This code should only be run once (protection for subclasses of crystal gobject subclasses)
           if type.value.g_type == @@_g_type
             # Allocate crystal proxy object and add toggle reference to keep it and the c object alive
-            this_ptr = GC.malloc(instance_sizeof(self))
-            this = this_ptr.as(self)
-            set_crystal_type_id(this_ptr)
-            GC.add_finalizer(this)
+            this = self.allocate
             _g_toggle_notify(pointerof(this.@_g_retainer).as(Void*), instance.as(Void*), 0)
             LibGObject.g_object_add_toggle_ref(instance, G_TOGGLE_NOTIFY__, pointerof(this.@_g_retainer).as(Void*))
 
