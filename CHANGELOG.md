@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.15.0] 2023-01-15
+### Fixed
+- Fix callback generation of callbacks without user_data paramenter as last parameter (#63).
+- Fix signal boolean parameters (#66).
+- Allow chaining up unsafe vfuncs, thanks @BlobCodes.
+
 ## [0.14.0] 2022-09-02
 ### Added
 - Added support to declare GObject properties in Crystal classes 🎉️, thanks @BlobCodes (#44).
