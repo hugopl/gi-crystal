@@ -430,7 +430,7 @@ module Generator
       arg = strategy.arg
       type_info = arg.type_info
       callback = type_info.interface.as(CallbackInfo)
-      idx = strategies.index(strategy).not_nil!
+      idx = strategies.index!(strategy)
       user_data_arg = strategies[idx + 1].arg
       destroy_notify_arg = strategies[idx + 2].arg
 
