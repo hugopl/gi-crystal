@@ -414,6 +414,9 @@ module GObject
       {% end %}
     end
 
+    # To be used inside a vfunc (re)-implementation. Has the same meaning of `super`, but works with GObject virtual functions.
+    #
+    # Do nothing is the current vfunc doesn't have any previous implementation.
     macro previous_vfunc(*args)
       \{% begin %}
         %func = @@_gi_parent_vfunc_\{{ (@def.annotation(GObject::Virtual)[:name] || @def.name.gsub(/^do_/, "")).id }}
@@ -425,6 +428,9 @@ module GObject
       \{% end %}
     end
 
+    # To be used inside a vfunc (re)-implementation. Has the same meaning of `super`, but works with GObject virtual functions.
+    #
+    # Raises NilAssertionError if the current vfunc doesn't have any previous implementation.
     macro previous_vfunc!(*args)
       \{% begin %}
         %func = @@_gi_parent_vfunc_\{{ (@def.annotation(GObject::Virtual)[:name] || @def.name.gsub(/^do_/, "")).id }}.not_nil!
