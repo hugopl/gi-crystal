@@ -207,7 +207,7 @@ describe "GObject signals" do
       called.should eq(true)
     end
 
-    it "works with 32 bits integer parameters" do
+    it "works with (U)Int32 parameters" do
       obj = UserSignalObj.new
       value = 0
       obj.uint32_signal.connect do |v|
@@ -218,10 +218,10 @@ describe "GObject signals" do
       value.should eq(32)
     end
 
-    it "works with 64 bits integer parameters" do
+    it "works with (U)Int64 parameters" do
       obj = UserSignalObj.new
       received_i64 = 0_i64
-      received_u64 = 0_i64
+      received_u64 = 0_u64
       obj.int64_signal.connect do |i64, u64|
         received_i64 = i64
         received_u64 = u64
@@ -232,7 +232,7 @@ describe "GObject signals" do
       received_u64.should eq(128_u64)
     end
 
-    it "works with float parameters" do
+    it "works with Float32 parameters" do
       obj = UserSignalObj.new
       received_f32 = 0.0_f32
       received_f64 = 0.0
@@ -246,7 +246,7 @@ describe "GObject signals" do
       received_f64.should eq(6.28_f64)
     end
 
-    it "works with string parameters" do
+    it "works with String parameters" do
       obj = UserSignalObj.new
       received_str = ""
       obj.string_signal.connect do |str|
@@ -257,7 +257,7 @@ describe "GObject signals" do
       received_str.should eq("Hello")
     end
 
-    it "works with boolean parameters" do
+    it "works with Bool parameters" do
       obj = UserSignalObj.new
       received_bool = false
       obj.bool_signal.connect do |bool|
