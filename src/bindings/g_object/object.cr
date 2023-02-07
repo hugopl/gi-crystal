@@ -475,7 +475,7 @@ module GObject
           {% for arg in signature.args %}
           {%
             resolved_type = arg.type.resolve
-            if resolved_type == String
+            if resolved_type == String || resolved_type == Path
               type = ::Pointer(UInt8)
             elsif resolved_type == Bool
               type = ::Int32
@@ -489,9 +489,11 @@ module GObject
 
             {% for arg in signature.args %}
             {% resolved_type = arg.type.resolve %}
-            {% if arg.type.resolve == String %}
+            {% if resolved_type == String %}
               {{ arg.var }} = String.new({{ arg.var }})
-            {% elsif arg.type.resolve == Bool %}
+            {% elsif resolved_type == Path %}
+              {{ arg.var }} = Path.new(String.new({{ arg.var }}))
+            {% elsif resolved_type == Bool %}
               {{ arg.var }} = {{ arg.var }} != 0
             {% end %}
             {% end %}

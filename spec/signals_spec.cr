@@ -6,6 +6,7 @@ private class UserSignalObj < GObject::Object
   signal int64(int64 : Int64, uint64 : UInt64)
   signal floats(float : Float32, double : Float64)
   signal string(str : String)
+  signal path(path : Path)
   signal bool(value : Bool)
 end
 
@@ -255,6 +256,17 @@ describe "GObject signals" do
 
       obj.string_signal.emit("Hello")
       received_str.should eq("Hello")
+    end
+
+    it "works with Path parameters" do
+      obj = UserSignalObj.new
+      received_path = ""
+      obj.path_signal.connect do |path|
+        received_path = path
+      end
+
+      obj.path_signal.emit(Path.new("Hello"))
+      received_path.should eq(Path.new("Hello"))
     end
 
     it "works with Bool parameters" do

@@ -105,6 +105,15 @@ class String
   end
 end
 
+struct Path
+  # Returns the GObject GType for Path.
+  def self.g_type
+    GObject::TYPE_STRING
+  end
+
+  delegate to_unsafe, to: to_s
+end
+
 struct Bool
   # Returns the GObject GType for Bool.
   def self.g_type
