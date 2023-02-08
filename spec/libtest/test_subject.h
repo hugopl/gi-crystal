@@ -301,6 +301,15 @@ GList* test_subject_return_list_of_strings_transfer_container(TestSubject* self)
 GSList* test_subject_return_slist_of_iface_transfer_full(TestSubject* self);
 
 /**
+ * test_subject_return_slist_of_gobject_transfer_full:
+ * Returns: (transfer full) (element-type TestSubject):
+ *
+ * Used to test GSList transfer full conversions, first element will be self, the second one
+ * a new created `TestSubject`.
+ */
+GSList* test_subject_return_slist_of_gobject_transfer_full(TestSubject* self);
+
+/**
  * test_subject_return_slist_of_strings_transfer_full:
  * Returns: (transfer full) (element-type utf8): `["one", "two"]`
  *

@@ -13,6 +13,18 @@ describe "GSList" do
     Test::Subject.cast(list[1]).string.should eq("Subject from C")
   end
 
+  it "works with GObjects" do
+    subject = Test::Subject.new(string: "Subject from Crystal")
+
+    list = subject.return_slist_of_gobject_transfer_full
+    list.size.should eq(2)
+
+    subject_from_c = list[0]
+    subject_from_c.object_id.should eq(subject.object_id)
+    Test::Subject.cast(subject_from_c).string.should eq("Subject from Crystal")
+    Test::Subject.cast(list[1]).string.should eq("Subject from C")
+  end
+
   it "works on transfer full" do
     subject = Test::Subject.new
     list = subject.return_slist_of_strings_transfer_full
