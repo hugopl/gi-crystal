@@ -500,6 +500,14 @@ GList* test_subject_return_list_of_strings_transfer_container(TestSubject* self)
   return list;
 }
 
+GSList* test_subject_return_slist_of_iface_transfer_full(TestSubject* self) {
+  GSList* list = NULL;
+  g_object_ref(self);
+  list = g_slist_append(list, self);
+  list = g_slist_append(list, test_subject_new_from_string("Subject from C"));
+  return list;
+}
+
 GSList* test_subject_return_slist_of_strings_transfer_full(TestSubject* self) {
   GSList* list = NULL;
   list = g_slist_append(list, g_strdup("one"));
