@@ -105,6 +105,19 @@ describe "GObject signals" do
     received_objs.should eq([obj1, obj2])
   end
 
+  it "can have Interface as parameter" do
+    subject = Test::Subject.new
+
+    received_obj : Test::Iface? = nil
+    subject.iface_signal.connect do |obj|
+      received_obj = obj
+    end
+
+    obj = Test::Subject.new
+    subject.iface_signal.emit(obj)
+    received_obj.should eq(obj)
+  end
+
   it "can have array Interface as parameter" do
     subject = Test::Subject.new
     obj1 = Test::Subject.new

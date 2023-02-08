@@ -255,6 +255,23 @@ static void test_subject_class_init(TestSubjectClass* klass) {
                G_TYPE_NONE, // return_type
                2, // n_params
                G_TYPE_POINTER, G_TYPE_INT, NULL);
+
+  /**
+   * TestSubject::iface:
+   * @self: the subject who sent the signal.
+   * @obj: a TestIface.
+   *
+   * Used to test signals with interfaces.
+   */
+  g_signal_new("iface", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+               0, // class_offset
+               NULL, // accumulator
+               NULL, // accumulator data
+               NULL, // C marshaller
+               G_TYPE_NONE, // return_type
+               1, // n_params
+               TEST_TYPE_IFACE, NULL);
+
   /**
    * TestSubject::enum:
    * @self: the subject who sent the signal.

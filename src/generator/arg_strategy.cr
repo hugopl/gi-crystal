@@ -384,22 +384,8 @@ module Generator
       arg_name = to_identifier(arg.name)
       type_info = arg.type_info
 
-      io << arg_name << '='
-
-      tag = type_info.tag
-      if tag.interface?
-        if type_info.interface.class.in?(ObjectInfo, InterfaceInfo, StructInfo)
-          io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", GICrystal::Transfer::" << arg.ownership_transfer << ")"
-        else
-          io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ")"
-        end
-      else
-        io << convert_to_crystal("lib_#{arg_name}", type_info, nil, arg.ownership_transfer)
-      end
-
-      if arg.nullable?
-        io << " unless lib_" << arg_name << ".null?"
-      end
+      io << arg_name << '=' << convert_to_crystal("lib_#{arg_name}", type_info, nil, arg.ownership_transfer)
+      io << " unless lib_" << arg_name << ".null?" if arg.nullable?
       io << LF
     end
   end
