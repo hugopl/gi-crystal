@@ -486,6 +486,18 @@ TestIface* test_subject_return_myself_as_interface(TestIface* self) {
   return self;
 }
 
+GList* test_subject_return_list_of_iface_transfer_full(TestSubject* self) {
+  GList* list = NULL;
+  g_object_ref(self);
+  list = g_list_append(list, self);
+  list = g_list_append(list, test_subject_new_from_string("Subject from C"));
+  return list;
+}
+
+GList* test_subject_return_list_of_gobject_transfer_full(TestSubject* self) {
+  return test_subject_return_list_of_iface_transfer_full(self);
+}
+
 GList* test_subject_return_list_of_strings_transfer_full(TestSubject* self) {
   GList* list = NULL;
   list = g_list_append(list, g_strdup("one"));

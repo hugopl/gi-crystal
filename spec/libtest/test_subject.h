@@ -276,6 +276,24 @@ gchar** test_subject_return_array_transfer_container(TestSubject* self, int* len
 int* test_subject_return_int32_array_transfer_full(TestSubject* self, int* length);
 
 /**
+ * test_subject_return_list_of_iface_transfer_full:
+ * Returns: (transfer full) (element-type TestIface):
+ *
+ * Used to test GList transfer full conversions, first element will be self, the second one
+ * a new created `TestSubject`.
+ */
+GList* test_subject_return_list_of_iface_transfer_full(TestSubject* self);
+
+/**
+ * test_subject_return_list_of_gobject_transfer_full:
+ * Returns: (transfer full) (element-type GObject):
+ *
+ * Used to test GList transfer full conversions, first element will be self, the second one
+ * a new created `TestSubject`.
+ */
+GList* test_subject_return_list_of_gobject_transfer_full(TestSubject* self);
+
+/**
  * test_subject_return_list_of_strings_transfer_full:
  * Returns: (transfer full) (element-type utf8): `["one", "two"]`
  *
