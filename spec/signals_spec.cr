@@ -1,5 +1,11 @@
 require "./spec_helper"
 
+private class NonGICrystalObject
+  def to_unsafe
+    raise "GICrystal must not call #to_unsafe of non gi-crystal objects."
+  end
+end
+
 private class UserSignalObj < GObject::Object
   signal no_args
   signal uint32(uint32 : UInt32)
@@ -8,6 +14,8 @@ private class UserSignalObj < GObject::Object
   signal string(str : String)
   signal path(path : Path)
   signal bool(value : Bool)
+  signal non_gi_crystal_object(obj : NonGICrystalObject)
+  signal gobject(obj : Test::Subject)
 end
 
 # Used on basic signal tests
@@ -280,6 +288,32 @@ describe "GObject signals" do
 
       obj.path_signal.emit(Path.new("Hello"))
       received_path.should eq(Path.new("Hello"))
+    end
+
+    it "works with non Crystal objects parameters" do
+      obj = UserSignalObj.new
+      received_crystal_obj : NonGICrystalObject? = nil
+      obj.non_gi_crystal_object_signal.connect do |crystal_obj|
+        received_crystal_obj = crystal_obj
+      end
+
+      crystal_obj = NonGICrystalObject.new
+      obj.non_gi_crystal_object_signal.emit(crystal_obj)
+      received_crystal_obj.should eq(crystal_obj)
+      received_crystal_obj.object_id.should eq(crystal_obj.object_id)
+    end
+
+    it "works with GObject parameters" do
+      obj = UserSignalObj.new
+      received_gobj : Test::Subject? = nil
+      obj.gobject_signal.connect do |gobj|
+        received_gobj = gobj
+      end
+
+      sent_gobj = Test::Subject.new
+      obj.gobject_signal.emit(sent_gobj)
+      received_gobj.should eq(sent_gobj)
+      received_gobj.not_nil!.to_unsafe.should eq(sent_gobj.not_nil!.to_unsafe)
     end
 
     it "works with Bool parameters" do

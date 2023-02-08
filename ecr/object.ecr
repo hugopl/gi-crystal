@@ -4,6 +4,7 @@
 <% end %>
 
 module <%= namespace_name %>
+  include GICrystal::ObjectWrapper
   <% render_doc(object) -%>
   @[GICrystal::GeneratedWrapper]
   class <%= type_name %> <%= parent_class %>

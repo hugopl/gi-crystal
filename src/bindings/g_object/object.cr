@@ -508,7 +508,11 @@ module GObject
         end
 
         def emit({{ signature.args.splat }})
-          LibGObject.g_signal_emit_by_name(@source, {{ signature.name.stringify }}, {{ signature.args.map(&.var).splat }})
+          LibGObject.g_signal_emit_by_name(@source, {{ signature.name.stringify }},
+          {% for arg in signature.args %}
+            GICrystal.to_unsafe({{ arg.var }}),
+          {% end %}
+          )
         end
       end
 

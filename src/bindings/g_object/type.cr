@@ -98,6 +98,13 @@ module GObject
   end
 end
 
+class Reference
+  # Returns the GObject GType for pure Crystal reference objects.
+  def self.g_type
+    GObject::TYPE_POINTER
+  end
+end
+
 class String
   # Returns the GObject GType for String.
   def self.g_type

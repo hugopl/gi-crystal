@@ -143,7 +143,7 @@ lib LibGIRepository
   fun g_irepository_prepend_library_path(directory : UInt8*) : Void
   fun g_irepository_prepend_search_path(directory : UInt8*) : Void
   fun g_irepository_require_private(this : Repository*, typelib_dir : UInt8*, namespace_ : UInt8*, version : UInt8*, flags : RepositoryLoadFlags, error : LibGLib::Error**) : Typelib*
-  fun g_irepository_require(this : Repository*, namespace_ : UInt8*, version : UInt8*, flags : RepositoryLoadFlags, error : LibGLib::Error**) : Typelib*
+  fun g_irepository_require(this : Repository*, namespace_ : UInt8*, version : Void*, flags : RepositoryLoadFlags, error : LibGLib::Error**) : Typelib*
   fun g_object_info_find_method(info : BaseInfo*, name : UInt8*) : BaseInfo*
   fun g_object_info_find_method_using_interfaces(info : BaseInfo*, name : UInt8*, implementor : BaseInfo**) : BaseInfo*
   fun g_object_info_find_signal(info : BaseInfo*, name : UInt8*) : BaseInfo*
