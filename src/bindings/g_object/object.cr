@@ -455,7 +455,7 @@ module GObject
         raise "Signal signature #{signature} can't have a block argument" if signature.block_arg
       %}
 
-      struct {{ signature.name.titleize }}Signal < GObject::Signal
+      struct {{ signature.name.camelcase }}Signal < GObject::Signal
         def name : String
           @detail ? "{{ signature.name }}::#{@detail}" : {{ signature.name.stringify }}
         end
@@ -513,7 +513,7 @@ module GObject
       end
 
       def {{ signature.name }}_signal
-        {{ signature.name.titleize }}Signal.new(self)
+        {{ signature.name.camelcase }}Signal.new(self)
       end
 
       def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
