@@ -8,6 +8,6 @@ module GICrystal
     {% unless file_exists?(req_path) %}
       {{ raise "Bindings for #{namespace.id}-#{version.id} not yet generated, run ./bin/gi-crystal first." }}
     {% end %}
-    require {{ "../lib/gi-crystal/src/auto/#{namespace.underscore.id}-#{version.id}/#{namespace.underscore.id}" }}
+    require {{ "gi-crystal/src/auto/#{namespace.underscore.id}-#{version.id}/#{namespace.underscore.id}" }}
   end
 end
