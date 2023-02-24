@@ -98,6 +98,7 @@ private def main(argv)
 
   options = parse_options(argv)
   Log.info { "Starting at #{Time.local}, project dir: #{project_dir}" }
+  Log.info { "Gi-Crystal version #{VERSION}, built with Crystal #{Crystal::VERSION}." }
   Generator::Generator.output_dir = options[:output_dir].to_s
   Log.info { "Generating bindings at #{options[:output_dir]}" }
 
