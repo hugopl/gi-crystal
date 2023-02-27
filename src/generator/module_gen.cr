@@ -162,5 +162,9 @@ module Generator
 
       values.first.value.zero?
     end
+
+    private def declare_error? : Bool
+      enums.any?(&.error_domain)
+    end
   end
 end
