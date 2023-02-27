@@ -127,7 +127,7 @@ Use the after keyword argument:
 
 ```Crystal
 # Connect to a slot without the sender
-widget.focus_signal.connect(->slot_without_sender(Gtk::Direction, after: true)
+widget.focus_signal.connect(->slot_without_sender(Gtk::Direction), after: true)
 
 # Connect to a block (always without sender parameter)
 widget.focus_signal.connect(after: true) do |direction|
