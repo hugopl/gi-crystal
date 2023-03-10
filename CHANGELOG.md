@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.15.1] 2023-03-10
+### Added
+- Show Crystal version on generator logs.
+- Support `Path` objects in signals, they are exposed as C strings to C code.
+
+### Fixed
+- Fix `GLib::SList` of modules (GObject interfaces) (#68).
+- Fix `GLib::SList` of `GObject::Object`.
+- Fix `GLib::List` of modules.
+- Fix `GLib::List` of `GObject::Object`.
+- Fix signals with modules (GObject interfaces) parameters.
+- Do not use relative paths on `GiCrystal.require` macro (#70).
+- Fix binding generation for modules with no errors that doesn't depend on GLib (#79).
+
 ## [0.15.0] 2023-01-15
 ### Fixed
 - Fix callback generation of callbacks without user_data paramenter as last parameter (#63).
