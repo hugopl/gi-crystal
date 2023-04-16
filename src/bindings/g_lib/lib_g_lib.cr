@@ -18,4 +18,9 @@ lib LibGLib
   fun g_slist_nth(list : SList*, n : UInt32) : SList*
   fun g_slist_free(list : SList*)
   fun g_slist_free_full(list : SList*, free_func : Proc(Void*, Nil))
+
+  # GBytes
+  # This function is used by some bindings of other modules like
+  # GTK widget template and Gio GResource.
+  fun g_bytes_new_static(data : Void*, size : LibC::SizeT) : Void*
 end
