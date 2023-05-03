@@ -37,6 +37,10 @@ G_BEGIN_DECLS
  *
  * initializer: [ctor@Test.Subject.new]
  *
+ * parameter: @parameter_42
+ *
+ * email_is_not_a_parameter: foo@example.com
+ *
  * code block:
  * ```c
  * #include <stdio.h>
