@@ -8,11 +8,6 @@ targets:
   gi-crystal:
     main: src/generator/main.cr
 
-dependencies:
-  version_from_shard:
-    github: hugopl/version_from_shard
-    version: ~> 1.2
-
 libraries:
   libgirepository: ~> 1.70
 
