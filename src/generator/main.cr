@@ -1,13 +1,12 @@
 require "colorize"
 require "log"
 require "option_parser"
-require "version_from_shard"
 
 require "./binding_config"
 require "./error"
 require "./module_gen"
 
-VersionFromShard.declare
+VERSION = {{ `shards version #{__DIR__}`.strip.stringify }}
 
 private def project_dir
   exe_path = Process.executable_path
