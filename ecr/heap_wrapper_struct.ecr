@@ -29,6 +29,9 @@ module <%= namespace_name %>
 
     <% if object.boxed? %>
     def finalize
+      {% if flag?(:debugmemory) %}
+      LibC.printf("~%s at %p\n", self.class.name, self)
+      {% end %}
       LibGObject.g_boxed_free(<%= type_name %>.g_type, self)
     end
     <% end %>
