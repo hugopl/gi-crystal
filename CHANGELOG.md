@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.15.3] 2023-05-31
+### Fixed
+- Let struct bindings allocated on help to obey `-Ddebugmemory` flag.
+- Translate GTK doc parameter markup to crystal doc style.
+
+### Changed
+- Removed version_from_shard dependency.
+
 ## [0.15.2] 2023-04-16
 ### Added
 - Added declaration of `LibGLib.g_bytes_new_static`, used internally by other modules.
