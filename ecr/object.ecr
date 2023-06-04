@@ -63,7 +63,7 @@ module <%= namespace_name %>
       # (i.e. its memory is freed).
       def finalize
         {% if flag?(:debugmemory) %}
-        LibC.printf("~%s at %p - ref count: %d\n", self.class.name.to_unsafe, self, ref_count)
+        LibC.printf("~%s at %p\n", self.class.name.to_unsafe, self)
         {% end %}
         GICrystal.finalize_instance(self)
       end
