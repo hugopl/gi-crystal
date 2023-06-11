@@ -56,6 +56,7 @@ module GeneratorNamespaceRenamedDueToACrystalBug
     getter types = Hash(String, TypeConfig).new
     getter lib_ignore = Set(String).new
     getter execute_callback = Set(String).new
+    getter ignore_constants = Set(String).new
 
     class_getter loaded_configs = Hash(String, BindingConfig).new
 

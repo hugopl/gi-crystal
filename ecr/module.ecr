@@ -17,8 +17,10 @@ require "./<%= inc %>"
 
 module <%= namespace_name %>
   <% constants.each do |const| -%>
-    <% render_doc(const) -%>
-    <%= const.name %> = <%= const.literal %>
+    <% unless config.ignore_constants.includes? const.name %>
+      <% render_doc(const) -%>
+      <%= const.name %> = <%= const.literal %>
+    <% end %>
   <% end %>
 
   # Callbacks
