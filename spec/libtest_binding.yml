@@ -1,6 +1,9 @@
 namespace: Test
 version: "1.0"
 
+ignore_constants:
+  - IGNORED_CONSTANT
+
 types:
   Struct:
     ignore_fields:
