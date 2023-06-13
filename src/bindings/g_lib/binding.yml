@@ -13,6 +13,9 @@ require_after:
 - variant.cr
 - variant_dict.cr
 
+ignore_constants:
+  - C_STD_VERSION
+
 types:
   Array:
     ignore: true
