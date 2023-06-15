@@ -8,6 +8,7 @@ private class IfaceVFuncImpl < GObject::Object
   getter float64 = 0.0
   getter string : String?
   getter obj : GObject::Object?
+  property bool_return_value = false
 
   @[GObject::Virtual]
   def vfunc_basic(@int32, @float32, @float64, @string, @obj)
@@ -16,6 +17,11 @@ private class IfaceVFuncImpl < GObject::Object
   @[GObject::Virtual]
   def vfunc_return_string
     "string returned from vfunc!"
+  end
+
+  @[GObject::Virtual]
+  def vfunc_return_bool : Bool
+    @bool_return_value
   end
 
   @[GObject::Virtual]
@@ -79,12 +85,20 @@ describe "GObject vfuncs" do
     subject.string.should eq("hey")
   end
 
-  it "can have return a string" do
+  it "can return a string" do
     obj = IfaceVFuncImpl.new
     obj.call_vfunc("vfunc_return_string").should eq("string returned from vfunc!")
   end
 
-  it "can have return an enum" do
+  it "can return a boolean" do
+    obj = IfaceVFuncImpl.new
+    obj.bool_return_value = true
+    obj.call_vfunc("vfunc_return_bool").should eq("true")
+    obj.bool_return_value = false
+    obj.call_vfunc("vfunc_return_bool").should eq("false")
+  end
+
+  it "can return an enum" do
     obj = IfaceVFuncImpl.new
     obj.call_vfunc("vfunc_return_enum").should eq("TEST_VALUE2")
   end
