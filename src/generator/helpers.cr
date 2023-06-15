@@ -145,6 +145,8 @@ module Generator::Helpers
     case tag
     when .utf8?, .filename?
       "#{var}.to_unsafe"
+    when .boolean?
+      "#{var} ? 1 : 0"
     when .interface?
       iface = type.interface.not_nil!
       if iface.is_a?(EnumInfo)

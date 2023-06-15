@@ -31,6 +31,12 @@ struct _TestIfaceVFuncsInterface {
   char* (*vfunc_return_string)(TestIfaceVFuncs* self);
 
   /**
+   * TestIfaceVFuncsInterface::vfunc_return_bool
+   * @self: Self
+   */
+  gboolean (*vfunc_return_bool)(TestIfaceVFuncs* self);
+
+  /**
    * TestIfaceVFuncsInterface::vfunc_bubble_up
    * @self: Self
    */
