@@ -23,4 +23,10 @@ describe "GObject flags" do
     ret.none?.should eq(false)
     ret.to_i.should eq(17)
   end
+
+  it "can be ignored in binding.yml" do
+    {% if parse_type("Test::IgnoredFlags").resolve? %}
+      true.should eq(false), "Test::IgnoredFlags was not ignored."
+    {% end %}
+  end
 end

@@ -8,3 +8,7 @@ types:
   Struct:
     ignore_fields:
     - ignored_field
+  IgnoredEnum:
+    ignore: true
+  IgnoredFlags:
+    ignore: true

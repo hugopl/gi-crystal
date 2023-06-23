@@ -33,4 +33,16 @@ typedef enum {
 
 GType test_empty_flags_get_type();
 
+/**
+ * TestIgnoredFlags:
+ * @TEST_IGNORED_FLAGS_VALUE:
+ *
+ * Used to test ignored flags
+ */
+typedef enum {
+  TEST_IGNORED_FLAGS_VALUE = 1
+} TestIgnoredFlags;
+
+GType test_ignored_flags_get_type();
+
 G_END_DECLS
