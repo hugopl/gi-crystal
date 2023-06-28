@@ -159,7 +159,7 @@ module Generator
         end
       else
         io << ".value = "
-        io << convert_to_lib("value", field_type, :none)
+        io << convert_to_lib("value", field_type, :none, false)
       end
       io << "\nvalue\n"
       io << "end\n"

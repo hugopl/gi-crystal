@@ -55,6 +55,18 @@ gchar* test_iface_vfuncs_call_vfunc(TestIfaceVFuncs* self, const char* name) {
 
     iface->vfunc_bubble_up_with_args(self, 5);
     buffer = g_strdup("success");
+  } else if (!strcmp(name, "vfunc_return_nullable_string")) {
+    g_return_val_if_fail(iface->vfunc_return_nullable_string, NULL);
+
+    buffer = iface->vfunc_return_nullable_string(self);
+    if (!buffer)
+      buffer = "NULL";
+    buffer = g_strdup(buffer);
+  } else if (!strcmp(name, "vfunc_return_nullable_obj")) {
+    g_return_val_if_fail(iface->vfunc_return_nullable_obj, NULL);
+
+    TestSubject* obj = iface->vfunc_return_nullable_obj(self);
+    buffer = g_strdup(obj ? "Obj" : "NULL");
   } else
     g_warning("bad vfunc name: %s", name);
 
