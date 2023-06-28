@@ -41,5 +41,9 @@ module GObjectIntrospection
     def flags
       Flags.from_value(LibGIRepository.g_function_info_get_flags(self))
     end
+
+    def to_s(io : IO)
+      io << symbol
+    end
   end
 end

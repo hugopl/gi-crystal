@@ -1,7 +1,8 @@
 require "./arg_strategy"
+require "./callable_gen"
 
 module Generator
-  class MethodGen < Generator
+  class MethodGen < CallableGen
     include WrapperUtil
 
     alias MethodReturnType = TypeInfo | ArgInfo
@@ -28,6 +29,10 @@ module Generator
 
     def throws? : Bool
       @method.flags.throws?
+    end
+
+    def callable : CallableInfo
+      @method
     end
 
     private def method_identifier : String

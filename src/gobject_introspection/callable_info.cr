@@ -27,5 +27,9 @@ module GObjectIntrospection
     def caller_owns
       Transfer.from_value(LibGIRepository.g_callable_info_get_caller_owns(self))
     end
+
+    def to_s(io : IO)
+      io << (name? || "?")
+    end
   end
 end

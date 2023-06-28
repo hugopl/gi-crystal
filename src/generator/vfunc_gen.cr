@@ -1,8 +1,9 @@
 require "./arg_strategy"
+require "./callable_gen"
 require "./box_helper"
 
 module Generator
-  class VFuncGen < Generator
+  class VFuncGen < CallableGen
     include BoxHelper
     include Helpers
 
@@ -31,6 +32,10 @@ module Generator
           io << to_identifier(arg_name) << '=' << "lib_" << arg_name << LF
         end
       end
+    end
+
+    def callable : CallableInfo
+      @vfunc
     end
 
     private def call_user_method(io)
