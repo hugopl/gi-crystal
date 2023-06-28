@@ -79,7 +79,7 @@ typedef void (*TestSubjectSimpleFunc)(TestSubject* subject, int number, gpointer
  *
  * Used to test callbacks with pointer parameters
  */
-typedef void (*TestSubjectCallbackWithPointer) (gpointer data, GObject* object, gboolean boolean);
+typedef void (*TestSubjectCallbackWithPointer)(gpointer data, GObject* object, gboolean boolean);
 
 /**
  * test_subject_new_from_whatever:
