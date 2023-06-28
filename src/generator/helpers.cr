@@ -140,11 +140,15 @@ module Generator::Helpers
     end
   end
 
-  def convert_to_lib(var : String, type : TypeInfo, _transfer : Transfer) : String
+  def convert_to_lib(var : String, type : TypeInfo, _transfer : Transfer, nullable : Bool) : String
     tag = type.tag
     case tag
     when .utf8?, .filename?
-      "#{var}.to_unsafe"
+      if nullable
+        "#{var}.nil? ? Pointer(UInt8).null : #{var}.to_unsafe"
+      else
+        "#{var}.to_unsafe"
+      end
     when .boolean?
       "#{var} ? 1 : 0"
     when .interface?
@@ -152,7 +156,11 @@ module Generator::Helpers
       if iface.is_a?(EnumInfo)
         "#{var}.#{tag_conversion_function(iface.storage_type)}"
       else
-        "#{var}.to_unsafe"
+        if nullable
+          "#{var}.nil? ? Pointer(Void).null : #{var}.to_unsafe"
+        else
+          "#{var}.to_unsafe"
+        end
       end
     else
       var
