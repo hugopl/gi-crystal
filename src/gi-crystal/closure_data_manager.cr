@@ -47,6 +47,22 @@ module GICrystal
       @closure_data.clear
     end
 
+    def add_togle_ref(obj : GObject::Object)
+      crystal_obj_ptr = obj.as(Void*)
+      LibGObject.g_object_add_toggle_ref(obj, ->ClosureDataManager.on_toggle_ref_change(Void*, Void*, Int32), crystal_obj_ptr)
+      # g_object_add_toggle_ref increases the ref count, but our code already do this,
+      # so we need to keep this refcount the same number before
+      LibGObject.g_object_unref(obj)
+    end
+
+    def self.on_toggle_ref_change(data : Pointer(Void), gobj : Pointer(Void), is_last_ref : Int32) : Nil
+      if GICrystal.to_bool(is_last_ref)
+        deregister(data)
+      else
+        register(data)
+      end
+    end
+
     def count : Int32
       @closure_data.each_value.sum
     end

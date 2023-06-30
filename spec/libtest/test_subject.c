@@ -63,6 +63,7 @@ static void test_subject_finalize(GObject* gobject) {
 
   g_free(priv->string);
   g_strfreev(priv->str_list);
+  g_clear_object(&priv->gobj);
 
   G_OBJECT_CLASS(test_subject_parent_class)->finalize(gobject);
 }

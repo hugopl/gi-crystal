@@ -72,6 +72,11 @@ module GObject
         end
 
         # :nodoc:
+        private def _add_toggle_ref
+          GICrystal::ClosureDataManager.instance.add_togle_ref(self)
+        end
+
+        # :nodoc:
         def self._class_init(klass : Pointer(LibGObject::TypeClass), user_data : Pointer(Void)) : Nil
           {% verbatim do %}
             {% begin %}
@@ -403,11 +408,9 @@ module GObject
         def self.cast?(obj : GObject::Object) : self?
           return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
 
-          # If the object was collected by Crystal GC but still alive in C world we can't bring
-          # the crystal object form the dead.
-          gc_collected = GICrystal.gc_collected?(obj)
           instance = GICrystal.instance_pointer(obj)
-          raise GICrystal::ObjectCollectedError.new if gc_collected || instance.null?
+          # This should never happen with GC resistant objects
+          raise GICrystal::ObjectCollectedError.new if instance.null?
 
           instance.as(self)
         end
@@ -537,11 +540,17 @@ module GObject
       @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(LibGObject::Parameter).null)
       LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
       LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))
+      _add_toggle_ref
     end
 
     def initialize(pointer, transfer : GICrystal::Transfer)
       @pointer = pointer
       LibGObject.g_object_ref_sink(self) if transfer.none? || LibGObject.g_object_is_floating(self) == 1
+    end
+
+    # :nodoc:
+    private def _add_toggle_ref
+      # toggle_ref are only used on User GObject subclasses, for generated classes this does nothing
     end
 
     # Returns GObject reference counter.

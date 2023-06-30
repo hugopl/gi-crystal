@@ -28,16 +28,9 @@ module GICrystal
 
   # See `declare_new_method`.
   INSTANCE_QDATA_KEY = LibGLib.g_quark_from_static_string("gi-crystal::instance")
-  # See `declare_new_method`.
-  GC_COLLECTED_QDATA_KEY = LibGLib.g_quark_from_static_string("gi-crystal::gc-collected")
 
   # Raised when trying to cast an object that was already collected by GC.
   class ObjectCollectedError < RuntimeError
-  end
-
-  # :nodoc:
-  def gc_collected?(object) : Bool
-    {% raise "Implement GICrystal.gc_collected?(object) for your fundamental type." %}
   end
 
   # :nodoc:
@@ -115,14 +108,8 @@ module GICrystal
   # This declare the `new` method on a instance of type *type*, *qdata_get_func* and *qdata_set_func* are functions used
   # to set/get qdata on objects, e.g. `g_object_get_qdata`/`g_object_set_qdata` for GObjects.
   #
-  # GICrystal stores two qdatas in objects on following keys:
-  #
-  # - INSTANCE_QDATA_KEY: Store the pointer of Crystal wrapper for this C object.
-  # - GC_COLLECTED_QDATA_KEY: Store 1 if the GC was called for the Crystal wrapper, 0 otherwise.
-  #
-  # `INSTANCE_QDATA_KEY` is used when a object comes from a C function and instead of allocate a new wrapper for it
-  # we just restore the old one.
-  # `GC_COLLECTED_QDATA_KEY` is used to avoid to restore a wrapper that was already collected by GC.
+  # GICrystal stores the Crystal object instance in the GObject, so when it appears from C world we try to re-use the
+  # old Crystal instance if it wasn't garbage collected. The key used for this is `INSTANCE_QDATA_KEY`.
   #
   # This is mainly used for `GObject::Object`, since `GObject::ParamSpec` doesn't support casts on GICrystal.
   macro declare_new_method(type, qdata_get_func, qdata_set_func)

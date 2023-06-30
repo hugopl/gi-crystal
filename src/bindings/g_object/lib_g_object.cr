@@ -48,4 +48,6 @@ lib LibGObject
 
   # Null terminated strings GType, used by GValue
   fun g_strv_get_type : UInt64
+
+  fun g_object_add_toggle_ref(object : Void*, notify : (Void*, Void*, Int32 ->), data : Void*)
 end
