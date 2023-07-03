@@ -1,4 +1,5 @@
 require "./gi-crystal/closure_data_manager"
+require "./gi-crystal/toggle_ref_manager"
 
 # This module have types, functions and macros used by the generated bindings, if you are just using the bindings you
 # should never deal with any of this.

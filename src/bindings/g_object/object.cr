@@ -58,6 +58,8 @@ module GObject
         # ParamSpec pointers for the GObject properties in the object
         @@_g_param_specs = Pointer(LibGObject::ParamSpec*).null
 
+        @_g_retainer : Void* = Pointer(Void).null
+
         def self.g_type : UInt64
           if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
             g_type = {{ @type.superclass.id }}._register_derived_type("{{ @type.name.gsub(/::/, "-") }}",
@@ -113,12 +115,12 @@ module GObject
             # This branch is entered once there are no additional references to this GObject left.
             # Remove the toggle ref so it can be garbage collected if there are no references to this object in crystal.
 
-            GICrystal::ClosureDataManager.deregister(object)
+            GICrystal::ToggleRefManager.deregister(object.as(self).@_g_retainer)
           else
             # This branch is entered once at least one additional reference to this GObject has been established.
             # It must now be protected from being garbage collected.
 
-            GICrystal::ClosureDataManager.register(object)
+            (object + offsetof(self, @_g_retainer)).as(Void**).value = GICrystal::ToggleRefManager.register(object)
           end
         end
         private G_TOGGLE_NOTIFY__ = ->_g_toggle_notify(Void*, Void*, Int32)
