@@ -424,11 +424,9 @@ module GObject
         def self.cast?(obj : GObject::Object) : self?
           return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
 
-          # If the object was collected by Crystal GC but still alive in C world we can't bring
-          # the crystal object form the dead.
-          gc_collected = GICrystal.gc_collected?(obj)
           instance = GICrystal.instance_pointer(obj)
-          raise GICrystal::ObjectCollectedError.new if gc_collected || instance.null?
+          # This should never happen with GC resistant objects
+          raise GICrystal::ObjectCollectedError.new if instance.null?
 
           instance.as(self)
         end
@@ -451,7 +449,6 @@ module GObject
           {% end %}
 
           LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).null)
-          LibGObject.g_object_set_qdata(self, GICrystal::GC_COLLECTED_QDATA_KEY, Pointer(Void).new(0x1))
           LibGObject.g_object_remove_toggle_ref(self, G_TOGGLE_NOTIFY__, self.as(Void*))
         end
 

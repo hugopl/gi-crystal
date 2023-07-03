@@ -5,9 +5,8 @@
         <%- write_implementations(io) -%>
         <%-= '\n' unless vfunc.args.empty? -%>
 
-        %gc_collected = !LibGObject.g_object_get_qdata(%this, GICrystal::GC_COLLECTED_QDATA_KEY).null?
         %instance = LibGObject.g_object_get_qdata(%this, GICrystal::INSTANCE_QDATA_KEY)
-        raise GICrystal::ObjectCollectedError.new if %gc_collected || %instance.null?
+        raise GICrystal::ObjectCollectedError.new if %instance.null?
 
         %retval = %instance.as(self).{{ impl_method_name.id }}(<% call_user_method(io) %>)
         <%= convert_to_lib("%retval", vfunc.return_type, vfunc.caller_owns, vfunc.may_return_null?) %>
@@ -28,9 +27,8 @@
     private macro _register_unsafe_<%= vfunc.name %>_vfunc(impl_method_name)
       private def self._vfunc_unsafe_<%= vfunc.name %>(%this : Pointer(Void), <% generate_lib_args(io, vfunc) %>) : <%= return_type %>
         <%-= vfunc_gi_annotations %>
-        %gc_collected = !LibGObject.g_object_get_qdata(%this, GICrystal::GC_COLLECTED_QDATA_KEY).null?
         %instance = LibGObject.g_object_get_qdata(%this, GICrystal::INSTANCE_QDATA_KEY)
-        raise GICrystal::ObjectCollectedError.new if %gc_collected || %instance.null?
+        raise GICrystal::ObjectCollectedError.new if %instance.null?
 
         %instance.as(self).{{ impl_method_name.id }}(<% call_user_method_with_lib_args(io) %>)
       end
