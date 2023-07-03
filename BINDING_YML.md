@@ -38,6 +38,10 @@ the HarfBuzz library, if you just want to not generate a binding for a specific 
 
 List of C functions that may execute a callback, so the generator adds a `@[Raises]` annotation to it.
 
+## ignore_constants (list of strings)
+
+List of C `#define`s that the generator will ignore.
+
 ## types (list of BindingTypes)
 
 List of types that require extra configuration, like be removed from generation, have methods removed, etc. Note that the

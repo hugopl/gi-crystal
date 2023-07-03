@@ -6,6 +6,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.16.0] 2023-06-16
+### Added
+- Add test helper methods: `ClosureDataManager.count`, `ClosureDataManager.info` and `ClosureDataManager.deregister_all` (#92).
+- Added bindings for `GLib.real_name` (#93).
+- Added option to ignore constants in binding generation, thanks @charitybell (#95)
+
+### Fixed
+- Fix compilation with `-Ddebugmemory` for some struct bindings (#91).
+- Convert boolean return values in virtual functions (#96).
+
+### Changed
+- Removed a lot of constants from GLib and GObject bindings (#97).
+
+## [0.15.3] 2023-05-31
+### Fixed
+- Let struct bindings allocated on help to obey `-Ddebugmemory` flag.
+- Translate GTK doc parameter markup to crystal doc style.
+
+### Changed
+- Removed version_from_shard dependency.
+
 ## [0.15.2] 2023-04-16
 ### Added
 - Added declaration of `LibGLib.g_bytes_new_static`, used internally by other modules.
@@ -34,7 +55,7 @@ Changes that change the generated API have a ⚠️.
 ### Added
 - Added support to declare GObject properties in Crystal classes 🎉️, thanks @BlobCodes (#44).
 - Added possibility to ignore some struct fields in binding generation (#58).
-- Crystalize even more docs, thanks @GeopJr. (#62).
+- Crystalize even more docs, thanks @GeopJr (#62).
 
 ### Fixed
 - Enum and flags `#g_type` method now works (#56).

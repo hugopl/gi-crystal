@@ -8,6 +8,9 @@ private class IfaceVFuncImpl < GObject::Object
   getter float64 = 0.0
   getter string : String?
   getter obj : GObject::Object?
+  property bool_return_value = false
+  property nullable_string_return_value : String?
+  property nullable_obj_return_value : Test::Subject?
 
   @[GObject::Virtual]
   def vfunc_basic(@int32, @float32, @float64, @string, @obj)
@@ -19,8 +22,23 @@ private class IfaceVFuncImpl < GObject::Object
   end
 
   @[GObject::Virtual]
+  def vfunc_return_bool : Bool
+    @bool_return_value
+  end
+
+  @[GObject::Virtual]
   def vfunc_return_enum
     Test::RegularEnum::Value2
+  end
+
+  @[GObject::Virtual]
+  def vfunc_return_nullable_string : String?
+    @nullable_string_return_value
+  end
+
+  @[GObject::Virtual]
+  def vfunc_return_nullable_obj : Test::Subject?
+    @nullable_obj_return_value
   end
 end
 
@@ -79,14 +97,44 @@ describe "GObject vfuncs" do
     subject.string.should eq("hey")
   end
 
-  it "can have return a string" do
+  it "can return a string" do
     obj = IfaceVFuncImpl.new
     obj.call_vfunc("vfunc_return_string").should eq("string returned from vfunc!")
   end
 
-  it "can have return an enum" do
+  it "can return a boolean" do
+    obj = IfaceVFuncImpl.new
+    obj.bool_return_value = true
+    obj.call_vfunc("vfunc_return_bool").should eq("true")
+    obj.bool_return_value = false
+    obj.call_vfunc("vfunc_return_bool").should eq("false")
+  end
+
+  it "can return an enum" do
     obj = IfaceVFuncImpl.new
     obj.call_vfunc("vfunc_return_enum").should eq("TEST_VALUE2")
+  end
+
+  it "can return nil on a String? return type restriction" do
+    obj = IfaceVFuncImpl.new
+    obj.call_vfunc("vfunc_return_nullable_string").should eq("NULL")
+  end
+
+  it "can return an String on a String? return type restriction" do
+    obj = IfaceVFuncImpl.new
+    obj.nullable_string_return_value = "hey"
+    obj.call_vfunc("vfunc_return_nullable_string").should eq("hey")
+  end
+
+  it "can return nil on a Object? return type restriction" do
+    obj = IfaceVFuncImpl.new
+    obj.call_vfunc("vfunc_return_nullable_string").should eq("NULL")
+  end
+
+  it "can return an object on a Object? return type restriction" do
+    obj = IfaceVFuncImpl.new
+    obj.nullable_obj_return_value = Test::Subject.new
+    obj.call_vfunc("vfunc_return_nullable_obj").should eq("Obj")
   end
 
   it "can chain vfuncs up" do

@@ -27,3 +27,16 @@ GType test_empty_flags_get_type() {
 
   return static_g_define_type_id;
 }
+
+GType test_ignored_flags_get_type() {
+  static gsize static_g_define_type_id = 0;
+
+  if (g_once_init_enter(&static_g_define_type_id)) {
+    static const GFlagsValue values[]
+      = { { TEST_IGNORED_FLAGS_VALUE, "TEST_IGNORED_FLAGS_VALUE", "value" }, { 0, NULL, NULL } };
+    GType g_define_type_id = g_flags_register_static(g_intern_static_string("TestIgnoredFlags"), values);
+    g_once_init_leave(&static_g_define_type_id, g_define_type_id);
+  }
+
+  return static_g_define_type_id;
+}

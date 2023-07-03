@@ -21,4 +21,17 @@ typedef enum {
 GType test_regular_enum_get_type();
 #define TEST_TYPE_REGULAR_ENUM test_regular_enum_get_type()
 
+/**
+ * TestIgnoredEnum:
+ * @TEST_IGNORED_VALUE:
+ *
+ * Used to test ignored enums.
+ */
+typedef enum {
+  TEST_IGNORED_VALUE
+} TestIgnoredEnum;
+
+GType test_ignored_enum_get_type();
+#define TEST_TYPE_IGNORED_ENUM test_ignored_enum_get_type()
+
 G_END_DECLS

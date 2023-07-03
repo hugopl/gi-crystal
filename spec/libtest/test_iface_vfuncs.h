@@ -3,6 +3,7 @@
 #include <glib-object.h>
 
 #include "test_regular_enum.h"
+#include "test_subject.h"
 
 G_BEGIN_DECLS
 
@@ -31,6 +32,12 @@ struct _TestIfaceVFuncsInterface {
   char* (*vfunc_return_string)(TestIfaceVFuncs* self);
 
   /**
+   * TestIfaceVFuncsInterface::vfunc_return_bool
+   * @self: Self
+   */
+  gboolean (*vfunc_return_bool)(TestIfaceVFuncs* self);
+
+  /**
    * TestIfaceVFuncsInterface::vfunc_bubble_up
    * @self: Self
    */
@@ -48,6 +55,20 @@ struct _TestIfaceVFuncsInterface {
    * @self: Self
    */
   TestRegularEnum (*vfunc_return_enum)(TestIfaceVFuncs* self);
+
+  /**
+   * TestIfaceVFuncsInterface::vfunc_return_nullable_string
+   * @self: Self.
+   * Returns: (nullable): A nullable GObject
+   */
+  char* (*vfunc_return_nullable_string)(TestIfaceVFuncs* self);
+
+  /**
+   * TestIfaceVFuncsInterface::vfunc_return_nullable_obj
+   * @self: Self.
+   * Returns: (type TestSubject) (transfer none) (nullable): A nullable GObject
+   */
+  TestSubject* (*vfunc_return_nullable_obj)(TestIfaceVFuncs* self);
 };
 
 /**

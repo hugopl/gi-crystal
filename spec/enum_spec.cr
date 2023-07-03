@@ -12,6 +12,12 @@ describe "Enums" do
     Test::FlagFlags.g_type.should_not eq(0)
   end
 
+  it "can be ignored in binding.yml" do
+    {% if parse_type("Test::IgnoredEnum").resolve? %}
+      true.should eq(false), "Test::IgnoredEnum was not ignored."
+    {% end %}
+  end
+
   it "allows retrieving values by name" do
     enum_class : LibGObject::EnumClass* = LibGObject.g_type_class_ref(TestEnum.g_type).as(LibGObject::EnumClass*)
     flags_class : LibGObject::FlagsClass* = LibGObject.g_type_class_ref(TestFlags.g_type).as(LibGObject::FlagsClass*)

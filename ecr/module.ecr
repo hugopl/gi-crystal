@@ -17,8 +17,9 @@ require "./<%= inc %>"
 
 module <%= namespace_name %>
   <% constants.each do |const| -%>
+    <% next if config.ignore_constants.includes?(const.name) %>
     <% render_doc(const) -%>
-    <%= const.name %> = <%= const.literal %>
+    <%= const.name %> = <%= const.literal -%>
   <% end %>
 
   # Callbacks
@@ -35,7 +36,9 @@ module <%= namespace_name %>
 
   # Enums
   <% enums.each do |enum_| %>
-    <%= next if enum_.error_domain %>
+    <% next if config.type_config(enum_.name).ignore? %>
+    <% next if enum_.error_domain %>
+
     <% render_doc(enum_) -%>
     enum <%= to_type_name(enum_.name) %> : <%= to_crystal_type(enum_.storage_type) %>
       <% enum_.values.each do |value| -%>
@@ -48,6 +51,8 @@ module <%= namespace_name %>
 
   # Flags
   <% flags.each do |flag| -%>
+    <% next if config.type_config(flag.name).ignore? %>
+
     <% render_doc(flag) -%>
     <%= "@[Flags]\n" unless empty_flag?(flag) -%>
     enum <%= to_type_name(flag.name) %> : <%= to_crystal_type(flag.storage_type) %>

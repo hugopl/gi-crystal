@@ -1,5 +1,5 @@
 name: gi-crystal
-version: 0.15.2
+version: 0.16.0
 
 authors:
   - Hugo Parente Lima <hugo.pl@gmail.com>
@@ -7,11 +7,6 @@ authors:
 targets:
   gi-crystal:
     main: src/generator/main.cr
-
-dependencies:
-  version_from_shard:
-    github: hugopl/version_from_shard
-    version: ~> 1.2
 
 libraries:
   libgirepository: ~> 1.70
