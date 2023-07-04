@@ -2,6 +2,11 @@ require "./spec_helper"
 describe GICrystal::ClosureDataManager do
   it "can print info about registered pointers" do
     GC.collect
+
+    # Some objects may remain... since GC may not had collected all possible items yet, so
+    # we remove everything.
+    GICrystal::ClosureDataManager.deregister_all
+
     buffer = IO::Memory.new
     GICrystal::ClosureDataManager.info(buffer)
     buffer.to_s.should eq("total closures on hold: 0\n")
