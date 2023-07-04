@@ -546,6 +546,7 @@ module GObject
     def initialize(pointer, transfer : GICrystal::Transfer)
       @pointer = pointer
       LibGObject.g_object_ref_sink(self) if transfer.none? || LibGObject.g_object_is_floating(self) == 1
+      _add_toggle_ref
     end
 
     # :nodoc:
