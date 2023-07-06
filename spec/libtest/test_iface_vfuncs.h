@@ -69,6 +69,13 @@ struct _TestIfaceVFuncsInterface {
    * Returns: (type TestSubject) (transfer none) (nullable): A nullable GObject
    */
   TestSubject* (*vfunc_return_nullable_obj)(TestIfaceVFuncs* self);
+
+  /**
+   * TestIfaceVFuncsInterface::vfunc_return_transfer_full_obj
+   * @self: Self.
+   * Returns: (type TestSubject) (transfer full): A GObject
+   */
+  TestSubject* (*vfunc_return_transfer_full_obj)(TestIfaceVFuncs* self);
 };
 
 /**

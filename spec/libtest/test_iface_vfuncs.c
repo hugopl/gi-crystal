@@ -67,6 +67,13 @@ gchar* test_iface_vfuncs_call_vfunc(TestIfaceVFuncs* self, const char* name) {
 
     TestSubject* obj = iface->vfunc_return_nullable_obj(self);
     buffer = g_strdup(obj ? "Obj" : "NULL");
+  } else if (!strcmp(name, "vfunc_return_transfer_full_obj")) {
+    g_return_val_if_fail(iface->vfunc_return_transfer_full_obj, NULL);
+
+    GObject* obj = G_OBJECT(iface->vfunc_return_transfer_full_obj(self));
+    int ref_value = obj->ref_count;
+    g_object_unref(obj);
+    buffer = g_strdup_printf("%i", ref_value - 1);
   } else
     g_warning("bad vfunc name: %s", name);
 
