@@ -58,6 +58,8 @@ module GObject
         # ParamSpec pointers for the GObject properties in the object
         @@_g_param_specs = Pointer(LibGObject::ParamSpec*).null
 
+        @_g_retainer : Void* = Pointer(Void).null
+
         def self.g_type : UInt64
           if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
             g_type = {{ @type.superclass.id }}._register_derived_type("{{ @type.name.gsub(/::/, "-") }}",
@@ -103,6 +105,25 @@ module GObject
             {% end %}
           {% end %}
         end
+
+        # :nodoc:
+        def self._g_toggle_notify(object : Void*, _gobject : Void*, is_last_ref : Int32) : Nil
+          return if object.null?
+          is_last_ref = GICrystal.to_bool(is_last_ref)
+
+          if is_last_ref
+            # This branch is entered once there are no additional references to this GObject left.
+            # Remove the toggle ref so it can be garbage collected if there are no references to this object in crystal.
+
+            GICrystal::ToggleRefManager.deregister(object.as(self).@_g_retainer)
+          else
+            # This branch is entered once at least one additional reference to this GObject has been established.
+            # It must now be protected from being garbage collected.
+
+            (object + offsetof(self, @_g_retainer)).as(Void**).value = GICrystal::ToggleRefManager.register(object)
+          end
+        end
+        private G_TOGGLE_NOTIFY__ = ->_g_toggle_notify(Void*, Void*, Int32)
 
         # :nodoc:
         @[GObject::Virtual(unsafe: true, name: "get_property")]
@@ -403,11 +424,44 @@ module GObject
         def self.cast?(obj : GObject::Object) : self?
           return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
 
-          # If the object was collected by Crystal GC but still alive in C world we can't bring
-          # the crystal object form the dead.
-          gc_collected = GICrystal.gc_collected?(obj)
           instance = GICrystal.instance_pointer(obj)
-          raise GICrystal::ObjectCollectedError.new if gc_collected || instance.null?
+          # This should never happen with GC resistant objects
+          raise GICrystal::ObjectCollectedError.new if instance.null?
+
+          instance.as(self)
+        end
+
+        # A hook to be executed after the underlying gobject has been initialized.
+        #
+        # This specific implementation turns a normal reference into a toggle reference.
+        private def _after_init : Nil
+          # Set toggle ref to protect the crystal object from the garbage collector while in C.
+
+          self.class._g_toggle_notify(self.as(Void*), @pointer, 0)
+          LibGObject.g_object_add_toggle_ref(@pointer, G_TOGGLE_NOTIFY__, self.as(Void*))
+          LibGObject.g_object_unref(@pointer)
+        end
+
+        # :nodoc:
+        def finalize
+          {% if flag?(:debugmemory) %}
+            LibC.printf("~%s at %p - ref count: %d\n", self.class.name.to_unsafe, self, ref_count)
+          {% end %}
+
+          LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).null)
+          LibGObject.g_object_remove_toggle_ref(self, G_TOGGLE_NOTIFY__, self.as(Void*))
+        end
+
+        # :nodoc:
+        def self.new(pointer, transfer : GICrystal::Transfer) : self
+          # This overrides the `initialize(pointer, transfer : GICrystal::Transfer)`
+          # method because we must make sure there is never a second crystal object for this gobject.
+
+          instance = LibGObject.g_object_get_qdata(pointer, GICrystal::INSTANCE_QDATA_KEY)
+          raise "Could not retrieve crystal instance!" if instance.null?
+
+          LibGObject.g_object_ref_sink(pointer) if transfer.none? || LibGObject.g_object_is_floating(pointer) == 1
+          LibGObject.g_object_unref(pointer)
 
           instance.as(self)
         end
@@ -537,11 +591,13 @@ module GObject
       @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(LibGObject::Parameter).null)
       LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
       LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))
+      self._after_init
     end
 
     def initialize(pointer, transfer : GICrystal::Transfer)
       @pointer = pointer
       LibGObject.g_object_ref_sink(self) if transfer.none? || LibGObject.g_object_is_floating(self) == 1
+      self._after_init
     end
 
     # Returns GObject reference counter.
