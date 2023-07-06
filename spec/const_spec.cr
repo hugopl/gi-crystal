@@ -16,4 +16,12 @@ describe "constant bindings" do
     {% end %}
     responds.should eq(true)
   end
+
+  it "bind false Boolean constants" do
+    Test::BOOLEAN_FALSE_CONSTANT.should eq(false)
+  end
+
+  it "bind true Boolean constants" do
+    Test::BOOLEAN_TRUE_CONSTANT.should eq(true)
+  end
 end
