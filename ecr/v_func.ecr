@@ -9,6 +9,9 @@
         raise GICrystal::ObjectCollectedError.new if %instance.null?
 
         %retval = %instance.as(self).{{ impl_method_name.id }}(<% call_user_method(io) %>)
+        <% if vfunc.caller_owns.full? && vfunc.return_type.object? %>
+          LibGObject.g_object_ref(%retval) if %retval
+        <% end %>
         <%= convert_to_lib("%retval", vfunc.return_type, vfunc.caller_owns, vfunc.may_return_null?) %>
       end
 
