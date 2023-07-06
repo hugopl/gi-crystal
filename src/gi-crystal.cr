@@ -57,6 +57,12 @@ module GICrystal
   end
 
   # :nodoc:
+  @[AlwaysInline]
+  def to_c_bool(value : Bool) : Int32
+    value ? 1 : 0
+  end
+
+  # :nodoc:
   def transfer_null_ended_array(ptr : Pointer(Pointer(UInt8)), transfer : Transfer) : Array(String)
     res = Array(String).new
     return res if ptr.null?

@@ -150,7 +150,7 @@ module Generator::Helpers
         "#{var}.to_unsafe"
       end
     when .boolean?
-      "#{var} ? 1 : 0"
+      "GICrystal.to_c_bool(#{var})"
     when .interface?
       iface = type.interface.not_nil!
       if iface.is_a?(EnumInfo)
