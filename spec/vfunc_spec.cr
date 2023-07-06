@@ -42,8 +42,8 @@ private class IfaceVFuncImpl < GObject::Object
   end
 
   @[GObject::Virtual]
-  def vfunc_return_transfer_full_obj : Test::Subject
-    @nullable_obj_return_value.not_nil!
+  def vfunc_return_transfer_full_obj : Test::Subject?
+    @nullable_obj_return_value
   end
 end
 
@@ -147,6 +147,12 @@ describe "GObject vfuncs" do
     obj.nullable_obj_return_value = Test::Subject.new
     # this call returns obj ref count.
     obj.call_vfunc("vfunc_return_transfer_full_obj").should eq("2")
+  end
+
+  it "can return 'transfer full' nullable objects" do
+    obj = IfaceVFuncImpl.new
+    obj.nullable_obj_return_value = nil
+    obj.call_vfunc("vfunc_return_transfer_full_obj").should eq("NULL")
   end
 
   it "can chain vfuncs up" do

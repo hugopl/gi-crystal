@@ -73,7 +73,7 @@ struct _TestIfaceVFuncsInterface {
   /**
    * TestIfaceVFuncsInterface::vfunc_return_transfer_full_obj
    * @self: Self.
-   * Returns: (type TestSubject) (transfer full): A GObject
+   * Returns: (type TestSubject) (transfer full) (nullable): A GObject
    */
   TestSubject* (*vfunc_return_transfer_full_obj)(TestIfaceVFuncs* self);
 };
