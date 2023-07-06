@@ -73,7 +73,7 @@ gchar* test_iface_vfuncs_call_vfunc(TestIfaceVFuncs* self, const char* name) {
     GObject* obj = G_OBJECT(iface->vfunc_return_transfer_full_obj(self));
     int ref_value = obj->ref_count;
     g_object_unref(obj);
-    buffer = g_strdup_printf("%i", ref_value - 1);
+    buffer = g_strdup_printf("%i", ref_value);
   } else
     g_warning("bad vfunc name: %s", name);
 

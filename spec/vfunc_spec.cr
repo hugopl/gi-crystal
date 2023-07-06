@@ -145,7 +145,8 @@ describe "GObject vfuncs" do
   it "can return 'transfer full' objects" do
     obj = IfaceVFuncImpl.new
     obj.nullable_obj_return_value = Test::Subject.new
-    obj.call_vfunc("vfunc_return_transfer_full_obj").should eq("1")
+    # this call returns obj ref count.
+    obj.call_vfunc("vfunc_return_transfer_full_obj").should eq("2")
   end
 
   it "can chain vfuncs up" do
