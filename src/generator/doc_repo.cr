@@ -124,6 +124,15 @@ module Generator
     def crystallize_doc(doc : String) : String
       crystallized_doc = doc
       crystallized_doc = crystallized_doc.gsub(/```([a-zA-Z]+)\n/, "\n\nWARNING: **⚠️ The following code is in \\1 ⚠️**\n```\\1\n")
+      crystallized_doc = crystallized_doc.gsub(/\s@(\w[\w\d_]*)\b/, " *\\1*")
+      crystallized_doc = crystallized_doc.gsub(/%(TRUE|FALSE|NULL)/) do |_, match|
+        case match[1]
+        when "TRUE"  then "`true`"
+        when "FALSE" then "`false`"
+        when "NULL"  then "`nil`"
+        end
+      end
+
       crystallized_doc = crystallized_doc.gsub(/\[([a-zA-Z]+)@([a-zA-Z\.:_]+)\]/) do |_, match|
         split_reference = match[-1].split(/\.|:/)
         identifier = split_reference[-1]
@@ -136,11 +145,17 @@ module Generator
                      elsif identifier.starts_with?("set_") && identifier.size > 4
                        "##{identifier[4..]}="
                      else
-                       "##{identifier}"
+                       "#{split_reference.size == 2 ? "::" : "#"}#{identifier}"
                      end
 
         "`#{split_reference[0..-2].join("::")}#{identifier}`"
       end
+
+      # FIXME: Get this list of modules form the generator itself instead of hardcode them
+      crystallized_doc = crystallized_doc.gsub(/(G[dts]k|Pango|cairo_|graphene_|Adw|Hdy|GtkSource)(\w+\b)/) do |_, match|
+        match.captures.join("::")
+      end
+
       crystallized_doc
     end
 

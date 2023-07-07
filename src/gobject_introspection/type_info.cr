@@ -46,6 +46,11 @@ module GObjectIntrospection
 
     delegate array?, to: tag
 
+    def object? : Bool
+      iface = interface
+      !iface.nil? && !iface.is_a?(EnumInfo)
+    end
+
     def interface : BaseInfo?
       ptr = LibGIRepository.g_type_info_get_interface(self)
       BaseInfo.build(ptr) if ptr

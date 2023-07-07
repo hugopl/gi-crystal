@@ -1,5 +1,5 @@
 module Generator
-  class StructGen < FileGen
+  abstract class StructGen < FileGen
     include WrapperUtil
     include MethodHolder
 
@@ -7,6 +7,28 @@ module Generator
 
     def initialize(@struct : StructInfo)
       super(@struct.namespace)
+    end
+
+    def self.new(info : StructInfo)
+      type_config = BindingConfig.for(info.namespace).type_config(info.name)
+      case type_config.binding_strategy
+      in .auto?
+        if info.copyable?
+          if info.pod_type?
+            StackStructGen.new(info)
+          else
+            HeapStructGen.new(info)
+          end
+        else
+          HeapWrapperStructGen.new(info)
+        end
+      in .stack_struct?
+        StackStructGen.new(info)
+      in .heap_struct?
+        HeapStructGen.new(info)
+      in .heap_wrapper_struct?
+        HeapWrapperStructGen.new(info)
+      end
     end
 
     def filename : String
@@ -21,10 +43,6 @@ module Generator
       @struct.name
     end
 
-    def skip?(key : String = subject) : Bool
-      super || @struct.g_type_struct? || @struct.g_error?
-    end
-
     def type_name
       to_crystal_type(@struct, false)
     end
@@ -36,9 +54,12 @@ module Generator
     def struct_new_method : String
       String.build do |s|
         s << "def self.new("
-        s << @struct.fields.map do |field|
-          "#{to_crystal_arg_decl(field.name)} : #{to_crystal_type(field.type_info)}? = nil"
-        end.join(", ")
+        @struct.fields.each do |field|
+          next if ignore_field?(field)
+          next if field.type_info.pointer?
+
+          s << "#{to_crystal_arg_decl(field.name)} : #{to_crystal_type(field.type_info)}? = nil, "
+        end
         s << ")\n"
 
         s << "_instance = allocate\n"
@@ -48,10 +69,13 @@ module Generator
       end
     end
 
-    private def generate_ctor_fields_assignment(io)
+    private def generate_ctor_fields_assignment(io : IO, var : String = "_instance")
       @struct.fields.each do |field|
+        next if ignore_field?(field)
+        next if field.type_info.pointer?
+
         field_name = to_identifier(field.name)
-        io << "_instance." << field.name << " = " << field_name << " unless " << field_name << ".nil?\n"
+        io << var << '.' << field.name << " = " << field_name << " unless " << field_name << ".nil?\n"
       end
     end
 
@@ -70,6 +94,19 @@ module Generator
       io << "?" if is_pointer
     end
 
+    private def ignore_field?(field : FieldInfo) : Bool
+      config.type_config(@struct.name).ignore_field?(field.name)
+    end
+
+    private def render_getters_and_setters(io : IO)
+      foreach_field do |field|
+        next if ignore_field?(field)
+
+        generate_getter(io, field)
+        generate_setter(io, field)
+      end
+    end
+
     private def generate_getter(io : IO, field : FieldInfo)
       field_name = field.name
       field_type = field.type_info
@@ -85,23 +122,27 @@ module Generator
       field_type_name(io, field)
       io << LF
 
-      io << "_var = (to_unsafe + " << field.byteoffset << ").as(Pointer(" << to_lib_type(field_type, structs_as_void: true) << "))\n"
+      io << "value = to_unsafe.as(Pointer(" << to_lib_type(@struct) << ")).value." << to_identifier(field_name) << LF
       if is_pointer
-        io << "return if _var.value.null?\n"
+        io << "return if value.null?\n"
+        type = case field_type.tag
+               when .utf8?, .filename? then "UInt8"
+               else
+                 "Void"
+               end
+        io << "value = value.as(Pointer(" << type << "))\n"
       end
 
-      # Bindinged objects ctors expect a pointer to the object, if the same behavior would be used for
-      # stdlib String class a constructor like `String.new(ptr : Pointer(Pointer(Void))` would need to exists,
-      # but it doesn't (of course).
-      obj_ptr_expr = !is_pointer && field_type.tag.interface? ? "_var" : "_var.value"
-      io << convert_to_crystal(obj_ptr_expr, field.type_info, @struct.fields, :none) << LF
+      io << convert_to_crystal("value", field.type_info, @struct.fields, :none) << LF
       io << "\nend\n"
     end
 
     private def generate_setter(io : IO, field : FieldInfo)
-      field_name = field.name
       field_type = field.type_info
       is_pointer = field_type.pointer?
+      return if is_pointer
+
+      field_name = field.name
       field_lib_type = to_lib_type(field_type, structs_as_void: true)
 
       io << "def " << to_call(field_name) << "=(value : "
@@ -109,7 +150,7 @@ module Generator
       io << ")\n"
 
       io << "_var = (to_unsafe + " << field.byteoffset << ").as(Pointer(" << field_lib_type << "))"
-      if !is_pointer && field_type.tag.interface?
+      if field_type.tag.interface?
         iface = field_type.interface
         if iface.is_a?(StructInfo) && iface.boxed?
           Log.warn { "Struct with non pointer boxed struct as parameter" }
@@ -118,8 +159,7 @@ module Generator
         end
       else
         io << ".value = "
-        io << "value.nil? ? " << field_lib_type << ".null : " if is_pointer
-        io << convert_to_lib("value", field_type, :none)
+        io << convert_to_lib("value", field_type, :none, false)
       end
       io << "\nvalue\n"
       io << "end\n"

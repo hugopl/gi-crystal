@@ -27,10 +27,6 @@ module Generator
       @object.name
     end
 
-    def generate
-      generate(filename) unless skip?
-    end
-
     private def parent_class
       parent = @object.parent
       return if parent.nil?
@@ -40,10 +36,6 @@ module Generator
 
     def type_name
       to_crystal_type(@object, false)
-    end
-
-    def g_object_type? : Bool
-      object.parent.nil? && type_name == "Object" # loose check that works
     end
 
     private def all_properties : Array(PropertyInfo)
@@ -79,6 +71,16 @@ module Generator
         s << "./" << module_dir(info.namespace) if info.namespace != @object.namespace
         s << '/' << info.name.underscore << "\"\n"
       end
+    end
+
+    macro render_qdata_optimized_new_method
+      render_qdata_optimized_new_method(io)
+    end
+
+    def render_qdata_optimized_new_method(io : IO)
+      return if !object.inherits?("GObject") && !object.inherits?("GParam")
+
+      io << "GICrystal.declare_new_method(" << type_name << ',' << object.qdata_get_func << ',' << object.qdata_set_func << ")\n"
     end
   end
 end

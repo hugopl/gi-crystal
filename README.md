@@ -70,8 +70,6 @@ where `GLib` and `Gtk` are modules.
 GObject interfaces are mapped to Crystal modules + a dummy class that only implements this module, used when there's some
 function returning the interface.
 
-Currently isn't possible to include a GObject interface on your objects, see [issue 10](https://github.com/hugopl/gi-crystal/issues/10).
-
 ### Down Casts
 
 If the object was created by Crystal code you can cast it like you do with any Crystal object instance, using `.as?` and `.as`.
@@ -125,7 +123,17 @@ implementation that will probably change in the future to just ignore the return
 
 ### After signals
 
-Instead of `widget.focus_signal.connect`, use `widget.focus_signal.connect_after`.
+Use the after keyword argument:
+
+```Crystal
+# Connect to a slot without the sender
+widget.focus_signal.connect(->slot_without_sender(Gtk::Direction), after: true)
+
+# Connect to a block (always without sender parameter)
+widget.focus_signal.connect(after: true) do |direction|
+  # ...
+end
+```
 
 ### Signals with details
 
@@ -184,11 +192,45 @@ Crystal as a `const char*` pointer. This may change in the future.
 
 ## Declaring GObject properties
 
-- TBD
+GObject Properties are declared using the `GObject::Property` annotation on the instance variable.
 
 ### Virtual Methods
 
-- TBD
+Virtual methods must have the `GObject::Virtual` annotation, currently only virtual methods from interfaces are supported.
+
+```Crystal
+class Widget0 < Gtk::Widget
+  # GObject virtual method name is guessed from Crystal method name, that can start with `do_`.
+  @[GObject::Virtual]
+  def do_snapshot(snapshot : Gtk::Snapshot)
+  end
+emd
+
+class Widget1 < Gtk::Widget
+  # If the `do_` prefix annoyes you, just use the same GObject virtual method name.
+  @[GObject::Virtual]
+  def snapshot(snapshot : Gtk::Snapshot)
+  end
+end
+
+class Widget2 < Gtk::Widget
+  # Or you can use whatever name and inform the GObject virtual method name in the annotation.
+  @[GObject::Virtual(name: "snapshot")]
+  def heyho(snapshot : Gtk::Snapshot)
+  end
+end
+```
+
+If for some reason (peformance or GICrystal bugs 🙊️) you don't want wrappers, you can create an unsafe virtual method:
+
+```Crystal
+class Widget3 < Gtk::Widget
+  @[GObject::Virtual(unsafe: true)]
+  def snapshot(snapshot : Pointer(Void))
+    # User is responsible for memory management here, like in C.
+  end
+end
+```
 
 ## GLib GError
 
@@ -217,6 +259,19 @@ So if you want to rescue from this specific error you must `rescue e : GLib::Fil
 error in this domain you must `rescue e : GLib::FileError`, and finally if you want to rescue from any GLib errors you do
 `rescue e : GLib::GLibError`.
 
+## Raw C Structs
+
+At [binding.yml](BINDING_YML.md) file you can define the strategy used to bind the structs, if set to `auto`it will behave
+like lsited bellow:
+
+- If the struct have no pointer attributes it's mapped to a Crystal struct with the same memory layout of the C struct
+  (`stack_struct` binding strategy).
+- If the struct have pointer attributes it's mapped to a Crystal class with the same memory layout of the C struct, so a
+  `finalize` method can be implemented to free the resources. Not that no setters are generated to pointer attributes, since
+  we can't guess how this memory must be handled (`heap_struct` binding strategy).
+- If the struct is a opaque pointer it's mapped to a Crystal class with a pointer to the C object, it's assumed that the
+  object is a GObject Box, so the `g_boxed_*` family of functions are used to handle the memory (`heap_wrapper_struct`
+  binding strategy).
 
 ## Contributing
 

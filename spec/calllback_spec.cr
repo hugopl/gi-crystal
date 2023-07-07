@@ -5,6 +5,10 @@ def simple_callback(obj, value) : Nil
 end
 
 describe "Callback parameters" do
+  it "do not remove last callback argument unless it is a pointer" do
+    Test::SubjectCallbackWithPointer.should eq(Proc(Pointer(Void), GObject::Object, Bool, Nil))
+  end
+
   it "can be set" do
     subject = Test::Subject.new
     subject.simple_func = ->simple_callback(Test::Subject, Int32)

@@ -6,6 +6,7 @@ private class UserSignalObj < GObject::Object
   signal int64(int64 : Int64, uint64 : UInt64)
   signal floats(float : Float32, double : Float64)
   signal string(str : String)
+  signal path(path : Path)
   signal bool(value : Bool)
 end
 
@@ -81,6 +82,14 @@ describe "GObject signals" do
     # subject.return_int_signal.emit
   end
 
+  it "can have boolean parameters and return value" do
+    subject = Test::Subject.new
+    subject.return_bool_signal.connect do |value|
+      typeof(value).should be_a(Bool)
+      value
+    end
+  end
+
   pending "test emit signals with return values"
 
   it "can have array GObject as parameter" do
@@ -94,6 +103,19 @@ describe "GObject signals" do
 
     subject.array_of_gobj_signal.emit([obj1, obj2])
     received_objs.should eq([obj1, obj2])
+  end
+
+  it "can have Interface as parameter" do
+    subject = Test::Subject.new
+
+    received_obj : Test::Iface? = nil
+    subject.iface_signal.connect do |obj|
+      received_obj = obj
+    end
+
+    obj = Test::Subject.new
+    subject.iface_signal.emit(obj)
+    received_obj.should eq(obj)
   end
 
   it "can have array Interface as parameter" do
@@ -199,7 +221,7 @@ describe "GObject signals" do
       called.should eq(true)
     end
 
-    it "works with 32 bits integer parameters" do
+    it "works with (U)Int32 parameters" do
       obj = UserSignalObj.new
       value = 0
       obj.uint32_signal.connect do |v|
@@ -210,10 +232,10 @@ describe "GObject signals" do
       value.should eq(32)
     end
 
-    it "works with 64 bits integer parameters" do
+    it "works with (U)Int64 parameters" do
       obj = UserSignalObj.new
       received_i64 = 0_i64
-      received_u64 = 0_i64
+      received_u64 = 0_u64
       obj.int64_signal.connect do |i64, u64|
         received_i64 = i64
         received_u64 = u64
@@ -224,7 +246,7 @@ describe "GObject signals" do
       received_u64.should eq(128_u64)
     end
 
-    it "works with float parameters" do
+    it "works with Float32 parameters" do
       obj = UserSignalObj.new
       received_f32 = 0.0_f32
       received_f64 = 0.0
@@ -238,7 +260,7 @@ describe "GObject signals" do
       received_f64.should eq(6.28_f64)
     end
 
-    it "works with string parameters" do
+    it "works with String parameters" do
       obj = UserSignalObj.new
       received_str = ""
       obj.string_signal.connect do |str|
@@ -249,7 +271,18 @@ describe "GObject signals" do
       received_str.should eq("Hello")
     end
 
-    it "works with boolean parameters" do
+    it "works with Path parameters" do
+      obj = UserSignalObj.new
+      received_path = ""
+      obj.path_signal.connect do |path|
+        received_path = path
+      end
+
+      obj.path_signal.emit(Path.new("Hello"))
+      received_path.should eq(Path.new("Hello"))
+    end
+
+    it "works with Bool parameters" do
       obj = UserSignalObj.new
       received_bool = false
       obj.bool_signal.connect do |bool|

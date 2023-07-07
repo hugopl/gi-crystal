@@ -1,7 +1,8 @@
 require "./arg_strategy"
+require "./callable_gen"
 
 module Generator
-  class MethodGen < Generator
+  class MethodGen < CallableGen
     include WrapperUtil
 
     alias MethodReturnType = TypeInfo | ArgInfo
@@ -22,16 +23,16 @@ module Generator
       @crystal_arg_count = @args_strategies.size - @args_strategies.count(&.remove_from_declaration?)
     end
 
-    def skip? : Bool
-      config.ignore?(@method.symbol) || (@method.flags.constructor? && @method.args.empty? && object.is_a?(StructInfo))
-    end
-
     def scope
       @method.symbol
     end
 
     def throws? : Bool
       @method.flags.throws?
+    end
+
+    def callable : CallableInfo
+      @method
     end
 
     private def method_identifier : String

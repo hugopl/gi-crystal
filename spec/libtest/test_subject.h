@@ -37,6 +37,10 @@ G_BEGIN_DECLS
  *
  * initializer: [ctor@Test.Subject.new]
  *
+ * parameter: @parameter_42
+ *
+ * email_is_not_a_parameter: foo@example.com
+ *
  * code block:
  * ```c
  * #include <stdio.h>
@@ -45,6 +49,10 @@ G_BEGIN_DECLS
  *    return 0;
  * }
  * ```
+ *
+ * Others:
+ * %NULL %TRUE %FALSE
+ * `GdkVulkanContext` AdwComboRow
  *
  */
 #define TEST_TYPE_SUBJECT test_subject_get_type()
@@ -65,6 +73,13 @@ typedef struct _TestSubjectClass {
  * Used to test callback code generation
  */
 typedef void (*TestSubjectSimpleFunc)(TestSubject* subject, int number, gpointer user_data);
+
+/**
+ * TestSubjectCallbackWithPointer:
+ *
+ * Used to test callbacks with pointer parameters
+ */
+typedef void (*TestSubjectCallbackWithPointer)(gpointer data, GObject* object, gboolean boolean);
 
 /**
  * test_subject_new_from_whatever:
@@ -265,6 +280,24 @@ gchar** test_subject_return_array_transfer_container(TestSubject* self, int* len
 int* test_subject_return_int32_array_transfer_full(TestSubject* self, int* length);
 
 /**
+ * test_subject_return_list_of_iface_transfer_full:
+ * Returns: (transfer full) (element-type TestIface):
+ *
+ * Used to test GList transfer full conversions, first element will be self, the second one
+ * a new created `TestSubject`.
+ */
+GList* test_subject_return_list_of_iface_transfer_full(TestSubject* self);
+
+/**
+ * test_subject_return_list_of_gobject_transfer_full:
+ * Returns: (transfer full) (element-type GObject):
+ *
+ * Used to test GList transfer full conversions, first element will be self, the second one
+ * a new created `TestSubject`.
+ */
+GList* test_subject_return_list_of_gobject_transfer_full(TestSubject* self);
+
+/**
  * test_subject_return_list_of_strings_transfer_full:
  * Returns: (transfer full) (element-type utf8): `["one", "two"]`
  *
@@ -279,6 +312,24 @@ GList* test_subject_return_list_of_strings_transfer_full(TestSubject* self);
  * Used to test GList transfer container conversions.
  */
 GList* test_subject_return_list_of_strings_transfer_container(TestSubject* self);
+
+/**
+ * test_subject_return_slist_of_iface_transfer_full:
+ * Returns: (transfer full) (element-type TestIface):
+ *
+ * Used to test GSList transfer full conversions, first element will be self, the second one
+ * a new created `TestSubject`.
+ */
+GSList* test_subject_return_slist_of_iface_transfer_full(TestSubject* self);
+
+/**
+ * test_subject_return_slist_of_gobject_transfer_full:
+ * Returns: (transfer full) (element-type TestSubject):
+ *
+ * Used to test GSList transfer full conversions, first element will be self, the second one
+ * a new created `TestSubject`.
+ */
+GSList* test_subject_return_slist_of_gobject_transfer_full(TestSubject* self);
 
 /**
  * test_subject_return_slist_of_strings_transfer_full:

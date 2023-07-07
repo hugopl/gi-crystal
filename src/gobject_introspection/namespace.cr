@@ -20,7 +20,8 @@ module GObjectIntrospection
     protected def initialize(@name, version : String? = nil)
       @pointer = LibGIRepository.g_irepository_get_default
       error = Pointer(LibGLib::Error).new(0)
-      ptr = LibGIRepository.g_irepository_require(@pointer, @name, GICrystal.to_unsafe(version), 0, pointerof(error))
+      version_ptr = version ? version.to_unsafe : Pointer(UInt8).null
+      ptr = LibGIRepository.g_irepository_require(@pointer, @name, version_ptr, 0, pointerof(error))
       raise Error.new(String.new(error.value.message)) if ptr.null?
 
       @version = String.new(LibGIRepository.g_irepository_get_version(@pointer, @name))

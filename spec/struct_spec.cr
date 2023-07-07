@@ -1,14 +1,9 @@
 require "./spec_helper"
 
 describe "Struct bindings" do
-  it "can have struct pointers as attributes" do
+  it "do not generate setters for struct pointer attributes" do
     truct = Test::Struct.new(begin: 42)
-    truct.point_ptr.should eq(nil)
-    truct.point_ptr = Test::Point.new(1, 2)
-    truct.point_ptr.should be_a(Test::Point)
-    truct.point_ptr!.x.should eq(1)
-    truct.point_ptr!.y.should eq(2)
-    truct.point_ptr = nil
+    truct.responds_to?(:point_ptr=).should eq(false)
     truct.point_ptr.should eq(nil)
   end
 
@@ -21,8 +16,24 @@ describe "Struct bindings" do
     truct.point.y.should eq(2)
   end
 
+  it "binds POD structs with other POD structs as a Crystal struct" do
+    rect = Test::Rect.new
+    rect.is_a?(Value).should eq(true)
+
+    two_points = Test::TwoPoints.new
+    two_points.is_a?(Value).should eq(true)
+  end
+
+  it "ignore fields according to binding.yml" do
+    truct = Test::Struct.new
+    truct.responds_to?(:ignored_field).should eq(false)
+    truct.responds_to?(:ignored_field=).should eq(false)
+  end
+
   it "can have nullable string attributes" do
-    truct = Test::Struct.new(string: "hey")
+    truct = Test::Struct.new
+    truct.string.should eq(nil)
+    truct._initialize
     truct.string.should eq("hey")
   end
 

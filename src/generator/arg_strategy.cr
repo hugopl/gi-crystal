@@ -191,7 +191,7 @@ module Generator
       return false unless arg.nullable?
 
       arg_type = arg.type_info
-      return false if BindingConfig.handmade?(arg_type)
+      return false if handmade_type?(arg_type)
 
       true
     end
@@ -276,7 +276,7 @@ module Generator
       return false if strategy.remove_from_declaration?
 
       arg_type = strategy.arg_type
-      return false unless BindingConfig.handmade?(arg_type)
+      return false unless handmade_type?(arg_type)
 
       true
     end
@@ -366,10 +366,10 @@ module Generator
       return false if strategy.remove_from_declaration?
 
       arg_type = strategy.arg.type_info
-      return false if BindingConfig.handmade?(arg_type)
+      return false if handmade_type?(arg_type)
 
       case arg_type.tag
-      when .interface?, .utf8?, .filename?
+      when .interface?, .utf8?, .filename?, .boolean?
         true
       else
         false
@@ -384,22 +384,8 @@ module Generator
       arg_name = to_identifier(arg.name)
       type_info = arg.type_info
 
-      io << arg_name << '='
-
-      tag = type_info.tag
-      if tag.interface?
-        if type_info.interface.class.in?(ObjectInfo, InterfaceInfo, StructInfo)
-          io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ", GICrystal::Transfer::" << arg.ownership_transfer << ")"
-        else
-          io << to_crystal_type(type_info) << ".new(lib_" << arg_name << ")"
-        end
-      elsif tag.utf8? || tag.filename?
-        io << convert_to_crystal("lib_#{arg_name}", type_info, nil, arg.ownership_transfer)
-      end
-
-      if arg.nullable?
-        io << " unless lib_" << arg_name << ".null?"
-      end
+      io << arg_name << '=' << convert_to_crystal("lib_#{arg_name}", type_info, nil, arg.ownership_transfer)
+      io << " unless lib_" << arg_name << ".null?" if arg.nullable?
       io << LF
     end
   end
@@ -430,7 +416,7 @@ module Generator
       arg = strategy.arg
       type_info = arg.type_info
       callback = type_info.interface.as(CallbackInfo)
-      idx = strategies.index(strategy).not_nil!
+      idx = strategies.index!(strategy)
       user_data_arg = strategies[idx + 1].arg
       destroy_notify_arg = strategies[idx + 2].arg
 

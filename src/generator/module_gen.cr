@@ -3,7 +3,9 @@ require "file_utils"
 require "./file_gen"
 require "./wrapper_util"
 require "./object_gen"
-require "./struct_gen"
+require "./heap_struct_gen"
+require "./heap_wrapper_struct_gen"
+require "./stack_struct_gen"
 require "./interface_gen"
 require "./lib_gen"
 
@@ -26,10 +28,28 @@ module Generator
     protected def initialize(@config : BindingConfig)
       @namespace = GObjectIntrospection::Repository.default.require(@config.namespace, @config.version)
 
-      @objects = @namespace.objects.map { |info| ObjectGen.new(info) }.reject(&.skip?)
-      @structs = @namespace.structs.map { |info| StructGen.new(info) }.reject(&.skip?)
-      @interfaces = @namespace.interfaces.map { |info| InterfaceGen.new(info) }.reject(&.skip?)
+      @objects = @namespace.objects.compact_map do |info|
+        ObjectGen.new(info) if should_generate_code?(info)
+      end
+      @structs = @namespace.structs.compact_map do |info|
+        StructGen.new(info) if should_generate_code?(info)
+      end
+      @interfaces = @namespace.interfaces.compact_map do |info|
+        InterfaceGen.new(info) if should_generate_code?(info)
+      end
       @lib = LibGen.new(@namespace)
+    end
+
+    private def should_generate_code?(info : RegisteredTypeInfo) : Bool
+      type_config = config.type_config(info.name)
+      !(type_config.handmade? || type_config.ignore?)
+    end
+
+    private def should_generate_code?(info : StructInfo) : Bool
+      return false if info.g_type_struct? || info.g_error?
+
+      type_config = config.type_config(info.name)
+      !(type_config.handmade? || type_config.ignore?)
     end
 
     delegate version, to: @namespace
@@ -52,7 +72,7 @@ module Generator
 
     def each_callback
       @namespace.callbacks.each do |callback|
-        yield(callback) unless config.ignore?(callback.name)
+        yield(callback) unless config.type_config(callback.name).ignore?
       end
     end
 
@@ -75,7 +95,7 @@ module Generator
       requires = [] of String
       {% for collection in %w(@objects @structs @interfaces) %}
       {{ collection.id }}.each do |gen|
-        requires << gen.filename unless gen.skip?
+        requires << gen.filename
       end
       {% end %}
       requires.sort!
@@ -141,6 +161,10 @@ module Generator
       return false if values.size != 1
 
       values.first.value.zero?
+    end
+
+    private def declare_error? : Bool
+      enums.any?(&.error_domain)
     end
   end
 end

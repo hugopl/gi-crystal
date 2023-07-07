@@ -1,0 +1,47 @@
+module <%= namespace_name %>
+  <% render_doc(object) -%>
+  class <%= type_name %>
+    @pointer : Pointer(Void)
+
+    def initialize(pointer : Pointer(Void), transfer : GICrystal::Transfer)
+      raise ArgumentError.new("Tried to generate struct with a NULL pointer") if pointer.null?
+
+      <% if object.boxed? %>
+        @pointer = if transfer.none?
+                     LibGObject.g_boxed_copy(<%= to_crystal_type(object, false) %>.g_type, pointer)
+                   else
+                     pointer
+                   end
+      <% else %>
+        @pointer = pointer
+      <% end %>
+    end
+
+    # :nodoc:
+    # Code copied from crystal/src/weak_ref.cr
+    # Allocates this object using malloc_atomic, allowing the GC to run more efficiently.
+    # As GObjects memory is managed using reference counting, we do not need to scan its pointers.
+    def self.allocate
+      ptr = GC.malloc_atomic(instance_sizeof(self)).as(self)
+      set_crystal_type_id(ptr)
+      ptr
+    end
+
+    <% if object.boxed? %>
+    def finalize
+      {% if flag?(:debugmemory) %}
+      LibC.printf("~%s at %p\n", self.class.name, self)
+      {% end %}
+      LibGObject.g_boxed_free(<%= type_name %>.g_type, self)
+    end
+    <% end %>
+
+    <% render_getters_and_setters(io) %>
+    <% render "ecr/g_type_method.ecr" %>
+    <% render_methods %>
+
+    def to_unsafe
+      @pointer
+    end
+  end
+end

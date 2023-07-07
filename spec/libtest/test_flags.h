@@ -27,8 +27,22 @@ GType test_flag_flags_get_type();
  *
  * Used to test flags that have only the NONE entry.
  */
-typedef enum { TEST_EMPTY_NONE = 0 } TestEmptyFlags;
+typedef enum {
+  TEST_EMPTY_NONE = 0
+} TestEmptyFlags;
 
 GType test_empty_flags_get_type();
+
+/**
+ * TestIgnoredFlags:
+ * @TEST_IGNORED_FLAGS_VALUE:
+ *
+ * Used to test ignored flags
+ */
+typedef enum {
+  TEST_IGNORED_FLAGS_VALUE = 1
+} TestIgnoredFlags;
+
+GType test_ignored_flags_get_type();
 
 G_END_DECLS

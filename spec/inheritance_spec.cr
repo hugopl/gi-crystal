@@ -18,6 +18,35 @@ private class UserSubject < Test::Subject
   end
 end
 
+private class UserObjectWithGProperties < GObject::Object
+  @[GObject::Property(nick: "STRING", blurb: "A string without meaning", default: "default")]
+  property str_ing : String = "default"
+
+  @[GObject::Property(nick: "INTEGER", blurb: "An Int32", default: 42, min: 40, max: 50)]
+  property int : Int32 = 42
+
+  @[GObject::Property(default: TestFlags::BC)]
+  property flags = TestFlags::BC
+
+  @[GObject::Property]
+  property object : UserObject
+
+  @[GObject::Property]
+  property signal_test : Bool = true
+
+  # This declaration tests if the property is created as readonly if it only have getter?
+  @[GObject::Property]
+  getter? readonly_bool : Bool = true
+
+  @[GObject::Property]
+  property nilable_object : UserObject?
+
+  def initialize
+    super
+    @object = UserObject.new
+  end
+end
+
 class User::Class::With::Colons < GObject::Object
 end
 
@@ -34,21 +63,6 @@ describe "Classes inheriting GObject::Object" do
     obj = UserObject.new
     casted_obj = UserObject.cast(obj)
     casted_obj.object_id.should eq(obj.object_id)
-  end
-
-  it "raises on cast of deleted crystal objects" do
-    subject = Test::Subject.new
-    user_obj = UserObject.new
-    subject.gobj = user_obj
-
-    # Pretend the GC collected the object, but add a ref to it, so the
-    # unref made by the artificial `finalize` call wont have any effect.
-    LibGObject.g_object_ref(user_obj)
-    user_obj.finalize
-
-    expect_raises(GICrystal::ObjectCollectedError) do
-      UserObject.cast(subject.gobj.not_nil!)
-    end
   end
 
   it "create a crystal instance if the object was born on C world" do
@@ -89,5 +103,67 @@ describe "Classes inheriting GObject::Object" do
     obj = UserSubject.new("hey")
     LibGObject.g_type_check_instance_is_a(obj, UserSubject.g_type).should eq(1)
     obj.string.should eq("hey")
+  end
+
+  it "can set GObject properties" do
+    obj = UserObjectWithGProperties.new
+
+    LibGObject.g_object_set(obj, "str-ing", "test value", Pointer(Void).null)
+    obj.str_ing.should eq("test value")
+
+    LibGObject.g_object_set(obj, "int", 50, Pointer(Void).null)
+    obj.int.should eq(50)
+
+    LibGObject.g_object_set(obj, "flags", TestFlags::C, Pointer(Void).null)
+    obj.flags.should eq(TestFlags::C)
+
+    object = UserObject.new
+    LibGObject.g_object_set(obj, "object", object, Pointer(Void).null)
+    obj.object.should eq(object)
+
+    LibGObject.g_object_set(obj, "nilable-object", Pointer(Void).null, Pointer(Void).null)
+    obj.nilable_object.should eq(nil)
+  end
+
+  it "can get GObject properties" do
+    obj = UserObjectWithGProperties.new
+
+    out_string = uninitialized Pointer(LibC::Char)
+    LibGObject.g_object_get(obj, "str-ing", pointerof(out_string), Pointer(Void).null)
+    String.new(out_string).should eq("default")
+    obj.str_ing = "test value"
+    LibGObject.g_object_get(obj, "str-ing", pointerof(out_string), Pointer(Void).null)
+    String.new(out_string).should eq("test value")
+
+    out_int = uninitialized Int32
+    LibGObject.g_object_get(obj, "int", pointerof(out_int), Pointer(Void).null)
+    out_int.should eq(42)
+    obj.int = 50
+    LibGObject.g_object_get(obj, "int", pointerof(out_int), Pointer(Void).null)
+    out_int.should eq(50)
+
+    obj.flags = TestFlags::A
+    out_flags = uninitialized TestFlags
+    LibGObject.g_object_get(obj, "flags", pointerof(out_flags), Pointer(Void).null)
+    out_flags.should eq(TestFlags::A)
+
+    obj.object = user_obj = UserObject.new
+    out_object = uninitialized Pointer(Void)
+    LibGObject.g_object_get(obj, "object", pointerof(out_object), Pointer(Void).null)
+    out_object.should eq(user_obj.to_unsafe)
+  end
+
+  it "emits notify signal on GObject properties access" do
+    test_var = 0
+    obj = UserObjectWithGProperties.new
+    signal = obj.notify_signal["signal-test"].connect { test_var += 1 }
+
+    test_var.should eq(0)
+    obj.signal_test = false
+    test_var.should eq(1)
+    obj.signal_test = true
+    test_var.should eq(2)
+
+    signal.disconnect
   end
 end

@@ -114,7 +114,7 @@ module Generator::Helpers
                 raise Error.new("Unknown lib representation for #{iface.class.name}.")
               end
             elsif tag.array?
-              array_type_name = to_lib_type(type.param_type, include_namespace)
+              array_type_name = to_lib_type(type.param_type, include_namespace: include_namespace)
               if is_arg
                 array_type_name
               else
@@ -140,13 +140,50 @@ module Generator::Helpers
     end
   end
 
-  def convert_to_lib(var : String, type : TypeInfo, _transfer : Transfer) : String
+  def convert_to_lib(var : String, type : TypeInfo, _transfer : Transfer, nullable : Bool) : String
     tag = type.tag
     case tag
-    when .interface?, .utf8?, .filename?
-      "#{var}.to_unsafe"
+    when .utf8?, .filename?
+      if nullable
+        "#{var}.nil? ? Pointer(UInt8).null : #{var}.to_unsafe"
+      else
+        "#{var}.to_unsafe"
+      end
+    when .boolean?
+      "GICrystal.to_c_bool(#{var})"
+    when .interface?
+      iface = type.interface.not_nil!
+      if iface.is_a?(EnumInfo)
+        "#{var}.#{tag_conversion_function(iface.storage_type)}"
+      else
+        if nullable
+          "#{var}.nil? ? Pointer(Void).null : #{var}.to_unsafe"
+        else
+          "#{var}.to_unsafe"
+        end
+      end
     else
       var
+    end
+  end
+
+  def tag_conversion_function(tag : TypeTag)
+    case tag
+    when .boolean? then "to_i"
+    when .int8?    then "to_i8"
+    when .u_int8?  then "to_u8"
+    when .int16?   then "to_i16"
+    when .u_int16? then "to_u16"
+    when .int32?   then "to_i32"
+    when .u_int32? then "to_u32"
+    when .int64?   then "to_i64"
+    when .u_int64? then "to_u64"
+    when .float?   then "to_f32"
+    when .double?  then "to_f64"
+    when .gtype?   then "to_u64"
+    when .unichar? then "to_u32"
+    else
+      "to_unsafe"
     end
   end
 
@@ -166,14 +203,23 @@ module Generator::Helpers
     end
   end
 
+  def remove_callable_last_parameter?(info : CallableInfo) : Bool
+    return false unless info.is_a?(CallbackInfo)
+
+    last_arg = info.args.last?
+    return false if last_arg.nil?
+
+    last_arg.type_info.tag.void?
+  end
+
   def callable_to_crystal_types(io : IO, info : CallableInfo) : Nil
     # He must hide the user_data arg from CallbackInfo
-    stop_at = info.is_a?(CallbackInfo) ? info.args.size - 1 : -1
+    stop_at = remove_callable_last_parameter?(info) ? info.args.size - 1 : -1
     info.args.each_with_index do |arg, i|
       break if i == stop_at
 
       arg_type_info = arg.type_info
-      nullmark = '?' if arg.nullable?
+      nullmark = '?' if arg.nullable? && !arg_type_info.tag.void?
       io << to_crystal_type(arg_type_info, include_namespace: true) << nullmark << ','
     end
     io << to_crystal_type(info.return_type, include_namespace: true)
@@ -206,9 +252,19 @@ module Generator::Helpers
     end
   end
 
+  def handmade_type?(type : TypeInfo) : Bool
+    return false unless type.tag.interface?
+
+    iface = type.interface
+    return false if iface.nil?
+
+    BindingConfig.for(iface.namespace).type_config(iface.name).handmade?
+  end
+
   # @is_arg: The type is means to be used in a argument list for some method
   def to_crystal_type(type : TypeInfo, include_namespace : Bool = true, is_arg : Bool = false) : String
-    return "_" if is_arg && BindingConfig.handmade?(type)
+    # Check if the type is handmade used in a argument
+    return "_" if is_arg && handmade_type?(type)
 
     tag = type.tag
     case tag

@@ -89,9 +89,9 @@ object pointer into every wrapper it creates, so it can restore the wraper objec
 When the wrapper is collected by the GC it reset this pointer to NULL, so if it appear again in the Crystal world we create
 another wrapper for it. See `Crystal::INSTANCE_QDATA_KEY` constant.
 
-For user made objects inheriting GObject we need another flag, since if the GC collect it all the Crystal data is removed as
-well, so we raise an exception when the user try to restore the Crystal object doing a cast, see
-`Crystal::GC_COLLECTED_QDATA_KEY`.
+For user made objects inheriting GObject a [toggle ref](https://docs.gtk.org/gobject/method.Object.add_toggle_ref.html) is
+added to the GObject, so the object it's garbage collected only if there's no references for it in C world. This is done at
+`src/bindings/g_object/object.cr`, look for `_add_toggle_ref`.
 
 ## How Struct wrappers works
 

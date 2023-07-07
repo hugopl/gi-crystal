@@ -27,6 +27,7 @@ module Generator
         if arg_strategy.has_implementation?
           arg_strategy.write_implementation(io)
         elsif !arg_strategy.remove_from_declaration?
+          io << "# NoStrategy\n"
           arg_name = arg_strategy.arg.name
           io << to_identifier(arg_name) << '=' << "lib_" << arg_name << LF
         end
@@ -47,6 +48,18 @@ module Generator
         arg_type = "Pointer(#{arg_type})" if is_signal && arg_type == "Void"
         arg_name = to_identifier(arg.name)
         io << "lib_" << arg_name << " :  " << arg_type << ", "
+      end
+    end
+
+    def generate_lib_types(io : IO, callable : CallableInfo)
+      is_signal = callable.is_a?(SignalInfo)
+
+      callable.args.each do |arg|
+        # If arg_type is Void, it's probably a struct, GObjIntrospection doesn't inform that signal args are pointer when
+        # they are structs
+        arg_type = to_lib_type(arg.type_info, structs_as_void: true)
+        arg_type = "Pointer(#{arg_type})" if is_signal && arg_type == "Void"
+        io << arg_type << ", "
       end
     end
 

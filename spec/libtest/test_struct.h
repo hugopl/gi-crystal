@@ -17,6 +17,26 @@ typedef struct _TestPoint {
 } TestPoint;
 
 /**
+ * TestRect
+ * @origin: Rect origin
+ * @width:
+ * @height:
+ */
+typedef struct _TestRect {
+  TestPoint origin;
+  int width;
+  int height;
+} TestRect;
+
+/**
+ * TestTwoPoints
+ * @points: two points
+ */
+typedef struct _TestTwoPoints {
+  TestPoint points[2];
+} TestTwoPoints;
+
+/**
  * TestStruct:
  * @in: A attribute using a invalid Crystal keyword.
  * @begin: Another attribute using a invalid Crystal keyword.
@@ -31,6 +51,7 @@ typedef struct _TestStruct {
   TestPoint* point_ptr;
   TestPoint point;
   const char* string;
+  int ignored_field;
 } TestStruct;
 
 /**

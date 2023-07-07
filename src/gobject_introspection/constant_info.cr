@@ -12,7 +12,7 @@ module GObjectIntrospection
       tag = type_info.tag
       case tag
       when .boolean?
-        value.v_boolean ? "true" : "false"
+        value.v_boolean == 1 ? "true" : "false"
       when .int8?
         "#{value.v_int8}_i8"
       when .u_int8?

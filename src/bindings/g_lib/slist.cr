@@ -37,15 +37,17 @@ module GLib
 
       {% if T == String %}
         T.new(data.as(Pointer(LibC::Char)))
+      {% elsif T.module? %}
+        {{ T.name.stringify.gsub(/(.*)(::)([^:]*)\z/, "\\1::Abstract\\3").id }}.new(data, :none)
       {% else %}
-        T.new(data)
+        T.new(data, :none)
       {% end %}
     end
 
     def finalize
       if @transfer.full?
-        {% if T > GObject::Object %}
-          LibGLib.g_slist_free_full(self, ->LibGLib.g_object_unref)
+        {% if T <= GObject::Object || T.module? %}
+          LibGLib.g_slist_free_full(self, ->LibGObject.g_object_unref)
         {% else %}
           LibGLib.g_slist_free_full(self, ->LibGLib.g_free)
         {% end %}

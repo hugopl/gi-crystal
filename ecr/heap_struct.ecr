@@ -1,0 +1,31 @@
+module <%= namespace_name %>
+  <% render_doc(object) -%>
+  class <%= type_name %>
+    @data : <%= to_lib_type(object) %>
+
+    def initialize(@data, transfer : GICrystal::Transfer)
+    end
+
+    def initialize(pointer : Pointer(Void), transfer : GICrystal::Transfer)
+      raise ArgumentError.new("Tried to generate struct with a NULL pointer") if pointer.null?
+
+      # Raw structs are always moved to Crystal memory.
+      @data = pointer.as(Pointer(<%= to_lib_type(object) %>)).value
+      LibGLib.g_free(pointer) if transfer.full?
+    end
+
+    <%= struct_new_method %>
+
+    def ==(other : self) : Bool
+      LibC.memcmp(self, other.to_unsafe, sizeof(<%= to_lib_type(object) %>)).zero?
+    end
+
+    <% render_getters_and_setters(io) %>
+    <% render "ecr/g_type_method.ecr" %>
+    <% render_methods %>
+
+    def to_unsafe
+      pointerof(@data).as(Void*)
+    end
+  end
+end

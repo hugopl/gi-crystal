@@ -1,13 +1,12 @@
 require "colorize"
 require "log"
 require "option_parser"
-require "version_from_shard"
 
-require "./module_gen"
 require "./binding_config"
 require "./error"
+require "./module_gen"
 
-VersionFromShard.declare
+VERSION = {{ `shards version #{__DIR__}`.strip.stringify }}
 
 private def project_dir
   exe_path = Process.executable_path
@@ -18,7 +17,7 @@ end
 
 private def parse_options(argv)
   output_dir = nil
-  doc_gen = true
+  doc_gen = false
 
   OptionParser.parse(argv) do |parser|
     parser.banner = "Usage: generator [binding-config]"
@@ -33,7 +32,11 @@ private def parse_options(argv)
     parser.on("-o=DIRECTORY", "Output directory, default: \"lib/gi-crystal/src/auto\"") do |dir|
       output_dir = Path.new(dir).expand.to_s
     end
-    parser.on("--no-doc", "Disable documentation generation on generated code") { doc_gen = false }
+    parser.on("--doc", "Disable documentation generation on generated code") { doc_gen = true }
+    parser.on("--no-doc", "Disable documentation generation on generated code") do
+      STDERR.puts("⚠️  --no-doc is DEPRECATED and set by default.".colorize.yellow)
+      doc_gen = false
+    end
 
     parser.invalid_option do |flag|
       abort("#{flag} is not a valid option.\n\n#{parser}")
@@ -94,15 +97,17 @@ private def main(argv)
 
   options = parse_options(argv)
   Log.info { "Starting at #{Time.local}, project dir: #{project_dir}" }
+  Log.info { "Gi-Crystal version #{VERSION}, built with Crystal #{Crystal::VERSION}." }
   Generator::Generator.output_dir = options[:output_dir].to_s
   Log.info { "Generating bindings at #{options[:output_dir]}" }
 
   Generator::DocRepo.disable! unless options[:doc_gen]
 
   binding_yamls = find_bindings.concat(options[:extra_bindings])
-  binding_yamls.each { |file| Log.info { "Using binding config at #{file}" } }
-
-  Generator::BindingConfig.load(binding_yamls)
+  binding_yamls.each do |file|
+    Log.info { "Using binding config at #{file}" }
+    Generator::BindingConfig.load(file)
+  end
 
   generate_all
 rescue e : Generator::Error | GObjectIntrospection::Error | File::NotFoundError

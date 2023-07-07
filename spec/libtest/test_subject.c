@@ -209,6 +209,21 @@ static void test_subject_class_init(TestSubjectClass* klass) {
                0, // n_params
                NULL);
   /**
+   * TestSubject::return-bool:
+   * @subject: the subject
+   * @boolean: A boolean value
+   *
+   * Used to test bool return values and parameters.
+   */
+  g_signal_new("return-bool", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+               0, // class_offset
+               NULL, // accumulator
+               NULL, // accumulator data
+               NULL, // C marshaller
+               G_TYPE_BOOLEAN, // return_type
+               1, // n_params
+               G_TYPE_BOOLEAN, NULL);
+  /**
    * TestSubject::array-of-gobj:
    * @self: the subject who sent the signal.
    * @objs: (array length=n_objs) (element-type TestSubject): an array of TestSubject.
@@ -240,6 +255,23 @@ static void test_subject_class_init(TestSubjectClass* klass) {
                G_TYPE_NONE, // return_type
                2, // n_params
                G_TYPE_POINTER, G_TYPE_INT, NULL);
+
+  /**
+   * TestSubject::iface:
+   * @self: the subject who sent the signal.
+   * @obj: a TestIface.
+   *
+   * Used to test signals with interfaces.
+   */
+  g_signal_new("iface", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+               0, // class_offset
+               NULL, // accumulator
+               NULL, // accumulator data
+               NULL, // C marshaller
+               G_TYPE_NONE, // return_type
+               1, // n_params
+               TEST_TYPE_IFACE, NULL);
+
   /**
    * TestSubject::enum:
    * @self: the subject who sent the signal.
@@ -471,6 +503,18 @@ TestIface* test_subject_return_myself_as_interface(TestIface* self) {
   return self;
 }
 
+GList* test_subject_return_list_of_iface_transfer_full(TestSubject* self) {
+  GList* list = NULL;
+  g_object_ref(self);
+  list = g_list_append(list, self);
+  list = g_list_append(list, test_subject_new_from_string("Subject from C"));
+  return list;
+}
+
+GList* test_subject_return_list_of_gobject_transfer_full(TestSubject* self) {
+  return test_subject_return_list_of_iface_transfer_full(self);
+}
+
 GList* test_subject_return_list_of_strings_transfer_full(TestSubject* self) {
   GList* list = NULL;
   list = g_list_append(list, g_strdup("one"));
@@ -483,6 +527,18 @@ GList* test_subject_return_list_of_strings_transfer_container(TestSubject* self)
   list = g_list_append(list, "one");
   list = g_list_append(list, "two");
   return list;
+}
+
+GSList* test_subject_return_slist_of_iface_transfer_full(TestSubject* self) {
+  GSList* list = NULL;
+  g_object_ref(self);
+  list = g_slist_append(list, self);
+  list = g_slist_append(list, test_subject_new_from_string("Subject from C"));
+  return list;
+}
+
+GSList* test_subject_return_slist_of_gobject_transfer_full(TestSubject* self) {
+  return test_subject_return_slist_of_iface_transfer_full(self);
 }
 
 GSList* test_subject_return_slist_of_strings_transfer_full(TestSubject* self) {

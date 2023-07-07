@@ -6,7 +6,7 @@ require "../<%= dep.module_dir %>/<%= dep.filename%>"
 # C lib declaration
 require "./<%= @lib.filename %>"
 
-<% config.includes_before.each do |inc| -%>
+<% config.require_before.each do |inc| -%>
 require "<%= inc.relative_to("#{output_dir}/#{module_dir}") %>"
 <% end %>
 
@@ -17,8 +17,9 @@ require "./<%= inc %>"
 
 module <%= namespace_name %>
   <% constants.each do |const| -%>
+    <% next if config.ignore_constants.includes?(const.name) %>
     <% render_doc(const) -%>
-    <%= const.name %> = <%= const.literal %>
+    <%= const.name %> = <%= const.literal -%>
   <% end %>
 
   # Callbacks
@@ -27,13 +28,17 @@ module <%= namespace_name %>
     alias <%= to_type_name(callback.name) %> = <%= callable_to_crystal_proc(callback) %>
   <% end %>
 
+  <% if declare_error? %>
   # Base class for all errors in this module.
   class <%= namespace_name %>Error < GLib::Error
   end
+  <% end %>
 
   # Enums
   <% enums.each do |enum_| %>
-    <%= next if enum_.error_domain %>
+    <% next if config.type_config(enum_.name).ignore? %>
+    <% next if enum_.error_domain %>
+
     <% render_doc(enum_) -%>
     enum <%= to_type_name(enum_.name) %> : <%= to_crystal_type(enum_.storage_type) %>
       <% enum_.values.each do |value| -%>
@@ -46,6 +51,8 @@ module <%= namespace_name %>
 
   # Flags
   <% flags.each do |flag| -%>
+    <% next if config.type_config(flag.name).ignore? %>
+
     <% render_doc(flag) -%>
     <%= "@[Flags]\n" unless empty_flag?(flag) -%>
     enum <%= to_type_name(flag.name) %> : <%= to_crystal_type(flag.storage_type) %>
@@ -102,7 +109,6 @@ module <%= namespace_name %>
   extend self
 end
 
-# Extra includes
-<% config.includes.each do |inc| -%>
+<% config.require_after.each do |inc| -%>
 require "<%= inc.relative_to("#{output_dir}/#{module_dir}") %>"
 <% end %>

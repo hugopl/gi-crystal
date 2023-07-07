@@ -60,10 +60,6 @@ module Generator
       Generator.output_dir
     end
 
-    def skip?(key : String = subject) : Bool
-      config.ignore?(key) || config.handmade?(key)
-    end
-
     def module_dir(namespace : Namespace = @namespace)
       "#{namespace.name.underscore}-#{namespace.version}"
     end
@@ -88,11 +84,15 @@ module Generator
       Generator.pop_log_scope
     end
 
-    def generate(io : IO)
-      with_log_scope do
-        # Generator::ModuleGen class needs `module.ecr` and so on.
-        ECR.embed({{ "ecr/" + @type.name[11..-4].underscore.stringify + ".ecr" }}, io)
+    macro inherited
+      {% unless @type.abstract? %}
+      def generate(io : IO)
+        with_log_scope do
+          # Generator::ModuleGen class needs `module.ecr` and so on.
+          ECR.embed({{ "ecr/" + @type.name[11..-4].underscore.stringify + ".ecr" }}, io)
+        end
       end
+      {% end %}
     end
 
     macro render(filename, object = object)

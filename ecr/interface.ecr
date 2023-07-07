@@ -9,7 +9,7 @@ module <%= namespace_name %>
         include <%= namespace_name %>::<%= type_name %>
       end
 
-      {% unless @type.annotation(GObject::GeneratedWrapper) %}
+      {% unless @type.annotation(GICrystal::GeneratedWrapper) %}
         def self._install_iface_<%= namespace_name %>__<%= type_name %>(interface : Pointer(LibGObject::TypeInterface)) : Nil
         end
       {% end %}
@@ -28,7 +28,7 @@ module <%= namespace_name %>
   end
 
   # :nodoc:
-  @[GObject::GeneratedWrapper]
+  @[GICrystal::GeneratedWrapper]
   class <%= abstract_interface_name(object, false) %> < GObject::Object
     include <%= type_name %>
 
@@ -39,6 +39,5 @@ module <%= namespace_name %>
     end
 
     <% render "ecr/g_type_method.ecr" %>
-    <% render "ecr/cast_methods.ecr" %>
   end
 end

@@ -19,3 +19,21 @@ Spec.after_each do
   # Why 5 times? No idea... I was just unsure of doing just a single call.
   5.times { GC.collect }
 end
+
+# This flag is used by different tests, so it's here
+@[Flags]
+enum TestFlags
+  A  = 1
+  B  = 2
+  C  = 4
+  D  = 8
+  BC = 6
+end
+
+# This enum is used by different tests, so it's here
+enum TestEnum
+  X
+  Y
+  Z
+  Odd_Välue = Int32::MAX
+end

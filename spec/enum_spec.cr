@@ -1,24 +1,21 @@
-@[Flags]
-enum TestFlags
-  A  = 1
-  B  = 2
-  C  = 4
-  D  = 8
-  BC = 6
-end
-
-enum TestEnum
-  X
-  Y
-  Z
-  Odd_Välue = Int32::MAX
-end
+require "./spec_helper"
 
 describe "Enums" do
-  it "registers valid gtypes" do
+  it "registers valid gtypes for user enum/flags" do
     TestFlags.g_type.should_not eq(0)
     TestEnum.g_type.should_not eq(0)
     TestEnum.g_type.should_not eq(TestFlags.g_type)
+  end
+
+  it "registers valid gtypes for generated enum/flags" do
+    Test::RegularEnum.g_type.should_not eq(0)
+    Test::FlagFlags.g_type.should_not eq(0)
+  end
+
+  it "can be ignored in binding.yml" do
+    {% if parse_type("Test::IgnoredEnum").resolve? %}
+      true.should eq(false), "Test::IgnoredEnum was not ignored."
+    {% end %}
   end
 
   it "allows retrieving values by name" do
