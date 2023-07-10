@@ -33,6 +33,22 @@ describe "GVariant" do
     test_variant.not_nil!.as_i.should eq(42)
   end
 
+  it "have a string representation" do
+    v = GLib::Variant.new("hey")
+    v.to_s.should eq("'hey'")
+    v = GLib::Variant.new(42_u64)
+    v.to_s.should eq("uint64 42")
+    v.to_s(false).should eq("42")
+  end
+
+  it "can parse text representations of GVariant's" do
+    v = GLib::Variant.new("hey")
+    GLib::Variant.parse(v.to_s).should eq(v)
+
+    v = GLib::Variant.new(42_u64)
+    GLib::Variant.parse(v.to_s).should eq(v)
+  end
+
   context "respond to as_* and as_*?" do
     it { GLib::Variant.new(8_u8).as_u8.should eq(8_u8) }
     it { GLib::Variant.new(16_i16).as_i16.should eq(16_i16) }
