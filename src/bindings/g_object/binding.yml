@@ -265,6 +265,8 @@ types:
     - prerequisites
   Value:
     handmade: true
+  ValueArray:
+    ignore: true
   WeakRef:
     ignore: true
 
