@@ -670,6 +670,9 @@ int test_subject_sum_array_of_4_ints(TestSubject* self, int* array) {
   return acc;
 }
 
+void test_subject_deprecated_method(TestSubject* self) {
+}
+
 GError* test_subject_return_g_error() {
   return g_error_new(G_FILE_ERROR, G_FILE_ERROR_FAILED, "whatever message");
 }
