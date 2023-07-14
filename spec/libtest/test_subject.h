@@ -431,6 +431,15 @@ int test_subject_nullable_optimal_parameter(TestSubject* self, gchar** param);
 int test_subject_sum_array_of_4_ints(TestSubject* self, int* array);
 
 /**
+ * test_subject_deprecated_method:
+ *
+ * Used to test generation of @[Deprecated] annotations.
+ *
+ * Deprecated: This method is deprecated
+ */
+void test_subject_deprecated_method(TestSubject* self);
+
+/**
  * test_subject_return_g_error:
  * Returns: (transfer full): A GError
  *

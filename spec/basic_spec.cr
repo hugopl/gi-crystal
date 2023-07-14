@@ -9,6 +9,16 @@ class SubjectChildStore
 end
 
 describe "GObject Binding" do
+  it "generate @[Deprecated] annotations on deprecated methods" do
+    deprecated_methods = [] of String
+    {% for method in Test::Subject.methods %}
+      {% if method.annotation(Deprecated) %}
+        deprecated_methods << {{ method.name.stringify }}
+      {% end %}
+    {% end %}
+    deprecated_methods.should eq(%w(deprecated_method))
+  end
+
   describe "reference counting" do
     it "accessible by ref_count method" do
       subject = Test::Subject.new(boolean: true)
