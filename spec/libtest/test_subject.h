@@ -106,14 +106,6 @@ void test_subject_set_simple_func(TestSubject* self, TestSubjectSimpleFunc func,
 gboolean test_subject_call_simple_func(TestSubject* self, int number);
 
 /**
- * test_subject_set_str_list:
- * @list: (array zero-terminated=1):
- *
- * Setter for str_list property.
- */
-void test_subject_set_str_list(TestSubject* self, const char** list);
-
-/**
  * test_subject_may_return_null:
  * @return_nil:
  * Returns: (transfer none) (nullable): Return self if `return_nil` is true, NULL otherwise.

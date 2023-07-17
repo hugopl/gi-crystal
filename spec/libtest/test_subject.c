@@ -27,6 +27,8 @@ static void test_subject_iface_interface_init(TestIfaceInterface* iface) {
 G_DEFINE_TYPE_WITH_CODE(TestSubject, test_subject, G_TYPE_OBJECT,
                         G_ADD_PRIVATE(TestSubject) G_IMPLEMENT_INTERFACE(TEST_TYPE_IFACE, test_subject_iface_interface_init))
 
+void test_subject_set_str_list(TestSubject* self, const char** list);
+
 typedef enum {
   PROP_STRING = 1,
   PROP_BOOLEAN,
