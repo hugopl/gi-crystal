@@ -386,6 +386,9 @@ void test_subject_transfer_full_param(GObject* subject) {
 void test_subject_nullable_transfer_full_param(GObject* gobj) {
 }
 
+void test_subject_nullable_transfer_full_iface_param(TestIface* iface) {
+}
+
 gchar* test_subject_concat_strings(TestSubject* self, int n, const gchar** strings) {
   if (n == 0 || strings == NULL)
     return g_strdup("");
