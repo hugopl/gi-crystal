@@ -127,6 +127,12 @@ void test_subject_transfer_full_param(GObject* subject);
 void test_subject_nullable_transfer_full_param(GObject* gobj);
 
 /**
+ * test_subject_nullable_transfer_full_iface_param:
+ * @iface: (transfer full) (nullable):
+ */
+void test_subject_nullable_transfer_full_iface_param(TestIface* iface);
+
+/**
  * test_subject_concat_strings:
  * @n: number of strings to concat.
  * @strings: (array length=n) (element-type utf8) (nullable): a buffer

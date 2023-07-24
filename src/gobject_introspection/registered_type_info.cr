@@ -6,5 +6,13 @@ module GObjectIntrospection
     end
 
     abstract def methods : Array(FunctionInfo)
+
+    def unref_function : String
+      raise ArgumentError.new("ref/unref functions only exists for object/interface info.")
+    end
+
+    def ref_function : String
+      raise ArgumentError.new("ref/unref functions only exists for object/interface info.")
+    end
   end
 end

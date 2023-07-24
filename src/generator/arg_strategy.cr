@@ -319,15 +319,16 @@ module Generator
       arg = strategy.arg
       return false if !arg.ownership_transfer.full?
 
-      obj = arg.type_info.interface.as?(ObjectInfo)
-      return false if obj.nil?
-
-      true
+      case arg.type_info.interface
+      when ObjectInfo, InterfaceInfo then true
+      else
+        false
+      end
     end
 
     def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
-      obj = arg.type_info.interface.as(ObjectInfo)
+      obj = arg.type_info.interface.as(RegisteredTypeInfo)
 
       var = to_identifier(arg.name)
 
