@@ -121,6 +121,12 @@ TestSubject* test_subject_may_return_null(TestSubject* self, gboolean return_nil
 void test_subject_transfer_full_param(GObject* subject);
 
 /**
+ * test_subject_nullable_transfer_full_param:
+ * @gobj: (transfer full) (nullable):
+ */
+void test_subject_nullable_transfer_full_param(GObject* gobj);
+
+/**
  * test_subject_concat_strings:
  * @n: number of strings to concat.
  * @strings: (array length=n) (element-type utf8) (nullable): a buffer

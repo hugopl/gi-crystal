@@ -329,7 +329,10 @@ module Generator
       arg = strategy.arg
       obj = arg.type_info.interface.as(ObjectInfo)
 
-      io << "LibGObject." << obj.ref_function << '(' << to_identifier(arg.name) << ")"
+      var = to_identifier(arg.name)
+
+      io << "LibGObject." << obj.ref_function << '(' << var << ")"
+      io << " if " << var if arg.nullable?
     end
 
     def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil

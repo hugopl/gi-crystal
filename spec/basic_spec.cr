@@ -33,6 +33,20 @@ describe "GObject Binding" do
       subject.ref_count.should eq(1)
       Test::Subject.transfer_full_param(subject)
       subject.ref_count.should eq(2)
+
+      # be nice and don't leak ref on tests
+      LibGObject.g_object_unref(subject)
+    end
+
+    it "increase object reference when passing it to a nullable transfer full parameter" do
+      subject = Test::Subject.new(boolean: true)
+      Test::Subject.nullable_transfer_full_param(nil)
+
+      subject.ref_count.should eq(1)
+      Test::Subject.nullable_transfer_full_param(subject)
+      subject.ref_count.should eq(2)
+      # be nice and don't leak ref on tests
+      LibGObject.g_object_unref(subject)
     end
 
     it "sink float references on constructors" do
