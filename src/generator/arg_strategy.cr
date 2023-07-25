@@ -32,13 +32,13 @@ module Generator
     def self.find_strategies(method : CallableInfo, direction : Direction) : Array(ArgStrategy)
       strategies = method.args.map { |arg| ArgStrategy.new(method, arg) }
       {% for plan_class in %w(CallbackArgPlan
+                             TransferFullArgPlan
                              ArrayLengthArgPlan
                              OutArgUsedInReturnPlan
                              NullableArrayPlan
                              ArrayArgPlan
                              CallerAllocatesPlan
                              HandmadeArgPlan
-                             TransferFullArgPlan
                              GErrorArgPlan
                              BuiltInTypeArgPlan) %}
       plan = {{ plan_class.id }}.new(strategies)
@@ -331,9 +331,7 @@ module Generator
       obj = arg.type_info.interface.as(RegisteredTypeInfo)
 
       var = to_identifier(arg.name)
-
-      io << "LibGObject." << obj.ref_function << '(' << var << ")"
-      io << " if " << var if arg.nullable?
+      io << "GICrystal.ref(" << var << ")\n"
     end
 
     def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil

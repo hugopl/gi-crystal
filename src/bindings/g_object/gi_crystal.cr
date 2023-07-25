@@ -15,4 +15,16 @@ module GICrystal
     LibGObject.g_param_spec_set_qdata(object, INSTANCE_QDATA_KEY, Pointer(Void).null)
     LibGObject.g_param_spec_unref(object)
   end
+
+  # Increase the `GObject::Object` reference.
+  @[AlwaysInline]
+  def ref(obj : GObject::Object) : Nil
+    LibGObject.g_object_ref(obj)
+  end
+
+  # Increase the `GObject::ParamSpec` reference.
+  @[AlwaysInline]
+  def ref(obj : GObject::ParamSpec) : Nil
+    LibGObject.g_param_spec_ref(obj)
+  end
 end
