@@ -21,20 +21,6 @@ module GObjectIntrospection
       ObjectInfo.new(ptr) if ptr
     end
 
-    def unref_function : String
-      func = LibGIRepository.g_object_info_get_unref_function(self)
-      func.null? ? "g_object_unref" : String.new(func)
-    end
-
-    def ref_function : String
-      func = LibGIRepository.g_object_info_get_ref_function(self)
-      return "g_object_ref_sink" if func.null?
-
-      ref_func = String.new(func)
-      # FIXME: g_param_spec_ref_sink seems bad or I'm doing something wrong.
-      ref_func == "g_param_spec_ref_sink" ? "g_param_spec_ref" : ref_func
-    end
-
     # Return true for fundamental types, like GParamSpec, GObject isn't considered
     # a fundamental type by introspection API.
     def fundamental? : Bool

@@ -41,13 +41,5 @@ module GObjectIntrospection
       ptr = LibGIRepository.g_interface_info_get_iface_struct(self)
       StructInfo.new(ptr) if ptr
     end
-
-    def unref_function : String
-      "g_object_unref"
-    end
-
-    def ref_function : String
-      "g_object_ref"
-    end
   end
 end

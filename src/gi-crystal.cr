@@ -56,6 +56,11 @@ module GICrystal
     value ? 1 : 0
   end
 
+  # This method must be implemented in bindings for all base types that have reference counting.
+  @[AlwaysInline]
+  def ref(null : Nil) : Nil
+  end
+
   # :nodoc:
   def transfer_null_ended_array(ptr : Pointer(Pointer(UInt8)), transfer : Transfer) : Array(String)
     res = Array(String).new
