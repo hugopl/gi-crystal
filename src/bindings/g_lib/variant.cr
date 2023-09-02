@@ -97,6 +97,40 @@ module GLib
       GLib::VariantType.new(ptr, GICrystal::Transfer::None)
     end
 
+    # Parses a GVariant from a text representation.
+    def self.parse(text : String) : Variant
+      error = Pointer(LibGLib::Error).null
+      ptr = LibGLib.g_variant_parse(nil, text, nil, nil, pointerof(error))
+      GLib.raise_gerror(error) if error
+      Variant.new(ptr, :full)
+    end
+
+    # Pretty-prints value in the format understood by `#parse`.
+    def to_s(type_annotate : Bool)
+      String.build do |io|
+        to_s(io, type_annotate)
+      end
+    end
+
+    # ditto
+    def to_s(io : IO, type_annotate : Bool)
+      c_str = LibGLib.g_variant_print(self, GICrystal.to_c_bool(type_annotate))
+      io.write(::Bytes.new(c_str, LibC.strlen(c_str).to_i))
+    ensure
+      LibGLib.g_free(c_str) if c_str
+    end
+
+    # ditto
+    def to_s(io : IO)
+      to_s(io, true)
+    end
+
+    # Returns true if *other* variant have the same type and value of this variant.
+    def ==(other : Variant) : Bool
+      GICrystal.to_bool(LibGLib.g_variant_equal(self, other))
+    end
+
+    # :nodoc:
     def to_unsafe
       @ptr
     end

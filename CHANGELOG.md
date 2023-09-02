@@ -6,6 +6,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.17.0] 2023-07-14
+### Added
+- Annotate deprecated methods in bindings (#114).
+- Add `#to_s`, `#==` and `.parse` to `GLib::Variant` (#113).
+- Add GC resistant GObject subclasses 🎉️, thanks @BlobCodes (#107).
+- Allow enum and flags to be ignored in binding.yml (#101).
+- Print GI annotation info for vfunc, helping debugging.
+
+### Fixed
+- Bind false boolean constants to false (#111).
+- Ensure Bool return type on vfuncs that return booleans (#110).
+- Fix ownership transfer of vfunc return values (#102).
+- Fix compilation for vfuncs returning nullable objects or strings (#104).
+
+### Changed
+- Ignore deprecated `GObject::ValueArray` object. (#115)
+
 ## [0.16.0] 2023-06-16
 ### Added
 - Add test helper methods: `ClosureDataManager.count`, `ClosureDataManager.info` and `ClosureDataManager.deregister_all` (#92).

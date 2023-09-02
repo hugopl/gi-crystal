@@ -2,6 +2,7 @@
     def <%= to_call(prop.name) %>=(value : <%= prop_type_name %>) : <%= prop_type_name %>
       <% if prop.type_info.array? -%>
         # handle array
+        unsafe_value = value.to_a.map(&.to_unsafe).to_unsafe
       <% else -%>
         unsafe_value = value
       <% end %>
