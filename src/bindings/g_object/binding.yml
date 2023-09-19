@@ -256,6 +256,12 @@ types:
     - peek
     - peek_static
     - ref
+  TypeCValue:
+    ignore: true
+  TypeValueCollectFunc:
+    ignore: true
+  TypeValueLCopyFunc:
+    ignore: true
   TypeInterface:
     ignore_methods:
     - add_prerequisite
