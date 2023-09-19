@@ -13,7 +13,7 @@ Changes that change the generated API have a ⚠️.
 - Check if object is null before increase its reference (#119).
 - Fix array of string properties (#118).
 
-## Changed
+### Changed
 - Remove hardcoded `g_object_ref` calls, binding authors now need to implement
   `GICrystal.ref`/`GICrystal.unref` for their special types (#123).
 
