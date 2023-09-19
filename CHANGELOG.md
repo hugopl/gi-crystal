@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.18.0] 2023-09-19
+### Fixed
+- Fix compilation with glibs2 2.78 and gobj introspection 1.78 (#125).
+- Increase reference of transfer full interface parameters (#122).
+- Check if object is null before increase its reference (#119).
+- Fix array of string properties (#118).
+
+## Changed
+- Remove hardcoded `g_object_ref` calls, binding authors now need to implement
+  `GICrystal.ref`/`GICrystal.unref` for their special types (#123).
+
 ## [0.17.0] 2023-07-14
 ### Added
 - Annotate deprecated methods in bindings (#114).
