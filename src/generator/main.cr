@@ -88,6 +88,8 @@ end
 private def generate_all
   Generator::BindingConfig.loaded_configs.each_value do |conf|
     Generator::ModuleGen.load(conf).generate
+  rescue e : GObjectIntrospection::Error
+    Log.error { "Failed to load #{conf.namespace}: #{e.message}" }
   end
   format_files(Generator::Generator.output_dir)
 end
