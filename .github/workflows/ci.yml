@@ -1,28 +1,21 @@
 name: Crystal CI
 
 on:
-  push:
   pull_request:
+    branches: [main]
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '20 16 * * 6'
 
 jobs:
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - {os: ubuntu-latest, crystal: latest}
-# Ameba is broken on nightly builds
-#          - {os: ubuntu-latest, crystal: nightly}
-    runs-on: ${{ matrix.os }}
+  tests:
+    runs-on: ubuntu-latest
     steps:
       - name: Install package dependencies
         run: sudo apt-get install gobject-introspection libgirepository1.0-dev
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
         with:
-          crystal: ${{ matrix.crystal }}
+          crystal: latest
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Install crystal dependencies
