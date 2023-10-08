@@ -151,6 +151,8 @@ module Generator::Helpers
       end
     when .boolean?
       "GICrystal.to_c_bool(#{var})"
+    when .unichar?
+      "#{var}.ord.to_u32"
     when .interface?
       iface = type.interface.not_nil!
       if iface.is_a?(EnumInfo)
@@ -244,7 +246,7 @@ module Generator::Helpers
     when .g_list?           then "GLib::List"
     when .gs_list?          then "GLib::SList"
     when .g_hash?           then "Void"
-    when .unichar?          then "UInt32"
+    when .unichar?          then "Char"
     when .error?            then "GLib::Error"
     else
       raise Error.new("Unknown Crystal representation for #{tag}")
@@ -311,7 +313,7 @@ module Generator::Helpers
     case tag
     when .boolean?
       "GICrystal.to_bool(#{var})"
-    when .int8?, .u_int8?, .int16?, .u_int16?, .int32?, .u_int32?, .int64?, .u_int64?, .float?, .double?, .unichar?, .gtype?
+    when .int8?, .u_int8?, .int16?, .u_int16?, .int32?, .u_int32?, .int64?, .u_int64?, .float?, .double?, .gtype?
       var
     when .utf8?, .filename?
       expr = if transfer.full?
@@ -320,6 +322,8 @@ module Generator::Helpers
                "::String.new(#{var})"
              end
       tag.filename? ? "::Path.new(#{expr})" : expr
+    when .unichar?
+      "#{var}.chr"
     when .interface?
       iface = type.interface.not_nil!
       convert_to_crystal(var, iface, args, transfer)

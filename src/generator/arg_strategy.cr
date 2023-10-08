@@ -11,8 +11,8 @@ module Generator
     end
 
     abstract def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
-    abstract def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
-    abstract def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    abstract def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
+    abstract def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
   end
 
   class ArgStrategy
@@ -90,8 +90,8 @@ module Generator
       io = @implementation ||= IO::Memory.new
       io << "# " << arg_plan.class.name << LF
       case direction
-      in .c_to_crystal? then arg_plan.generate_lib_implementation(io, self)
-      in .crystal_to_c? then arg_plan.generate_crystal_implementation(io, self)
+      in .c_to_crystal? then arg_plan.generate_c_to_crystal_implementation(io, self)
+      in .crystal_to_c? then arg_plan.generate_crystal_to_c_implementation(io, self)
       end
     end
 
@@ -113,14 +113,14 @@ module Generator
       true
     end
 
-    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       arg_type = strategy.arg_type
       io << to_identifier(strategies[arg_type.array_length].arg.name) << " = " << to_identifier(arg.name)
       io << (arg.nullable? ? ".try(&.size) || 0" : ".size")
     end
 
-    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
     end
   end
 
@@ -136,7 +136,7 @@ module Generator
       true
     end
 
-    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       arg_name = to_identifier(arg.name)
       arg_type = arg.type_info
@@ -151,7 +151,7 @@ module Generator
       generate_array_to_unsafe(io, arg_name, arg.type_info)
     end
 
-    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       arg_name = to_identifier(arg.name)
       arg_type = arg.type_info
@@ -196,7 +196,7 @@ module Generator
       true
     end
 
-    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       arg_type = arg.type_info
       arg_name = to_identifier(arg.name)
@@ -210,7 +210,7 @@ module Generator
       end
     end
 
-    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       arg_name = arg.name
       var = "lib_#{to_identifier(arg_name)}"
@@ -230,7 +230,7 @@ module Generator
       true
     end
 
-    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
 
       io << to_identifier(arg.name) << " = "
@@ -243,7 +243,7 @@ module Generator
       end
     end
 
-    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
     end
 
     private def arg_used_in_return_type?(method, arg) : Bool
@@ -262,12 +262,12 @@ module Generator
       true
     end
 
-    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       io << to_identifier(arg.name) << "=" << to_crystal_type(arg.type_info) << ".new"
     end
 
-    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
     end
   end
 
@@ -281,7 +281,7 @@ module Generator
       true
     end
 
-    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       arg_type = strategy.arg_type
       type = to_crystal_type(arg_type)
@@ -300,7 +300,7 @@ module Generator
       io << "end\n"
     end
 
-    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       arg_type = strategy.arg_type
       type = to_crystal_type(arg_type)
@@ -326,7 +326,7 @@ module Generator
       end
     end
 
-    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       obj = arg.type_info.interface.as(RegisteredTypeInfo)
 
@@ -334,7 +334,7 @@ module Generator
       io << "GICrystal.ref(" << var << ")\n"
     end
 
-    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
     end
   end
 
@@ -349,10 +349,10 @@ module Generator
       true
     end
 
-    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
     end
 
-    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       arg_name = to_identifier(arg.name)
       namespace = to_type_name(strategy.method.namespace.name)
@@ -364,13 +364,15 @@ module Generator
 
   struct BuiltInTypeArgPlan < ArgPlan
     def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
-      return false if direction.crystal_to_c?
       return false if strategy.remove_from_declaration?
 
-      arg_type = strategy.arg.type_info
-      return false if handmade_type?(arg_type)
+      type_info = strategy.arg.type_info
+      return false if handmade_type?(type_info)
 
-      case arg_type.tag
+      tag = type_info.tag
+      return tag.unichar? if direction.crystal_to_c?
+
+      case tag
       when .interface?, .utf8?, .filename?, .boolean?
         true
       else
@@ -378,14 +380,19 @@ module Generator
       end
     end
 
-    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
-    end
-
-    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       arg_name = to_identifier(arg.name)
       type_info = arg.type_info
+      return unless type_info.tag.unichar?
+      io << arg_name << '=' << convert_to_lib(arg_name, type_info, :none, arg.nullable?) << LF
+    end
 
+    def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      type_info = arg.type_info
+
+      arg_name = to_identifier(arg.name)
       io << arg_name << '=' << convert_to_crystal("lib_#{arg_name}", type_info, nil, arg.ownership_transfer)
       io << " unless lib_" << arg_name << ".null?" if arg.nullable?
       io << LF
@@ -414,7 +421,7 @@ module Generator
       true
     end
 
-    def generate_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
       arg = strategy.arg
       type_info = arg.type_info
       callback = type_info.interface.as(CallbackInfo)
@@ -436,7 +443,7 @@ module Generator
       io << "end\n"
     end
 
-    def generate_lib_implementation(io : IO, strategy : ArgStrategy) : Nil
+    def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
     end
   end
 end
