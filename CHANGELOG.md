@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.19.0] 2023-10-08
+### Changed
+ - Use Crystal Char for gunichar.
+ - Do not block the code generation if some TypeLib wasn't found, just warn instead.
+
 ## [0.18.0] 2023-09-19
 ### Fixed
 - Fix compilation with glibs2 2.78 and gobj introspection 1.78 (#125).
