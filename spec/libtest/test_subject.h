@@ -115,6 +115,13 @@ gboolean test_subject_call_simple_func(TestSubject* self, int number);
 TestSubject* test_subject_may_return_null(TestSubject* self, gboolean return_nil);
 
 /**
+ * test_subject_return_char:
+ * @character: The very same character that will be returned.
+ * Returns: The very same character parameter.
+ */
+gunichar test_subject_return_char(TestSubject* self, gunichar character);
+
+/**
  * test_subject_transfer_full_param:
  * @subject: (transfer full):
  */

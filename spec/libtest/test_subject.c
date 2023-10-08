@@ -380,6 +380,10 @@ TestSubject* test_subject_may_return_null(TestSubject* self, gboolean return_nil
   return return_nil ? NULL : self;
 }
 
+gunichar test_subject_return_char(TestSubject* self, gunichar character) {
+  return character;
+}
+
 void test_subject_transfer_full_param(GObject* subject) {
 }
 
