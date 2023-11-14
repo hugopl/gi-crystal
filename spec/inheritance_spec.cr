@@ -22,7 +22,8 @@ private class UserObjectWithGProperties < GObject::Object
   @[GObject::Property(nick: "STRING", blurb: "A string without meaning", default: "default")]
   property str_ing : String = "default"
 
-  @[GObject::Property(nick: "INTEGER", blurb: "An Int32", default: 42, min: 40, max: 50)]
+  # The foo: 2 at end is to test if we ignore unknown parameters.
+  @[GObject::Property(nick: "INTEGER", blurb: "An Int32", default: 42, min: 40, max: 50, foo: 2)]
   property int : Int32 = 42
 
   @[GObject::Property(default: TestFlags::BC)]
