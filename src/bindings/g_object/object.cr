@@ -34,6 +34,28 @@ module GObject
   annotation Virtual
   end
 
+  # This annotation install a Crystal property as a GObject property, so it can be recognized by GObject
+  #
+  # It accepts the following parameters:
+  #
+  # name: Canonical name of the property specified, default to the variable name.
+  # nick: Nick name for the property specified, default to nil.
+  # default: The default value for this property when created from C world (impossible at the moment).
+  # min: Minimum value for this property, only valid for numeric or Char properties.
+  # max: Maximum value for this property, only valid for numeric or Char properties.
+  # blurb: Description of the property specified, default to nil.
+  #
+  # Example:
+  # ```Crystal
+  # private class PropObject < GObject::Object
+  #   @[GObject::Property(nick: "INTEGER", blurb: "An Int32", default: 42, min: 40, max: 50)]
+  #   property int : Int32 = 42
+  #
+  #   def initialize
+  #     super()
+  #   end
+  # end
+  # ```
   annotation Property
   end
 
@@ -85,7 +107,6 @@ module GObject
                 name = {{ var.name.gsub(/\_/, "-").stringify }}.to_unsafe
                 nick = {{ property["nick"] }}.try(&.to_unsafe) || Pointer(LibC::Char).null
                 blurb = {{ property["blurb"] }}.try(&.to_unsafe) || Pointer(LibC::Char).null
-                {% other_args = property.named_args.to_a.reject { |arg| ["nick", "blurb"].includes?(arg[0].stringify) } %}
 
                 {% has_getter = @type.has_method?(var.name.stringify) || @type.has_method?(var.name.stringify + "?") %}
                 {% has_setter = @type.has_method?("#{var.name}=") %}
@@ -96,6 +117,7 @@ module GObject
                 flags |= GObject::ParamFlags::Readable if {{ has_getter }}
                 flags |= GObject::ParamFlags::Writable if {{ has_setter }}
 
+                {% other_args = property.named_args.to_a.select { |arg| %w(min max default).includes?(arg[0].stringify) } %}
                 # Finally register the type to GLib.
                 # The given varible name has its underscores converted to dashes.
                 pspec = GObject.create_param_spec({{ var.type }}, name, nick, blurb, flags, {{ other_args.map { |tuple| "#{tuple[0]}: #{tuple[1]}".id }.splat }})
