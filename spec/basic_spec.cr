@@ -113,14 +113,27 @@ describe "GObject Binding" do
   end
 
   describe "casts" do
+    it "don't use wrapper cache" do
+      ptr = LibGObject.g_object_new(Test::SubjectChild.g_type, "string", "hey", "int32", 42, Pointer(Void).null)
+      obj = GObject::Object.new(ptr, :full)
+      subject = Test::SubjectChild.cast(obj)
+      # If these pointers are equal, they are the same Crystal object, with luck it may not crash, but
+      # it can crash because the crystal type id is for GObject::Object instead of Test::SubjectChild.
+      #
+      # Note that if the type is an user type, these pointers must be the same!
+      obj.as(Void*).should_not eq(subject.as(Void*))
+    end
+
     it "can downcast objects" do
       child = Test::SubjectChild.new(string: "hey")
       gobj = child.me_as_gobject
-      gobj.ref_count.should eq(1)
+      gobj.ref_count.should eq(2) # we can't reuse the crystal wrapper of non-user objects
       gobj.class.should eq(Test::SubjectChild)
       cast = Test::Subject.cast(gobj)
-      cast.ref_count.should eq(1)
+      cast.ref_count.should eq(3)
       cast.string.should eq("hey")
+      child.should eq(gobj)
+      cast.should eq(gobj)
     end
 
     it "thrown an exception on bad casts" do

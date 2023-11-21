@@ -29,6 +29,8 @@ module GICrystal
 
   # See `declare_new_method`.
   INSTANCE_QDATA_KEY = LibGLib.g_quark_from_static_string("gi-crystal::instance")
+  # See `declare_new_method`.
+  INSTANCE_FACTORY = LibGLib.g_quark_from_static_string("gi-crystal::factory")
 
   # Raised when trying to cast an object that was already collected by GC.
   class ObjectCollectedError < RuntimeError
@@ -117,23 +119,36 @@ module GICrystal
     end
   end
 
-  # This declare the `new` method on a instance of type *type*, *qdata_get_func* and *qdata_set_func* are functions used
-  # to set/get qdata on objects, e.g. `g_object_get_qdata`/`g_object_set_qdata` for GObjects.
+  # This declare the `new` method on a instance of type *type*, *qdata_get_func* (g_object_get_qdata) is used
+  # to fetch a possible already existing Crystal object.
   #
-  # GICrystal stores the Crystal object instance in the GObject, so when it appears from C world we try to re-use the
-  # old Crystal instance if it wasn't garbage collected. The key used for this is `INSTANCE_QDATA_KEY`.
+  # GICrystal stores the User defined Crystal objects instances in the GObject, so when it appears from C
+  # world we can retrieve the Crystal instance back.
   #
   # This is mainly used for `GObject::Object`, since `GObject::ParamSpec` doesn't support casts on GICrystal.
-  macro declare_new_method(type, qdata_get_func, qdata_set_func)
+  macro declare_new_method(type, qdata_get_func)
     # :nodoc:
     def self.new(pointer : Pointer(Void), transfer : GICrystal::Transfer) : self
       # Try to recover the Crystal instance if any
       instance = LibGObject.{{ qdata_get_func }}(pointer, GICrystal::INSTANCE_QDATA_KEY)
       return instance.as({{ type }}) if instance
 
-      # This object never meet Crystal land, so we allocate memory and initialize it.
+      # Try to construct the right wrapper for the matching GObject using the function pointer
+      # to `{{ type }}.new` stored in GType qdata.
+      #
+      # This pointer is stored at type initialization, i.e. the `g_type` class method.
+      instance_g_type = pointer.as(LibGObject::TypeInstance*).value.g_class.value.g_type
+      if instance_g_type != g_type
+        ctor_ptr = LibGObject.g_type_get_qdata(instance_g_type, GICrystal::INSTANCE_FACTORY)
+        if ctor_ptr
+          ctor = Proc(Void*, GICrystal::Transfer, {{ type }}).new(ctor_ptr, Pointer(Void).null)
+          return ctor.call(pointer, transfer)
+        end
+      end
+
+      # This object never meet Crystal land and there's no Crystal wrapper for the exact GType,
+      # so we allocate memory and initialize it for the type we know.
       instance = {{ type }}.allocate
-      LibGObject.{{ qdata_set_func }}(pointer, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(instance.object_id))
       instance.initialize(pointer, transfer)
       GC.add_finalizer(instance)
       instance

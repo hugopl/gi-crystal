@@ -1,0 +1,12 @@
+<% if object.type_init -%>
+  @@g_type : UInt64?
+
+  # Returns the type id (GType) registered in GLib type system.
+  def self.g_type : UInt64
+    @@g_type ||= <%= to_lib_namespace(namespace) %>.<%= object.type_init %>.tap do |g_type|
+      # Set the Crystal constructor on type qdata
+      ctor = -><%= abstract_interface_name(object) %>.new(Void*, GICrystal::Transfer)
+      LibGObject.g_type_set_qdata(g_type, GICrystal::INSTANCE_FACTORY, ctor.pointer)
+    end
+  end
+<% end %>

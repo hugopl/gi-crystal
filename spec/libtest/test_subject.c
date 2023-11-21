@@ -519,7 +519,7 @@ GList* test_subject_return_list_of_iface_transfer_full(TestSubject* self) {
   GList* list = NULL;
   g_object_ref(self);
   list = g_list_append(list, self);
-  list = g_list_append(list, test_subject_new_from_string("Subject from C"));
+  list = g_list_append(list, test_subject_new_from_string("Born in C"));
   return list;
 }
 
