@@ -444,13 +444,7 @@ module GObject
 
         # Cast a `GObject::Object` to this type, returns nil if cast can't be made.
         def self.cast?(obj : GObject::Object) : self?
-          return if LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
-
-          instance = GICrystal.instance_pointer(obj)
-          # This should never happen with GC resistant objects
-          raise GICrystal::ObjectCollectedError.new if instance.null?
-
-          instance.as(self)
+          new(obj.to_unsafe, :none) unless LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
         end
 
         # A hook to be executed after the underlying gobject has been initialized.
@@ -634,7 +628,7 @@ module GObject
 
     # Cast a `GObject::Object` to `self`, returns nil if the cast can't be made.
     def self.cast?(obj : GObject::Object) : self?
-      new(obj.to_unsafe, GICrystal::Transfer::None) unless LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
+      new(obj.to_unsafe, :none) unless LibGObject.g_type_check_instance_is_a(obj, g_type).zero?
     end
   end
 end

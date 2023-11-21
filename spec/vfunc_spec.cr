@@ -86,7 +86,7 @@ describe "GObject vfuncs" do
     obj.float64.should eq(3.3)
     obj.string.should eq("string")
     subject = Test::Subject.cast(obj.obj)
-    subject.ref_count.should eq(1)
+    subject.ref_count.should eq(2) # now 2 wrappers for the same C obj
     subject.string.should eq("hey")
   end
 
@@ -98,7 +98,7 @@ describe "GObject vfuncs" do
     obj.float64.should eq(3.3)
     obj.string.should eq("string")
     subject = Test::Subject.cast(obj.obj)
-    subject.ref_count.should eq(1)
+    subject.ref_count.should eq(2) # now 2 wrappers for the same C obj
     subject.string.should eq("hey")
   end
 

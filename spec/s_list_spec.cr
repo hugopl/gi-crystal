@@ -7,9 +7,8 @@ describe "GSList" do
     list = subject.return_slist_of_iface_transfer_full
     list.size.should eq(2)
 
-    subject_from_c = list[0]
-    subject_from_c.object_id.should eq(subject.object_id)
-    Test::Subject.cast(subject_from_c).string.should eq("Subject from Crystal")
+    list[0].object_id.should eq(subject.object_id)
+    Test::Subject.cast(list[0]).string.should eq("Subject from Crystal")
     Test::Subject.cast(list[1]).string.should eq("Subject from C")
   end
 
@@ -19,9 +18,11 @@ describe "GSList" do
     list = subject.return_slist_of_gobject_transfer_full
     list.size.should eq(2)
 
-    subject_from_c = list[0]
-    subject_from_c.object_id.should eq(subject.object_id)
-    Test::Subject.cast(subject_from_c).string.should eq("Subject from Crystal")
+    list[0].object_id.should eq(subject.object_id)
+    list[0].as(Test::Subject).string.should eq("Subject from Crystal")
+    Test::Subject.cast(list[0]).string.should eq("Subject from Crystal")
+
+    list[1].as(Test::Subject).string.should eq("Subject from C")
     Test::Subject.cast(list[1]).string.should eq("Subject from C")
   end
 

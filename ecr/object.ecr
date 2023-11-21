@@ -77,10 +77,12 @@ module <%= namespace_name %>
       end
     <% end %>
 
-    <% render "ecr/g_type_method.ecr" %>
+    <% render "ecr/object_g_type_method.ecr" %>
     <% render_properties %>
     <% render_methods %>
     <% render_signals %>
     <% render_vfuncs %>
+
+    def_equals_and_hash @pointer
   end
 end

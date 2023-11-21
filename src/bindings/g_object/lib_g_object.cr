@@ -5,6 +5,9 @@ lib LibGObject
   # So we can re-use the Crystal objects saving some memory allocations.
   fun g_object_set_qdata(object : Void*, quark : UInt32, data : Void*)
 
+  # This is used only tests
+  fun g_object_new(type : UInt64, first_property_name : Pointer(LibC::Char), ...) : Void*
+
   fun g_signal_new(signal_name : LibC::Char*,
                    itype : UInt64,
                    signal_flags : UInt32,

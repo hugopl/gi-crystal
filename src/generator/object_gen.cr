@@ -80,7 +80,7 @@ module Generator
     def render_qdata_optimized_new_method(io : IO)
       return if !object.inherits?("GObject") && !object.inherits?("GParam")
 
-      io << "GICrystal.declare_new_method(" << type_name << ',' << object.qdata_get_func << ',' << object.qdata_set_func << ")\n"
+      io << "GICrystal.declare_new_method(" << type_name << ',' << object.qdata_get_func << ")\n"
     end
   end
 end

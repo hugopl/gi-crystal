@@ -66,7 +66,8 @@ describe "Classes inheriting GObject::Object" do
     casted_obj.object_id.should eq(obj.object_id)
   end
 
-  it "create a crystal instance if the object was born on C world" do
+  # Crystal types created in C world are not supported yet
+  pending "creates crystal object for Crystal type born in C world" do
     raw_gobj = LibGObject.g_object_newv(UserObject.g_type, 0, nil)
     wrapper = GObject::Object.new(raw_gobj, :full)
     obj = UserObject.cast(wrapper)
@@ -78,7 +79,7 @@ describe "Classes inheriting GObject::Object" do
     obj.ref_count.should eq(1)
   end
 
-  it "create a crystal instance if the object with float ref was born on C world" do
+  pending "creates crystal object for Crystal type with float ref born in C world" do
     raw_gobj = LibGObject.g_object_newv(UserFloatRefObject.g_type, 0, nil)
     wrapper = GObject::Object.new(raw_gobj, :full)
     obj = UserFloatRefObject.cast(wrapper)

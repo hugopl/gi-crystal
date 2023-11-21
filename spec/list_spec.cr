@@ -2,27 +2,27 @@ require "./spec_helper"
 
 describe "GList" do
   it "works with interfaces" do
-    subject = Test::Subject.new(string: "Subject from Crystal")
+    subject = Test::Subject.new(string: "Born in Crystal")
 
     list = subject.return_list_of_iface_transfer_full
     list.size.should eq(2)
 
     subject_from_c = list[0]
     subject_from_c.object_id.should eq(subject.object_id)
-    Test::Subject.cast(subject_from_c).string.should eq("Subject from Crystal")
-    Test::Subject.cast(list[1]).string.should eq("Subject from C")
+    Test::Subject.cast(subject_from_c).string.should eq("Born in Crystal")
+    Test::Subject.cast(list[1]).string.should eq("Born in C")
   end
 
   it "works with GObjects" do
-    subject = Test::Subject.new(string: "Subject from Crystal")
+    subject = Test::Subject.new(string: "Born in Crystal")
 
     list = subject.return_list_of_gobject_transfer_full
     list.size.should eq(2)
 
     subject_from_c = list[0]
     subject_from_c.object_id.should eq(subject.object_id)
-    Test::Subject.cast(subject_from_c).string.should eq("Subject from Crystal")
-    Test::Subject.cast(list[1]).string.should eq("Subject from C")
+    Test::Subject.cast(subject_from_c).string.should eq("Born in Crystal")
+    Test::Subject.cast(list[1]).string.should eq("Born in C")
   end
 
   it "works on transfer full" do
