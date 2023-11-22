@@ -124,6 +124,15 @@ describe "GObject Binding" do
       obj.as(Void*).should_not eq(subject.as(Void*))
     end
 
+    it "can be used on interfaces" do
+      ptr = LibGObject.g_object_new(Test::Subject.g_type, "float64", 0.5, Pointer(Void).null)
+      obj = GObject::Object.new(ptr, :full)
+      iface = Test::Iface.cast(obj)
+      iface.float64.should eq(0.5)
+      iface.ref_count.should eq(2)
+      iface.return_myself_as_interface.float64.should eq(0.5)
+    end
+
     it "can downcast objects" do
       child = Test::SubjectChild.new(string: "hey")
       gobj = child.me_as_gobject

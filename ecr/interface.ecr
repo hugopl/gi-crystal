@@ -24,6 +24,17 @@ module <%= namespace_name %>
     <% render_vfuncs %>
     <% render_signals %>
 
+    # Cast a `GObject::Object` to `self`, throws a `TypeCastError` if the cast can't be made.
+    def self.cast(obj : GObject::Object) : self
+      cast?(obj) || raise TypeCastError.new("can't cast #{typeof(obj).name} to #{self}")
+    end
+
+    def self.cast?(obj : GObject::Object) : self?
+      if LibGObject.g_type_check_instance_is_a(obj, g_type) != 0
+        <%= abstract_interface_name(object, false) %>.new(obj.to_unsafe, :none)
+      end
+    end
+
     abstract def to_unsafe
   end
 
