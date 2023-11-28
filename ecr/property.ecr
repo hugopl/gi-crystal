@@ -3,6 +3,8 @@
       <% if prop.type_info.array? -%>
         # handle array
         unsafe_value = value.to_a.map(&.to_unsafe).to_unsafe
+      <% elsif prop.type_info.object? -%>
+        unsafe_value = value.nil? ? Pointer(Void).null : value.to_unsafe
       <% else -%>
         unsafe_value = value
       <% end %>

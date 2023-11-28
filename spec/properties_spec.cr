@@ -77,7 +77,7 @@ describe "GObject properties" do
     subject.gobj.object_id.should eq(value.object_id)
     value.ref_count.should eq(2)
 
-    subject.gobj = nil
+    subject.gobj = value.may_return_null(true)
     value.ref_count.should eq(1)
     subject.gobj.should eq(nil)
   end
