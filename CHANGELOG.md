@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.20.1] 2023-12-09
+### Fixed
+- Fixed a crash when trying to cast modules (#132)
+- Fix setter of GObject properties when using nulable types.
+
 ## [0.20.0] 2023-11-21
 ### Fixed
 - Fixed a crash when using casted objects that came to Crystal first as a GObject::Object.
