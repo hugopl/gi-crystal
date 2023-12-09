@@ -117,7 +117,7 @@ module Generator
       arg = strategy.arg
       arg_type = strategy.arg_type
       io << to_identifier(strategies[arg_type.array_length].arg.name) << " = " << to_identifier(arg.name)
-      io << (arg.nullable? ? ".try(&.size) || 0" : ".size")
+      io << (arg.nullable? ? ".try(&.size) || 0" : ".size") << LF
     end
 
     def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
@@ -202,7 +202,7 @@ module Generator
       arg_name = to_identifier(arg.name)
 
       generate_null_guard(io, arg_name, arg_type, nullable: arg.nullable?) do
-        if arg_type.array?
+        if arg_type.array? && !arg_type.param_type.tag.u_int8?
           generate_array_to_unsafe(io, arg_name, arg_type)
         else
           io << arg_name << ".to_unsafe"
