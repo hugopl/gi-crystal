@@ -10,6 +10,8 @@ If you are looking for GTK4 bindings for Crystal, go to [GTK4](https://github.co
 I wrote this while studying GObject Introspection to contribute with [crystal-gobject](https://github.com/jhass/crystal-gobject)
 but at some point I decided to take a different approach on how to generate the bindings, so I started this.
 
+Besides the binding generator this shard provides bindings for GLib, GObject and Gio libraries.
+
 ## Installation
 
 You are probably looking for the [GTK4](https://github.com/hugopl/gtk4.cr) shard, not this one, since this shard is only
@@ -24,6 +26,7 @@ useful if you are creating a binding for a GObject based library.
    ```
 
 2. Run `shards install`
+3. Run `./bin/gi-crystal` to generate the bindings.
 
 ## Usage
 
@@ -33,6 +36,14 @@ files under the project directory and generate the bindings at `lib/gi-crystal/s
 The generator is compiled in a _post-install_ task and can be found at `bin/gi-crystal` after you run `shards install`.
 
 See https://github.com/hugopl/gtk4.cr for an example of how to use it.
+
+If you want to use just GLib, GObject or Gio bindings do:
+
+```Crystal
+require "gi-crystal/glib"    # Just GLib bindings
+require "gi-crystal/gobject" # GLib and GObject bindings
+require "gi-crystal/gio"     # GLib, GObject and Gio bindings
+```
 
 ## Memory Management ❤️‍🔥️
 
