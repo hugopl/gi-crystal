@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.21.0] 2023-12-10
+### Fixed
+- Use ::Bytes on array of UInt8 parameters and return values. (#140)
+
+### Added
+- Gio bindings are now included in GICrystal (#139).
+- Easier to require just `GLib`, `GObject` or `Gio`, use `require "gi-crystal/glib"`,
+  `require "gi-crystal/gobject"` or `require "gi-crystal/gio"`
+
 ## [0.20.1] 2023-12-09
 ### Fixed
 - Fixed a crash when trying to cast modules (#132)
