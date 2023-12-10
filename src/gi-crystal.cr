@@ -93,8 +93,8 @@ module GICrystal
   end
 
   # :nodoc:
-  def transfer_array(ptr : Pointer(UInt8), length : Int, transfer : Transfer) : Slice(UInt8)
-    slice = Slice(UInt8).new(ptr, length, read_only: true)
+  def transfer_array(ptr : Pointer(UInt8), length : Int, transfer : Transfer) : ::Bytes
+    slice = ::Bytes.new(ptr, length, read_only: true)
     if transfer.full?
       slice = slice.clone
       LibGLib.g_free(ptr)

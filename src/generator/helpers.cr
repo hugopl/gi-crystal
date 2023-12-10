@@ -274,8 +274,12 @@ module Generator::Helpers
       return "Pointer(Void)" if iface.nil?
       to_crystal_type(iface, include_namespace)
     when .array?
-      t = to_crystal_type(type.param_type, include_namespace, is_arg: is_arg)
-      "Enumerable(#{t})"
+      if type.param_type.tag.u_int8?
+        "::Bytes"
+      else
+        t = to_crystal_type(type.param_type, include_namespace, is_arg: is_arg)
+        "Enumerable(#{t})"
+      end
     when tag.utf8?, .filename?, .g_list?, .gs_list?, .error?
       to_crystal_type(tag)
     else

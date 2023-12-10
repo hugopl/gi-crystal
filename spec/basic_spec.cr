@@ -217,6 +217,14 @@ describe "GObject Binding" do
     end
   end
 
+  describe "array of uint8 parameters" do
+    it "are translated to Crystal ::Bytes" do
+      contents = File.read(File.join(__DIR__, "./resource.xml"))
+      mime = Gio.content_type_guess("file.ui", contents.to_slice)
+      mime.should eq("application/x-designer")
+    end
+  end
+
   describe "optional parameters" do
     it "are removed" do
       Test::Subject.no_optional_param.should eq(0)
