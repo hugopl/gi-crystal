@@ -23,7 +23,8 @@ module Generator
       CrystalToC
     end
 
-    property? remove_from_declaration : Bool
+    property? remove_from_declaration : Bool = false
+    property? capture_block : Bool = false
     getter method : CallableInfo
     getter arg : ArgInfo
 
@@ -32,6 +33,7 @@ module Generator
     def self.find_strategies(method : CallableInfo, direction : Direction) : Array(ArgStrategy)
       strategies = method.args.map { |arg| ArgStrategy.new(method, arg) }
       {% for plan_class in %w(CallbackArgPlan
+                             AsyncPatternArgPlan
                              TransferFullArgPlan
                              ArrayLengthArgPlan
                              OutArgUsedInReturnPlan
@@ -60,7 +62,6 @@ module Generator
     end
 
     def initialize(@method : CallableInfo, @arg : ArgInfo)
-      @remove_from_declaration = false
     end
 
     def has_implementation? : Bool
@@ -78,12 +79,18 @@ module Generator
     def render_declaration(io : IO)
       return if remove_from_declaration?
 
-      # Default arg declaration
-      null_mark = '?' if arg.nullable?
+      # ⚠️`capture_block` flag is used for GIO async methods, the generator must
+      # create another version of the method with the block capture since `&callback : Proc(Nil)?
+      # trigger a compiler error.
+      #
+      # As the generator needs a refactor to make it easier to add method overloads based on argument
+      # strategies, for now I just set the captured block as non-nilable.
+      null_mark = '?' if arg.nullable? && !capture_block?
       type = to_crystal_type(arg_type, is_arg: true)
       name = to_crystal_arg_decl(arg.name)
+      io << '&' if capture_block?
       io << name << " : " << type << null_mark
-      io << ','
+      io << ',' if !capture_block? # Crystal bug(?) parsing foo(&capture : Proc(Nil),).
     end
 
     def add_implementation(arg_plan : ArgPlan, direction : Direction) : Nil
@@ -440,6 +447,47 @@ module Generator
       io << destroy_notify_var << " = ->GICrystal::ClosureDataManager.deregister(Pointer(Void)).pointer\n"
       io << "else\n"
       io << callback_var << '=' << userdata_var << '=' << destroy_notify_var << "= Pointer(Void).null\n"
+      io << "end\n"
+    end
+
+    def generate_c_to_crystal_implementation(io : IO, strategy : ArgStrategy) : Nil
+    end
+  end
+
+  struct AsyncPatternArgPlan < ArgPlan
+    def match?(strategy : ArgStrategy, direction : ArgStrategy::Direction) : Bool
+      arg = strategy.arg
+      type_info = arg.type_info
+      callback = type_info.interface
+      return false unless callback.is_a?(CallbackInfo)
+      return false if callback.name != "AsyncReadyCallback" || callback.namespace.name != "Gio"
+
+      idx = strategies.index(strategy)
+      return false if idx.nil? || idx != strategies.size - 2
+
+      user_data_arg = strategies[idx + 1].arg
+      return false unless user_data_arg.type_info.tag.void?
+
+      strategy.capture_block = true
+      strategies[idx + 1].remove_from_declaration = true
+    end
+
+    def generate_crystal_to_c_implementation(io : IO, strategy : ArgStrategy) : Nil
+      arg = strategy.arg
+      type_info = arg.type_info
+      idx = strategies.index(strategy).not_nil!
+
+      callback_var = to_identifier(arg.name)
+      user_data_var = to_identifier(strategies[idx + 1].arg.name)
+      io << user_data_var << " = Box.box(" << callback_var << ")\n"
+      io << callback_var << " = if " << callback_var << ".nil?\n"
+      io << "  Pointer(Void).null\n"
+      io << "else\n"
+      io << "  ->(gobject : Void*, result : Void*, box : Void*) {\n"
+      io << "    unboxed_callback = Box(Gio::AsyncReadyCallback).unbox(box)\n"
+      io << "    GICrystal::ClosureDataManager.deregister(box)\n"
+      io << "    unboxed_callback.call(typeof(self).new(gobject, :none), Gio::AbstractAsyncResult.new(result, :none))\n"
+      io << "  }.pointer\n"
       io << "end\n"
     end
 

@@ -259,6 +259,20 @@ So if you want to rescue from this specific error you must `rescue e : GLib::Fil
 error in this domain you must `rescue e : GLib::FileError`, and finally if you want to rescue from any GLib errors you do
 `rescue e : GLib::GLibError`.
 
+## Gio Async Pattern
+
+All `*_async` methods with a `*_finish` methods receive a block, the block works as the `Gio::AsyncReadyCallback` and you need
+to call the `*_finish` on the `result`, exceptions are raised by the `*_finish` functions on errors.
+
+Example:
+
+```Crystal
+file = Gio::File.new_for_path("/my/nice/file")
+file.read_async(0, nil) do |obj, result|
+  obj.as(Gio::File).read_finish(result)
+end
+```
+
 ## Raw C Structs
 
 At [binding.yml](BINDING_YML.md) file you can define the strategy used to bind the structs, if set to `auto`it will behave
