@@ -145,3 +145,6 @@ types:
     ignore: true
   UnixSocketAddressPrivate:
     ignore: true
+
+execute_callback:
+ - g_application_run
