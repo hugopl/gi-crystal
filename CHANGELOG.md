@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.22.0] 2024-01-15
+### Fixed
+- Remove deprecation warnings from crystal 1.11.
+- Tell the compiler LibGio.g_application_run can raise exceptions, so you can catch then.
+
 ## [0.21.0] 2023-12-10
 ### Fixed
 - Use ::Bytes on array of UInt8 parameters and return values. (#140)
