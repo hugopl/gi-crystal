@@ -330,7 +330,7 @@ module GObject
         # Mostly copied from crystal source
         macro property!(*names)
           {% verbatim do %}
-            getter! {{*names}}
+            getter! {{names.splat}}
 
             {% for name in names %}
               {% if name.is_a?(TypeDeclaration) %}
