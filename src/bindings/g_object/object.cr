@@ -493,7 +493,7 @@ module GObject
         {% if args.empty? %}
           %func.try &.call(self.to_unsafe, \{{ @def.args.map { |arg| arg.internal_name || arg.name }.splat }})
         {% else %}
-          %func.try &.call(self.to_unsafe, {{ *args }})
+          %func.try &.call(self.to_unsafe, {{ args.splat }})
         {% end %}
       \{% end %}
     end
@@ -507,7 +507,7 @@ module GObject
         {% if args.empty? %}
           %func.call(self.to_unsafe, \{{ @def.args.map { |arg| arg.internal_name || arg.name }.splat }})
         {% else %}
-          %func.call(self.to_unsafe, {{ *args }})
+          %func.call(self.to_unsafe, {{ args.splat }})
         {% end %}
       \{% end %}
     end
