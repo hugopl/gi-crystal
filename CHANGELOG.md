@@ -9,7 +9,7 @@ Changes that change the generated API have a ⚠️.
 ## [0.22.0] 2024-01-15
 ### Fixed
 - Remove deprecation warnings from crystal 1.11.
-- Tell the compiler LibGio.g_application_run can raise exceptions, so you can catch then.
+- Tell the compiler LibGio.g_application_run can raise exceptions, so you can catch them.
 
 ## [0.21.0] 2023-12-10
 ### Fixed
