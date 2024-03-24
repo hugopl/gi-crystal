@@ -407,8 +407,6 @@ types:
     - mkdir_with_parents
     - nullify_pointer
     - number_parser_error_quark
-    - once_init_enter
-    - once_init_leave
     - option_error_quark
     - parse_debug_string
     - path_get_basename
@@ -843,3 +841,8 @@ execute_callback:
  - g_main_loop_run
  - g_main_context_invoke_full
  - g_main_context_invoke
+lib_ignore:
+- g_once_init_enter
+- g_once_init_leave
+- g_once_init_enter_pointer
+- g_once_init_leave_pointer
