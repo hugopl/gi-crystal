@@ -32,7 +32,7 @@ private def parse_options(argv)
     parser.on("-o=DIRECTORY", "Output directory, default: \"lib/gi-crystal/src/auto\"") do |dir|
       output_dir = Path.new(dir).expand.to_s
     end
-    parser.on("--doc", "Disable documentation generation on generated code") { doc_gen = true }
+    parser.on("--doc", "Enable documentation generation on generated code") { doc_gen = true }
     parser.on("--no-doc", "Disable documentation generation on generated code") do
       STDERR.puts("⚠️  --no-doc is DEPRECATED and set by default.".colorize.yellow)
       doc_gen = false
