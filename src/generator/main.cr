@@ -6,7 +6,7 @@ require "./binding_config"
 require "./error"
 require "./module_gen"
 
-VERSION = {{ `shards version #{__DIR__}`.strip.stringify }}
+VERSION = {{ `shards version "#{__DIR__}"`.strip.stringify }}
 
 private def project_dir
   exe_path = Process.executable_path
