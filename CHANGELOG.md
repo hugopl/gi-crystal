@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.22.3] 2024-06-10
+### Fixed
+- Fixed compilation problem when project dir has spaces, thanks @BigBoyBarney (#149)
+- Fixed typo in cli help message.
+
 ## [0.22.2] 2024-03-24
 ### Fixed
 - Fix compilation with GLib 2.80.
