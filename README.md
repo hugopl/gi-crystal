@@ -1,4 +1,4 @@
-![Build Status](https://github.com/hugopl/gi-crystal/actions/workflows/ci.yml/badge.svg?branch=master)
+![Build Status](https://github.com/hugopl/gi-crystal/actions/workflows/ci.yml/badge.svg?branch=main)
 
 # GI Crystal
 
