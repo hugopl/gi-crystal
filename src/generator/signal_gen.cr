@@ -41,6 +41,22 @@ module Generator
       end
     end
 
+    private def validation_args : String
+      String.build do |s|
+        @args_strategies.each do |arg_strategy|
+          next if arg_strategy.remove_from_declaration?
+
+          arg = arg_strategy.arg
+          arg_type_info = arg.type_info
+
+          s << to_identifier(arg.name) << " : ("
+          s << to_crystal_type(arg_type_info, include_namespace: true)
+          s << " | Nil" if arg.nullable?
+          s << ").class,"
+        end
+      end
+    end
+
     private def lean_proc_params : String
       String.build do |s|
         arg_strategies_to_proc_param_string(s, @signal, @args_strategies)

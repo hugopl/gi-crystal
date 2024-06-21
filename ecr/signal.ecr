@@ -4,6 +4,9 @@ struct <%= signal_type %> < GObject::Signal
     @detail ? "<%= signal.name %>::#{@detail}" : "<%= signal.name %>"
   end
 
+  def validate_params(<%= validation_args %>)
+  end
+
   def connect(*, after : Bool = false, &block : Proc(<%= lean_proc_params %>)) : GObject::SignalConnection
     connect(block, after: after)
   end
