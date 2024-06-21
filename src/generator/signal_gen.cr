@@ -48,10 +48,11 @@ module Generator
 
           arg = arg_strategy.arg
           arg_type_info = arg.type_info
-          nullmark = " | Nil" if arg.nullable?
 
-          s << to_identifier(arg.name) << " : "
-          s << to_crystal_type(arg_type_info, include_namespace: true) << ".class" << nullmark << ','
+          s << to_identifier(arg.name) << " : ("
+          s << to_crystal_type(arg_type_info, include_namespace: true)
+          s << " | Nil" if arg.nullable?
+          s << ").class,"
         end
       end
     end

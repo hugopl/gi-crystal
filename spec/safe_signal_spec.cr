@@ -65,4 +65,8 @@ describe "Save signals" do
     GC.collect
     obj_ref.value.should eq(nil)
   end
+
+  it "validate nilable parameters" do
+    Gio::SimpleAction::ActivateSignal.new(GObject::Object.new, "").validate_params(::Union(GLib::Variant, ::Nil))
+  end
 end
