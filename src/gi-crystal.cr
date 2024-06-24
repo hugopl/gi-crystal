@@ -119,6 +119,15 @@ module GICrystal
     end
   end
 
+  # When creating an user defined GObject from C, the GObject instance is stored here, so the Crystal
+  # constructor uses it instead of call `g_object_new`
+  @[ThreadLocal]
+  class_property g_object_being_created : Pointer(Void) = Pointer(Void).null
+  # When creating an user defined GObject from Crystal, the Crystal instance is stored here, so the
+  # GObject `instance_init` doesn't instantiate another Crystal object.
+  @[ThreadLocal]
+  class_property crystal_object_being_created : Pointer(Void) = Pointer(Void).null
+
   # This declare the `new` method on a instance of type *type*, *qdata_get_func* (g_object_get_qdata) is used
   # to fetch a possible already existing Crystal object.
   #

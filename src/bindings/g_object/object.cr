@@ -129,6 +129,32 @@ module GObject
         end
 
         # :nodoc:
+        #
+        # GObject instance initialization, this can be called when a GObject is created from Crystal `MyObj.new` or by
+        # C `g_object_new(MyObject.g_type)`, in both cases some tasks are always done here:
+        #
+        # - INSTANCE_QDATA_KEY is always set here, so Crystal properties can be fetched.
+        # - Floating refs are sank
+        #
+        # So, if the object is created from C
+        #
+        # - Set `GICrystal.g_object_being_created` with the C object instance pointer.
+        # - Call the Crystal object constructor, that will look the flag set above and use it instead of call `g_object_new`.
+        #
+        # If the object is created from Crystal
+        #
+        # - Set `GICrystal.crystal_object_being_created` with the Crystal object instance pointer.
+        # - Use the Crystal object instead of calling the Crystal object constructor.
+        def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
+          GICrystal.g_object_being_created = instance.as(Void*)
+          crystal_instance = GICrystal.crystal_object_being_created || {{ @type }}.new.as(Void*)
+          crystal_instance.as(GObject::Object)._gobj_pointer = instance.as(Void*)
+          LibGObject.g_object_set_qdata(instance, GICrystal::INSTANCE_QDATA_KEY, crystal_instance)
+          GICrystal.crystal_object_being_created = Pointer(Void).null
+          GICrystal.g_object_being_created = Pointer(Void).null
+        end
+
+        # :nodoc:
         def self._g_toggle_notify(object : Void*, _gobject : Void*, is_last_ref : Int32) : Nil
           return if object.null?
           is_last_ref = GICrystal.to_bool(is_last_ref)
@@ -423,10 +449,6 @@ module GObject
         end
 
         # :nodoc:
-        def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
-        end
-
-        # :nodoc:
         def self._install_ifaces
           {% verbatim do %}
             {% for ancestor in @type.ancestors.uniq %}
@@ -452,7 +474,6 @@ module GObject
         # This specific implementation turns a normal reference into a toggle reference.
         private def _after_init : Nil
           # Set toggle ref to protect the crystal object from the garbage collector while in C.
-
           self.class._g_toggle_notify(self.as(Void*), @pointer, 0)
           LibGObject.g_object_add_toggle_ref(@pointer, G_TOGGLE_NOTIFY__, self.as(Void*))
           LibGObject.g_object_unref(@pointer)
@@ -604,9 +625,16 @@ module GObject
     end
 
     def initialize
-      @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(LibGObject::Parameter).null)
+      GICrystal.crystal_object_being_created = Pointer(Void).new(object_id)
+
+      g_object = GICrystal.g_object_being_created
+      @pointer = g_object || LibGObject.g_object_newv(self.class.g_type, 0, Pointer(LibGObject::Parameter).null)
+      GICrystal.g_object_being_created = Pointer(Void).null
+
+      # If object is created by C, the qdata was already set.
+      LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, self.as(Void*)) unless g_object
       LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
-      LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))
+
       self._after_init
     end
 
@@ -614,6 +642,16 @@ module GObject
       @pointer = pointer
       LibGObject.g_object_ref_sink(self) if transfer.none? || LibGObject.g_object_is_floating(self) == 1
       self._after_init
+    end
+
+    # :nodoc:
+    # Set the internal GObject pointer.
+    #
+    # When creating crystal objects using property constructors that set Crystal properties we must
+    # set the @pointer in the GObject instance_init method, because at this point the Crystal instance
+    # was already created but is inside a call of `g_object_new_with_properties` and would only set the
+    # @pointer after it returns, however the @pointer is needed to write the properties.
+    def _gobj_pointer=(@pointer)
     end
 
     # Returns GObject reference counter.
