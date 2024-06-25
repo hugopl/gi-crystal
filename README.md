@@ -168,10 +168,7 @@ GValue as parameter you can pass any supported value. I.e. you can pass e.g. a p
 
 ## GObject inheritance
 
-You can inherit GObjects, when you do so a new type is registered in GObject type system. Crystal objects that inherit
-GObjects must always have a reference in Crystal world, otherwise they will be collected by the GC.
-
-Trying to cast a GObject that was already collected by Crystal GC will result in a `GICrystal::ObjectCollectedError` exception.
+You can inherit GObjects, when you do so a new type is registered in GObject type system.
 
 Crystal objects that inherit `GObject` returns the same object reference on casts, i.e. no memory allocation is done.
 For more examples see the [inheritance tests](spec/inheritance_spec.cr).
@@ -211,21 +208,13 @@ Virtual methods must have the `GObject::Virtual` annotation, currently only virt
 
 ```Crystal
 class Widget0 < Gtk::Widget
-  # GObject virtual method name is guessed from Crystal method name, that can start with `do_`.
-  @[GObject::Virtual]
-  def do_snapshot(snapshot : Gtk::Snapshot)
-  end
-emd
-
-class Widget1 < Gtk::Widget
-  # If the `do_` prefix annoyes you, just use the same GObject virtual method name.
   @[GObject::Virtual]
   def snapshot(snapshot : Gtk::Snapshot)
   end
 end
 
 class Widget2 < Gtk::Widget
-  # Or you can use whatever name and inform the GObject virtual method name in the annotation.
+  # If there's a name conflict you can name your method whatever you want and use the name annotation attribute.
   @[GObject::Virtual(name: "snapshot")]
   def heyho(snapshot : Gtk::Snapshot)
   end
