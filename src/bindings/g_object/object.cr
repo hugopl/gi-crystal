@@ -86,9 +86,17 @@ module GObject
           if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
             g_type = {{ @type.superclass.id }}._register_derived_type("{{ @type.name.gsub(/::/, "-") }}",
               ->_class_init(Pointer(LibGObject::TypeClass), Pointer(Void)),
-              ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)))
-
+              ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)),
+              {% if @type.abstract? %}
+              GObject::TypeFlags::Abstract,
+              {% end %}
+              )
             LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
+
+            {% unless @type.abstract? %}
+              ctor = ->{{ @type }}.new
+              LibGObject.g_type_set_qdata(g_type, GICrystal::INSTANCE_USERTYPE_FACTORY, ctor.pointer)
+            {% end %}
             self._install_ifaces
           end
 
@@ -146,12 +154,25 @@ module GObject
         # - Set `GICrystal.crystal_object_being_created` with the Crystal object instance pointer.
         # - Use the Crystal object instead of calling the Crystal object constructor.
         def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
-          GICrystal.g_object_being_created = instance.as(Void*)
-          crystal_instance = GICrystal.crystal_object_being_created || {{ @type }}.new.as(Void*)
-          crystal_instance.as(GObject::Object)._gobj_pointer = instance.as(Void*)
-          LibGObject.g_object_set_qdata(instance, GICrystal::INSTANCE_QDATA_KEY, crystal_instance)
-          GICrystal.crystal_object_being_created = Pointer(Void).null
-          GICrystal.g_object_being_created = Pointer(Void).null
+          g_type = type.value.g_type
+
+          crystal_instance = LibGObject.g_object_get_qdata(instance, GICrystal::INSTANCE_QDATA_KEY)
+          return if crystal_instance
+
+          crystal_instance ||= GICrystal.crystal_object_being_created
+          {% unless @type.abstract? %}
+            if !crystal_instance
+              ctor_ptr = LibGObject.g_type_get_qdata(g_type, GICrystal::INSTANCE_USERTYPE_FACTORY)
+              GICrystal.g_object_being_created = instance.as(Void*)
+              crystal_instance = Proc(Void*).new(ctor_ptr, Pointer(Void).null).call
+              GICrystal.g_object_being_created = Pointer(Void).null
+            end
+          {% end %}
+          if crystal_instance
+            crystal_instance.as(GObject::Object)._gobj_pointer = instance.as(Void*)
+            LibGObject.g_object_set_qdata(instance, GICrystal::INSTANCE_QDATA_KEY, crystal_instance)
+            GICrystal.crystal_object_being_created = Pointer(Void).null
+          end
         end
 
         # :nodoc:
