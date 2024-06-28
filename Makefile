@@ -3,9 +3,6 @@
 test: test-binding
 	./bin/spec $(RSPEC_OPTS)
 
-oldlibs-test: test-binding
-	OLD_LIBS=1 ./bin/spec $(RSPEC_OPTS)
-
 generator:
 	shards build --error-trace
 

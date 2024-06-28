@@ -8,7 +8,7 @@ on:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Install package dependencies
         run: sudo apt-get install gobject-introspection libgirepository1.0-dev
@@ -23,6 +23,6 @@ jobs:
       - name: Linter
         run: crystal tool format --check
       - name: Run tests
-        run: G_DEBUG=fatal-warnings RSPEC_OPTS="-v --order=random" make oldlibs-test
+        run: G_DEBUG=fatal-warnings RSPEC_OPTS="-v --order=random" make test
       - name: Run tests with -Ddebugmemory
-        run: G_DEBUG=fatal-warnings OLD_LIBS=1 ./bin/spec -Ddebugmemory -v --order=random
+        run: G_DEBUG=fatal-warnings ./bin/spec -Ddebugmemory -v --order=random
