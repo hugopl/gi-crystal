@@ -32,6 +32,14 @@ module GICrystal
   # See `declare_new_method`.
   INSTANCE_FACTORY = LibGLib.g_quark_from_static_string("gi-crystal::factory")
 
+  # GICrystal stores the type constructor pointer as a qdata in GType, so when C code request
+  # the creation of a Type, the instance_init of the base type can create the right Crystal
+  # instance.
+  #
+  # `INSTANCE_FACTORY` OTOH stores the constructor that receives a pointer and the transfer mode,
+  # it's used when C code returns an base type but we need to create a wrapper for the right type.
+  INSTANCE_USERTYPE_FACTORY = LibGLib.g_quark_from_static_string("gi-crystal::ut-factory")
+
   # Raised when trying to cast an object that was already collected by GC.
   class ObjectCollectedError < RuntimeError
   end
@@ -119,6 +127,32 @@ module GICrystal
     end
   end
 
+  # When creating an user defined GObject from C, the GObject instance is stored here, so the Crystal
+  # constructor uses it instead of call `g_object_new`
+  @[ThreadLocal]
+  class_property g_object_being_created : Pointer(Void) = Pointer(Void).null
+
+  @[ThreadLocal]
+  class_property object_g_type_being_created : UInt64 = 0
+
+  # When creating an user defined GObject from Crystal, the Crystal instance is stored here, so the
+  # GObject `instance_init` doesn't instantiate another Crystal object.
+  @[ThreadLocal]
+  class_property crystal_object_being_created : Pointer(Void) = Pointer(Void).null
+
+  # This is used on `_instance_init` functions of user defined GObjects to create Crystal instances when the
+  # object was created from C code, i.e. `g_object_new`.
+  def create_user_type_from_c_instance(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Pointer(Void)
+    ctor_ptr = LibGObject.g_type_get_qdata(type.value.g_type, GICrystal::INSTANCE_USERTYPE_FACTORY)
+    return Pointer(Void).null unless ctor_ptr
+
+    # Set the g_object_being_created, so the Crystal code wont call g_object_new again.
+    GICrystal.g_object_being_created = instance.as(Void*)
+    Proc(Void*).new(ctor_ptr, Pointer(Void).null).call
+  ensure
+    GICrystal.g_object_being_created = Pointer(Void).null
+  end
+
   # This declare the `new` method on a instance of type *type*, *qdata_get_func* (g_object_get_qdata) is used
   # to fetch a possible already existing Crystal object.
   #
@@ -142,7 +176,7 @@ module GICrystal
         ctor_ptr = LibGObject.g_type_get_qdata(instance_g_type, GICrystal::INSTANCE_FACTORY)
         if ctor_ptr
           ctor = Proc(Void*, GICrystal::Transfer, {{ type }}).new(ctor_ptr, Pointer(Void).null)
-          return ctor.call(pointer, transfer)
+          return ctor.call(pointer, transfer).as({{ type }})
         end
       end
 
