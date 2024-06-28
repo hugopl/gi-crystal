@@ -138,36 +138,31 @@ module GObject
 
         # :nodoc:
         #
-        # GObject instance initialization, this can be called when a GObject is created from Crystal `MyObj.new` or by
-        # C `g_object_new(MyObject.g_type)`, in both cases some tasks are always done here:
-        #
-        # - INSTANCE_QDATA_KEY is always set here, so Crystal properties can be fetched.
-        # - Floating refs are sank
-        #
-        # So, if the object is created from C
-        #
-        # - Set `GICrystal.g_object_being_created` with the C object instance pointer.
-        # - Call the Crystal object constructor, that will look the flag set above and use it instead of call `g_object_new`.
-        #
-        # If the object is created from Crystal
-        #
-        # - Set `GICrystal.crystal_object_being_created` with the Crystal object instance pointer.
-        # - Use the Crystal object instead of calling the Crystal object constructor.
+        # GObject instance initialization, creates the Crystal instance if there's no one created yet.
         def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
-          g_type = type.value.g_type
-
+          # Return if the Crystal instance is already set up.
           crystal_instance = LibGObject.g_object_get_qdata(instance, GICrystal::INSTANCE_QDATA_KEY)
           return if crystal_instance
 
-          crystal_instance ||= GICrystal.crystal_object_being_created
+          # Check if this was called from a Crystal constructor
+          crystal_instance = GICrystal.crystal_object_being_created
+          # If not, this comes from a C call, so a Crystal instance needs to be created, however
           {% unless @type.abstract? %}
             if !crystal_instance
-              ctor_ptr = LibGObject.g_type_get_qdata(g_type, GICrystal::INSTANCE_USERTYPE_FACTORY)
+              # we need to create the right type, and the instance_init from all type hierarchy is called,
+              # so the instance factory set on GType registration also as a qdata is used.
+              ctor_ptr = LibGObject.g_type_get_qdata(type.value.g_type, GICrystal::INSTANCE_USERTYPE_FACTORY)
+              # Set the g_object_being_created, so the Crystal code wont call g_object_new again.
               GICrystal.g_object_being_created = instance.as(Void*)
               crystal_instance = Proc(Void*).new(ctor_ptr, Pointer(Void).null).call
               GICrystal.g_object_being_created = Pointer(Void).null
             end
           {% end %}
+
+          # Now we have a Crystal object instance, let's set it up:
+          # - Set the INSTANCE_QDATA_KEY, so if someone read a property the get_property callback can
+          #   know what's the Crystal instance.
+          # - Set the Crystal instance @pointer variable, so Crystal code can run without a dangling pointer.
           if crystal_instance
             crystal_instance.as(GObject::Object)._gobj_pointer = instance.as(Void*)
             LibGObject.g_object_set_qdata(instance, GICrystal::INSTANCE_QDATA_KEY, crystal_instance)

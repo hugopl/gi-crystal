@@ -25,6 +25,12 @@ end
 private class NonAbstractUserObj < AbstractUserObj
 end
 
+# private class NonDefaultCtorObj < GObject::Object
+#  def initialize(int)
+#    super()
+#  end
+# end
+
 describe "Crystal GObjects" do
   it "can born in C land" do
     ptr = LibGObject.g_object_new(UserObj.g_type, "crystal_prop1", "value", Pointer(Void).null)
@@ -45,5 +51,9 @@ describe "Crystal GObjects" do
 
   it "works with abstract classes in hierarchy" do
     NonAbstractUserObj.new
+  end
+
+  pending "doesn't require classes to have a default cosntructor" do
+    # NonDefaultCtorObj.new(42)
   end
 end
