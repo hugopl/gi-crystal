@@ -140,6 +140,19 @@ module GICrystal
   @[ThreadLocal]
   class_property crystal_object_being_created : Pointer(Void) = Pointer(Void).null
 
+  # This is used on `_instance_init` functions of user defined GObjects to create Crystal instances when the
+  # object was created from C code, i.e. `g_object_new`.
+  def create_user_type_from_c_instance(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Pointer(Void)
+    ctor_ptr = LibGObject.g_type_get_qdata(type.value.g_type, GICrystal::INSTANCE_USERTYPE_FACTORY)
+    return Pointer(Void).null unless ctor_ptr
+
+    # Set the g_object_being_created, so the Crystal code wont call g_object_new again.
+    GICrystal.g_object_being_created = instance.as(Void*)
+    Proc(Void*).new(ctor_ptr, Pointer(Void).null).call
+  ensure
+    GICrystal.g_object_being_created = Pointer(Void).null
+  end
+
   # This declare the `new` method on a instance of type *type*, *qdata_get_func* (g_object_get_qdata) is used
   # to fetch a possible already existing Crystal object.
   #

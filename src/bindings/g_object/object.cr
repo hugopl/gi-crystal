@@ -61,6 +61,13 @@ module GObject
 
   class Object
     macro inherited
+      # :nodoc
+      def self._create_obj_through_default_constructor : Pointer(Void)
+        LibGLib.g_log("GICrystal", 4,
+                      {{ "Tried to create an instance of #{@type} from C, but #{@type} doesn't have a default constructor." }})
+        Pointer(Void).null
+      end
+
       {% unless @type.annotation(GICrystal::GeneratedWrapper) %}
         macro method_added(method)
           {% verbatim do %}
@@ -70,6 +77,13 @@ module GObject
                 {% vfunc_name = "unsafe_#{vfunc_name.id}" %}
               {% end %}
               _register_{{ vfunc_name.id }}_vfunc({{ method.name }})
+            {% end %}
+
+            {% if method.name == "initialize" && (method.args.empty? || method.args.all?(&.default_value)) %}
+              # :nodoc
+              def self._create_obj_through_default_constructor : Pointer(Void)
+                {{ @type }}.new.as(Void*)
+              end
             {% end %}
           {% end %}
         end
@@ -94,7 +108,7 @@ module GObject
             LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
 
             {% unless @type.abstract? %}
-              ctor = ->{{ @type }}.new
+              ctor = ->_create_obj_through_default_constructor
               LibGObject.g_type_set_qdata(g_type, GICrystal::INSTANCE_USERTYPE_FACTORY, ctor.pointer)
             {% end %}
             self._install_ifaces
@@ -148,15 +162,7 @@ module GObject
           crystal_instance = GICrystal.crystal_object_being_created
           # If not, this comes from a C call, so a Crystal instance needs to be created, however
           {% unless @type.abstract? %}
-            if !crystal_instance
-              # we need to create the right type, and the instance_init from all type hierarchy is called,
-              # so the instance factory set on GType registration also as a qdata is used.
-              ctor_ptr = LibGObject.g_type_get_qdata(type.value.g_type, GICrystal::INSTANCE_USERTYPE_FACTORY)
-              # Set the g_object_being_created, so the Crystal code wont call g_object_new again.
-              GICrystal.g_object_being_created = instance.as(Void*)
-              crystal_instance = Proc(Void*).new(ctor_ptr, Pointer(Void).null).call
-              GICrystal.g_object_being_created = Pointer(Void).null
-            end
+            crystal_instance ||= GICrystal.create_user_type_from_c_instance(instance, type)
           {% end %}
 
           # Now we have a Crystal object instance, let's set it up:
