@@ -25,14 +25,6 @@ module Generator
       @config = BindingConfig.for(@namespace.name, @namespace.version)
     end
 
-    def namespace_name : String
-      to_type_name(@namespace.name)
-    end
-
-    def subject : String
-      ""
-    end
-
     def self.push_log_scope(context : String)
       @@log_scope.push(context)
       # For some reason this call is *really* slow, probably a bug.
@@ -66,15 +58,6 @@ module Generator
 
     def scope : String
       self.class.name
-    end
-
-    def generate(filename : String)
-      output_dir = File.join(Generator.output_dir, module_dir)
-      FileUtils.mkdir_p(output_dir)
-
-      File.open(File.join(output_dir, filename), "w") do |io|
-        generate(io)
-      end
     end
 
     def with_log_scope(scope_name = scope)

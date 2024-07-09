@@ -1,11 +1,7 @@
 module Generator
-  class LibGen < Generator
+  class LibGen < FileGen
     def filename : String
       "lib_#{namespace.name.underscore}.cr"
-    end
-
-    def generate
-      generate(filename)
     end
 
     private def libraries : Array(String)

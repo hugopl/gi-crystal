@@ -39,10 +39,6 @@ module Generator
       "#{namespace.name}::#{@struct.name}"
     end
 
-    def subject
-      @struct.name
-    end
-
     def type_name
       to_crystal_type(@struct, false)
     end
