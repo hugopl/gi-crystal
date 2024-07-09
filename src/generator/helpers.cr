@@ -5,8 +5,8 @@ module Generator::Helpers
   # Keywords not allowed in calls
   CALL_KEYWORDS = {"initialize", "finalize"}
 
-  def to_get_type_function(struct_info : StructInfo)
-    "#{struct_info.namespace.name.underscore}_#{struct_info.name.underscore}_get_type"
+  def namespace_name : String
+    to_type_name(@namespace.name)
   end
 
   def to_lib_namespace(namespace : Namespace)

@@ -23,10 +23,6 @@ module Generator
       "#{@object.name.underscore}.cr"
     end
 
-    def subject : String
-      @object.name
-    end
-
     private def parent_class
       parent = @object.parent
       return if parent.nil?
