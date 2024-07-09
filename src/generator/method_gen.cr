@@ -31,10 +31,6 @@ module Generator
       @method.flags.throws?
     end
 
-    def callable : CallableInfo
-      @method
-    end
-
     private def method_identifier : String
       identifier = to_call(@method.name)
       method_flags = @method.flags

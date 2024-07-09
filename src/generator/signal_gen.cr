@@ -16,29 +16,12 @@ module Generator
       @args_strategies = ArgStrategy.find_strategies(@signal, :crystal_to_c)
     end
 
-    def filename : String?
-    end
-
-    def subject : String
-      "#{@obj.name}::#{signal_type}"
-    end
-
     def scope
       "#{@obj.namespace.name}::#{@obj.name} #{@signal.name} signal"
     end
 
     private def signal_type
       "#{@signal.name.tr("-", "_").camelcase}Signal"
-    end
-
-    private def has_return_value?
-      !@signal.return_type.tag.void?
-    end
-
-    private def signal_args
-      @signal_args ||= @signal.args.reject do |arg|
-        BindingConfig.for(arg.namespace).ignore?(to_crystal_type(arg.type_info, false))
-      end
     end
 
     private def lean_proc_params : String

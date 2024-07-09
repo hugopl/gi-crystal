@@ -1,7 +1,5 @@
 module Generator
   abstract class CallableGen < Generator
-    abstract def callable : CallableInfo
-
     def method_gi_annotations : String
       args = callable.args
       String.build do |io|
