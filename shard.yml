@@ -18,6 +18,6 @@ executables:
   - gi-crystal
   - compare-api
 
-crystal: ">= 1.4.1"
+crystal: ">= 1.6.0"
 
 license: BSD-3-Clause

@@ -3,15 +3,7 @@ require "yaml"
 require "./error"
 require "./generator"
 
-# This exists due to https://github.com/crystal-lang/crystal/issues/12290
 module Generator
-  alias BindingConfig = GeneratorNamespaceRenamedDueToACrystalBug::BindingConfig
-end
-
-module GeneratorNamespaceRenamedDueToACrystalBug
-  alias Error = ::Generator::Error
-  alias Namespace = ::Generator::Namespace
-
   enum BindingStrategy
     Auto
     # Bind the type as a Crystal struct
