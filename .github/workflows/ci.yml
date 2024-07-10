@@ -23,6 +23,6 @@ jobs:
       - name: Linter
         run: crystal tool format --check
       - name: Run tests
-        run: G_DEBUG=fatal-warnings RSPEC_OPTS="-v --order=random" make test
+        run: G_DEBUG=fatal-warnings RSPEC_OPTS="--color -v --order=random" make test
       - name: Run tests with -Ddebugmemory
-        run: G_DEBUG=fatal-warnings ./bin/spec -Ddebugmemory -v --order=random
+        run: G_DEBUG=fatal-warnings ./bin/spec -Ddebugmemory --color -v --order=random
