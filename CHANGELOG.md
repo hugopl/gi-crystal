@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.23.0] 2024-07-11
+### Added
+- Add support for Gio async functions (#157).
+
+### Changed
+- Requires Crystal compiler >= 1.6.0 (No PR 😁 2ebec2b0f9251b56b4310a8413b5d828c339af5f).
+- CI now uses newer libraries through Ubuntu 24.04 (#154).
+
+### Fixed
+- Some code cleanup (#155 #156).
+
 ## [0.22.3] 2024-06-10
 ### Fixed
 - Fixed compilation problem when project dir has spaces, thanks @BigBoyBarney (#149)
