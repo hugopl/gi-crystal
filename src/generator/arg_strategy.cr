@@ -479,12 +479,12 @@ module Generator
 
       callback_var = to_identifier(arg.name)
       user_data_var = to_identifier(strategies[idx + 1].arg.name)
-      io << user_data_var << " = Box.box(" << callback_var << ")\n"
+      io << user_data_var << " = ::Box.box(" << callback_var << ")\n"
       io << callback_var << " = if " << callback_var << ".nil?\n"
       io << "  Pointer(Void).null\n"
       io << "else\n"
       io << "  ->(gobject : Void*, result : Void*, box : Void*) {\n"
-      io << "    unboxed_callback = Box(Gio::AsyncReadyCallback).unbox(box)\n"
+      io << "    unboxed_callback = ::Box(Gio::AsyncReadyCallback).unbox(box)\n"
       io << "    GICrystal::ClosureDataManager.deregister(box)\n"
       io << "    unboxed_callback.call(typeof(self).new(gobject, :none), Gio::AbstractAsyncResult.new(result, :none))\n"
       io << "  }.pointer\n"
