@@ -32,6 +32,13 @@ describe "GObject properties" do
     subject = Test::Subject.new
     subject.string = "hey ho"
     subject.string.should eq("hey ho")
+    subject.string?.should eq("hey ho")
+  end
+
+  it "can be nullable strings" do
+    subject = Test::Subject.new
+    subject.string = nil
+    subject.string?.should eq(nil)
   end
 
   it "can be boolean" do

@@ -22,3 +22,21 @@
     <%= convert_to_crystal("value", prop.type_info, [] of ArgInfo, prop.ownership_transfer) %><% if prop_is_object? -%> unless value.null?<% end %>
   end
 <% end %>
+
+<% if prop_type_name == "::String" %>
+  <% if prop.flags.writable? -%>
+    # Set `#<%= prop_getter_method_name %>` property to nil.
+    def <%= to_call(prop.name) %>=(value : Nil) : Nil
+      LibGObject.g_object_set(self, "<%= prop.name %>", Pointer(Void).null, Pointer(Void).null)
+    end
+  <% end %>
+
+  <% if prop.flags.readable? -%>
+    # Same as `#<%= prop_getter_method_name %>`, but can return nil.
+    def <%= prop_getter_method_name %>? : ::String?
+      value = uninitialized Pointer(LibC::Char)
+      LibGObject.g_object_get(self, "<%= prop.name %>", pointerof(value), Pointer(Void).null)
+      ::String.new(value) if value
+    end
+  <% end %>
+<% end %>
