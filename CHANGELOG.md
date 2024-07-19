@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [0.24.0] 2024-07-19
+### Added
+- Consider all String properties as nilable and add `prop_name?` and `prop_name=(Nil)` (#160).
+
 ## [0.23.0] 2024-07-11
 ### Added
 - Add support for Gio async functions (#157).
