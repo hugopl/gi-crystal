@@ -408,6 +408,15 @@ module GObject
               {% if name.is_a?(TypeDeclaration) %}
                 @{{name.var.id}} : {{name.type}}?
 
+                def {{name.var.id}} : {{name.type}}
+                  if (value = @{{name.var.id}}).nil?
+                    @{{name.var.id}} = {{yield}}
+                    _emit_notify_signal({{name.var.id}})
+                  else
+                    value
+                  end
+                end
+
                 def {{name.var.id}}? : {{name.type}}
                   if (value = @{{name.var.id}}).nil?
                     @{{name.var.id}} = {{yield}}
@@ -417,10 +426,19 @@ module GObject
                   end
                 end
 
-                def {{name.var.id}}=(@{{name.var.id}} : \{{name.type}})
+                def {{name.var.id}}=(@{{name.var.id}} : {{name.type}})
                   _emit_notify_signal({{name.var.id}})
                 end
               {% else %}
+                def {{name.id}}
+                  if (value = @{{name.id}}).nil?
+                    @{{name.id}} = {{yield}}
+                    _emit_notify_signal({{name.id}})
+                  else
+                    value
+                  end
+                end
+
                 def {{name.id}}?
                   if (value = @{{name.id}}).nil?
                     @{{name.id}} = {{yield}}
@@ -439,6 +457,10 @@ module GObject
                 {% if name.is_a?(TypeDeclaration) %}
                   @{{name}}
 
+                  def {{name.var.id}} : {{name.type}}
+                    @{{name.var.id}}
+                  end
+
                   def {{name.var.id}}? : {{name.type}}
                     @{{name.var.id}}
                   end
@@ -449,6 +471,10 @@ module GObject
                 {% elsif name.is_a?(Assign) %}
                   @{{name}}
 
+                  def {{name.target.id}}
+                    @{{name.target.id}}
+                  end
+
                   def {{name.target.id}}?
                     @{{name.target.id}}
                   end
@@ -457,6 +483,10 @@ module GObject
                     _emit_notify_signal({{name.target.id}})
                   end
                 {% else %}
+                  def {{name.id}}
+                    @{{name.id}}
+                  end
+
                   def {{name.id}}?
                     @{{name.id}}
                   end

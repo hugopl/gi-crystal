@@ -44,6 +44,9 @@ private class UserObjectWithGProperties < GObject::Object
   @[GObject::Property]
   property signal_test : Bool = true
 
+  @[GObject::Property]
+  property? bool : Bool = false
+
   # This declaration tests if the property is created as readonly if it only have getter?
   @[GObject::Property]
   getter? readonly_bool : Bool = true
@@ -162,6 +165,17 @@ describe "Classes inheriting GObject::Object" do
     out_object = uninitialized Pointer(Void)
     LibGObject.g_object_get(obj, "object", pointerof(out_object), Pointer(Void).null)
     out_object.should eq(user_obj.to_unsafe)
+
+    obj.bool = true
+    out_bool = uninitialized Int32
+    LibGObject.g_object_get(obj, "bool", pointerof(out_bool), Pointer(Void).null)
+    GICrystal.to_bool(out_bool).should eq(true)
+    obj.bool?.should eq(true)
+
+    obj.bool = false
+    LibGObject.g_object_get(obj, "bool", pointerof(out_bool), Pointer(Void).null)
+    GICrystal.to_bool(out_bool).should eq(false)
+    obj.bool?.should eq(false)
   end
 
   it "emits notify signal on GObject properties access" do
