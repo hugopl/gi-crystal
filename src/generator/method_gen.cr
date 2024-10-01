@@ -83,7 +83,8 @@ module Generator
 
     private def method_return_type_declaration : String
       if @method.flags.constructor?
-        return @method.may_return_null? ? ": self?" : ": self"
+        type = to_crystal_type(object.as(RegisteredTypeInfo))
+        return @method.may_return_null? ? ": #{type}?" : ": #{type}"
       end
 
       return_type = method_return_type
