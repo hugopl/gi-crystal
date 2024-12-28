@@ -56,4 +56,13 @@ describe "GList" do
     list.each { |s| res << s }
     res.should eq(%w(one two))
   end
+
+  describe "ListStore" do
+    it "can splice an array" do
+      list_store = Gio::ListStore.new(Test::Subject.g_type)
+      one = Test::Subject.new
+      items = [one]
+      list_store.splice(position: 0_u32, n_removals: 0_u32, additions: items)
+    end
+  end
 end
