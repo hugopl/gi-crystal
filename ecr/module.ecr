@@ -7,7 +7,7 @@ require "../<%= dep.module_dir %>/<%= dep.filename%>"
 require "./<%= @lib.filename %>"
 
 <% config.require_before.each do |inc| -%>
-require "<%= inc.relative_to("#{output_dir}/#{module_dir}") %>"
+require "<%= inc.relative_to("#{output_dir}/#{module_dir}").to_posix %>"
 <% end %>
 
 # Wrappers
@@ -110,5 +110,5 @@ module <%= namespace_name %>
 end
 
 <% config.require_after.each do |inc| -%>
-require "<%= inc.relative_to("#{output_dir}/#{module_dir}") %>"
+require "<%= inc.relative_to("#{output_dir}/#{module_dir}").to_posix %>"
 <% end %>
