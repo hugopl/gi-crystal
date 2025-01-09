@@ -6,7 +6,7 @@ module Generator
 
     private def libraries : Array(String)
       namespace.shared_libraries.map do |library|
-        library[/lib([^\/]+)\.(?:so|.+?\.dylib).*/, 1]
+        library[/lib([^\/]+)(?:\.so|-.+?\.dll|\..+?\.dylib).*/, 1]
       end
     end
 
