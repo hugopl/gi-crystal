@@ -33,7 +33,7 @@ module Generator
       to_crystal_type(@iface, false)
     end
 
-    def each_object_method
+    def each_object_method(&)
       @iface.methods.each do |method|
         yield(method)
       end

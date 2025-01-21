@@ -75,7 +75,7 @@ module Generator
       end
     end
 
-    private def foreach_field
+    private def foreach_field(&)
       @struct.fields.each do |field|
         with_log_scope("#{scope} #{field.name} field") do
           yield(field)

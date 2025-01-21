@@ -1,6 +1,6 @@
 module Generator
   module WrapperUtil
-    def generate_null_guard(io : IO, identifier : String, type : TypeInfo, nullable : Bool = true) : Nil
+    def generate_null_guard(io : IO, identifier : String, type : TypeInfo, nullable : Bool = true, &) : Nil
       io << identifier << " = "
       if nullable
         io << "if " << identifier << ".nil?\n"

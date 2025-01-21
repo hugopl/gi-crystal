@@ -13,7 +13,7 @@ module Generator
     end
 
     # This exists just to be overwritten by e.g. interface
-    def each_object_method
+    def each_object_method(&)
       object.methods.each do |method|
         yield(method)
       end

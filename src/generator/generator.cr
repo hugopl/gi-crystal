@@ -60,7 +60,7 @@ module Generator
       self.class.name
     end
 
-    def with_log_scope(scope_name = scope)
+    def with_log_scope(scope_name = scope, &)
       Generator.push_log_scope(scope_name)
       yield
     ensure
