@@ -27,6 +27,10 @@ module GObjectIntrospection
       GICrystal.to_bool(LibGIRepository.g_object_info_get_fundamental(self))
     end
 
+    def final? : Bool
+      GICrystal.to_bool(LibGIRepository.g_object_info_get_final(self))
+    end
+
     def qdata_get_func : String
       # ⚠️ Ugly heuristic ahead
       unref_func = LibGIRepository.g_object_info_get_unref_function(self)

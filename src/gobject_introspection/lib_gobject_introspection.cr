@@ -153,6 +153,7 @@ lib LibGIRepository
   fun g_object_info_get_class_struct(info : BaseInfo*) : BaseInfo*
   fun g_object_info_get_constant(info : BaseInfo*, n : Int32) : BaseInfo*
   fun g_object_info_get_field(info : BaseInfo*, n : Int32) : BaseInfo*
+  fun g_object_info_get_final(info : BaseInfo*) : LibC::Int
   fun g_object_info_get_fundamental(info : BaseInfo*) : LibC::Int
   fun g_object_info_get_get_value_function(info : BaseInfo*) : UInt8*
   fun g_object_info_get_interface(info : BaseInfo*, n : Int32) : BaseInfo*

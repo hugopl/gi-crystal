@@ -16,7 +16,7 @@ module <%= namespace_name %>
     <% end %>
 
     <% class_struct = object.class_struct -%>
-    <% if class_struct.nil? || object.fundamental? %>
+    <% if class_struct.nil? || object.fundamental? || object.final? %>
     macro inherited
       {{ raise "Cannot inherit from #{@type.superclass}" unless @type.annotation(GICrystal::GeneratedWrapper) }}
     end
