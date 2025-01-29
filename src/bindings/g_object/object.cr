@@ -605,6 +605,13 @@ module GObject
 
         alias LeanProc = Proc({{ (signature.args.map(&.type) << Nil).splat }})
 
+        def validate_params(
+          {% for arg in signature.args %}
+            {{ arg }}.class,
+          {% end %}
+          )
+        end
+
         def connect(*, after : Bool = false, &block : LeanProc) : GObject::SignalConnection
           connect(block, after: after)
         end

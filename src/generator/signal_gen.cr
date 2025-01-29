@@ -24,6 +24,32 @@ module Generator
       "#{@signal.name.tr("-", "_").camelcase}Signal"
     end
 
+    private def has_return_value?
+      !@signal.return_type.tag.void?
+    end
+
+    private def signal_args
+      @signal_args ||= @signal.args.reject do |arg|
+        BindingConfig.for(arg.namespace).ignore?(to_crystal_type(arg.type_info, false))
+      end
+    end
+
+    private def validation_args : String
+      String.build do |s|
+        @args_strategies.each do |arg_strategy|
+          next if arg_strategy.remove_from_declaration?
+
+          arg = arg_strategy.arg
+          arg_type_info = arg.type_info
+
+          s << to_identifier(arg.name) << " : ("
+          s << to_crystal_type(arg_type_info, include_namespace: true)
+          s << " | Nil" if arg.nullable?
+          s << ").class,"
+        end
+      end
+    end
+
     private def lean_proc_params : String
       String.build do |s|
         arg_strategies_to_proc_param_string(s, @signal, @args_strategies)

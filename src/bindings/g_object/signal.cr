@@ -2,8 +2,8 @@ require "./signal_connection"
 
 module GObject
   abstract struct Signal
-    @source : GObject::Object
-    @detail : String?
+    getter source : GObject::Object
+    getter detail : String?
 
     def initialize(@source, @detail = nil)
     end
