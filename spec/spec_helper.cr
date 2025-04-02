@@ -2,7 +2,7 @@ require "spec"
 
 require "../src/gi-crystal"
 require "../src/gio"
-require "../src/auto/test-1.0/test"
+require "../src/generated/test-1.0/test"
 
 # Used on basic signal tests or on something that would need a kind of global var to
 # be sure something was called in another context.

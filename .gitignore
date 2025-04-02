@@ -12,4 +12,4 @@
 /shard.lock
 /build/
 /spec/build/
-/src/auto/
+/src/generated/
