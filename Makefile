@@ -7,7 +7,7 @@ generator:
 	shards build --error-trace
 
 test-binding: libtest generator
-	GI_TYPELIB_PATH="./spec/build" LIBRARY_PATH="./spec/build" LD_LIBRARY_PATH="./spec/build" ./bin/gi-crystal spec/libtest_binding.yml -o src/auto --doc
+	GI_TYPELIB_PATH="./spec/build" LIBRARY_PATH="./spec/build" LD_LIBRARY_PATH="./spec/build" ./bin/gi-crystal spec/libtest_binding.yml -o src/generated --doc
 
 libtest:
 	+make --quiet -C ./spec/libtest

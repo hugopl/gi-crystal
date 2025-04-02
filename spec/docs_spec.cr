@@ -14,7 +14,7 @@ describe "Docs conversion" do
       "# email_is_not_a_parameter: foo@example.com",
     }
 
-    test_subject = File.read("./src/auto/test-1.0/subject.cr")
+    test_subject = File.read("./src/generated/test-1.0/subject.cr")
 
     expected_results.each do |doc|
       test_subject.should contain(doc)
