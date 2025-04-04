@@ -1,7 +1,7 @@
 require "spec"
 
 require "../src/gi-crystal"
-require "../src/gio"
+require "../src/generated/gio-2.0/gio"
 require "../src/generated/test-1.0/test"
 
 # Used on basic signal tests or on something that would need a kind of global var to
