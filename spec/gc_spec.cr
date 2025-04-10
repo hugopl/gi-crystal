@@ -3,6 +3,11 @@ require "./spec_helper"
 private class GCResistantObj < GObject::Object
   property moto : String
 
+  def initialize
+    super
+    @moto = ""
+  end
+
   def initialize(@moto)
     super()
   end
