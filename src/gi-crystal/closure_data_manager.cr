@@ -39,41 +39,65 @@ module GICrystal
       instance.deregister_all
     end
 
+    {% if flag?(:preview_mt) %}
+      @mutex = Mutex.new
+    {% end %}
+
     private def initialize
       @closure_data = Hash(Pointer(Void), Int32).new { |h, k| h[k] = 0 }
     end
 
+    private def synchronize(&)
+      {% if flag?(:preview_mt) %}
+        @mutex.synchronize do
+          yield
+        end
+      {% else %}
+        yield
+      {% end %}
+    end
+
     def deregister_all
-      @closure_data.clear
+      synchronize do
+        @closure_data.clear
+      end
     end
 
     def count : Int32
-      @closure_data.each_value.sum
+      synchronize do
+        @closure_data.each_value.sum
+      end
     end
 
     def info(io : IO)
-      @closure_data.each do |ptr, count|
-        io.puts "0x#{ptr.address.to_s(16)} -> #{count}"
+      synchronize do
+        @closure_data.each do |ptr, count|
+          io.puts "0x#{ptr.address.to_s(16)} -> #{count}"
+        end
+        io.puts "total closures on hold: #{@closure_data.size}"
       end
-      io.puts "total closures on hold: #{@closure_data.size}"
     end
 
     def register(data : Pointer(Void)) : Pointer(Void)
-      {% if flag?(:debugmemory) %}
-        puts "Registering #{data.address.to_s(16)} on ClosureDataManager, count: #{@closure_data[data]? || 0}."
-      {% end %}
-      @closure_data[data] += 1 if data
-      data
+      synchronize do
+        {% if flag?(:debugmemory) %}
+          puts "Registering #{data.address.to_s(16)} on ClosureDataManager, count: #{@closure_data[data]? || 0}."
+        {% end %}
+        @closure_data[data] += 1 if data
+        data
+      end
     end
 
     def deregister(data : Pointer(Void)) : Nil
-      {% if flag?(:debugmemory) %}
-        puts "Deregistering #{data.address.to_s(16)} from ClosureDataManager, count: #{@closure_data[data]}."
-      {% end %}
+      synchronize do
+        {% if flag?(:debugmemory) %}
+          puts "Deregistering #{data.address.to_s(16)} from ClosureDataManager, count: #{@closure_data[data]}."
+        {% end %}
 
-      @closure_data[data] -= 1
-      if @closure_data[data] <= 0
-        @closure_data.delete(data)
+        @closure_data[data] -= 1
+        if @closure_data[data] <= 0
+          @closure_data.delete(data)
+        end
       end
     end
   end
