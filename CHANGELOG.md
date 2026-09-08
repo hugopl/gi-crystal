@@ -7,8 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Changes that change the generated API have a ⚠️.
 
 ## [Unreleased]
+### Added
+- New `blocks` attribute for methods on `binding.yml`, when true the generated binding calls the C
+  function inside a `Fiber::ExecutionContext::Isolated` context instead of calling it directly.
+
 ### Changed
 - Requires Crystal compiler >= 1.21.0.
+- `Gio::Application#run` is declared with `blocks: true`, so fibers keep running while the application
+  main loop is running, without any flag or change in user code. Note the main loop and the callbacks it
+  invokes no longer run on the process main thread.
 - `ClosureDataManager` is now always thread safe, it used to be only with `-Dpreview_mt`, which is not
   how threads are enabled since Crystal 1.21.
 

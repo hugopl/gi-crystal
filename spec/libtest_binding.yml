@@ -5,6 +5,10 @@ ignore_constants:
   - IGNORED_CONSTANT
 
 types:
+  Subject:
+    methods:
+      block_thread:
+        blocks: true
   Struct:
     ignore_fields:
     - ignored_field

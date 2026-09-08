@@ -112,6 +112,22 @@ module GICrystal
     LibGLib.g_free(ptr) if transfer.full?
   end
 
+  # Runs *block* in a dedicated `Fiber::ExecutionContext::Isolated` context, waiting for it to finish
+  # and returning its value. Exceptions raised inside *block* are re-raised in the calling fiber.
+  #
+  # Bindings generated for functions declared with `blocks: true` in their `binding.yml` use this, so a
+  # C function that blocks its own thread (a main loop, for example) doesn't block the whole Crystal
+  # scheduler, i.e. fibers in other execution contexts keep running while the C function executes.
+  #
+  # Note that *block* runs on a system thread of its own, and so does any callback the C function may
+  # invoke, `spawn` inside such a callback creates the fiber in `Fiber::ExecutionContext.default`.
+  def run_blocking(name : String, &block : -> T) : T forall T
+    channel = Channel(T).new(1)
+    context = Fiber::ExecutionContext::Isolated.new(name) { channel.send(block.call) }
+    context.wait
+    channel.receive
+  end
+
   # :nodoc:
   def transfer_full(str : Pointer(UInt8)) : String
     String.new(str).tap do

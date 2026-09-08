@@ -6,6 +6,10 @@ require_after:
 - list_model
 
 types:
+  Application:
+    methods:
+      run:
+        blocks: true
   AppLaunchContextPrivate:
     ignore: true
   ApplicationCommandLinePrivate:

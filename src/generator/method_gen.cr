@@ -133,12 +133,24 @@ module Generator
       args.join(", ")
     end
 
+    # If true, the C function blocks the thread it runs on, so the C call is wrapped in a isolated
+    # execution context, see `blocks` on `BINDING_YML.md`.
+    private def blocks? : Bool
+      config.type_config(@object.name).method_config(@method.name).blocks?
+    end
+
     def method_c_call : String
       c_return_type_info = @method.return_type
 
       String.build do |s|
         s << "_retval = " if !c_return_type_info.tag.void? || c_return_type_info.pointer?
-        s << to_lib_type(method, true) << '(' << method_c_call_args << ")\n"
+        if blocks?
+          s << "GICrystal.run_blocking(" << @method.symbol.inspect << ") do\n"
+          s << to_lib_type(method, true) << '(' << method_c_call_args << ")\n"
+          s << "end\n"
+        else
+          s << to_lib_type(method, true) << '(' << method_c_call_args << ")\n"
+        end
       end
     end
 
