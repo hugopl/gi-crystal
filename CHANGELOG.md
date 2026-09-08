@@ -19,6 +19,12 @@ Changes that change the generated API have a ⚠️.
 - `ClosureDataManager` is now always thread safe, it used to be only with `-Dpreview_mt`, which is not
   how threads are enabled since Crystal 1.21.
 
+### Fixed
+- Return values of callbacks and signal handlers are now converted back to their C representation, the
+  Crystal value used to be handed to C as-is. This fixes crashes on any method taking a callback that
+  returns an object (e.g. `Gtk::ListBox#bind_model`) and wrong values on callbacks/signal handlers
+  returning booleans or enums.
+
 ## [0.25.1] 2025-09-05
 ### Fixed
 - Fix ClosureDataManager corruption when building with -Dpreview_mt, thanks @refi64 (#179)

@@ -85,6 +85,7 @@ module Generator
                         "Pointer(Void).null"
                       end
 
+      io << "_retval = " unless callable.return_type.tag.void?
       io << "::Box(Proc("
       io << to_crystal_type(callable.container.not_nil!) << ',' if box_type.full_signal?
       arg_strategies_to_proc_param_string(io, callable, args_strategies)
@@ -95,6 +96,19 @@ module Generator
       end
 
       io << ")\n"
+
+      generate_return_conversion(io, callable)
+    end
+
+    # The callback/signal handler returns a Crystal value, but C expects the lib type, so we need to
+    # convert it back, just like VFuncGen does.
+    private def generate_return_conversion(io : IO, callable : CallableInfo) : Nil
+      return_type = callable.return_type
+      return if return_type.tag.void?
+
+      transfer = callable.caller_owns
+      io << "LibGObject.g_object_ref(_retval) if _retval\n" if transfer.full? && return_type.object?
+      io << convert_to_lib("_retval", return_type, transfer, callable.may_return_null?) << LF
     end
   end
 end
