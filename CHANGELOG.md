@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [Unreleased]
+### Changed
+- Requires Crystal compiler >= 1.21.0.
+- `ClosureDataManager` is now always thread safe, it used to be only with `-Dpreview_mt`, which is not
+  how threads are enabled since Crystal 1.21.
+
 ## [0.25.1] 2025-09-05
 ### Fixed
 - Fix ClosureDataManager corruption when building with -Dpreview_mt, thanks @refi64 (#179)
