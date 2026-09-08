@@ -87,10 +87,12 @@ def parse_options : Nil
 end
 
 def show_diff
-  if Process.fork
-    Process.exec("meld --version >/dev/null && " \
-                 "meld #{OUTPUT_DIR}old #{OUTPUT_DIR}new &2>/dev/null &", shell: true)
-  end
+  # Process.fork can't be used here, it's unsupported on multi threaded programs, which is every
+  # program since Crystal 1.21. Process.new doesn't wait for meld, so it's good enough.
+  return if Process.find_executable("meld").nil?
+
+  Process.new("meld", ["#{OUTPUT_DIR}old", "#{OUTPUT_DIR}new"],
+    input: :close, output: :close, error: :close)
 end
 
 def main
