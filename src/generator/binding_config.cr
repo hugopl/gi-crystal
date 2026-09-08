@@ -14,6 +14,18 @@ module Generator
     HeapWrapperStruct
   end
 
+  class MethodConfig
+    include YAML::Serializable
+    include YAML::Serializable::Strict
+
+    def initialize
+    end
+
+    # If true, the C function blocks the thread it runs on, so the generated binding calls it inside a
+    # isolated execution context to not block the whole Crystal scheduler.
+    getter? blocks = false
+  end
+
   class TypeConfig
     include YAML::Serializable
     include YAML::Serializable::Strict
@@ -24,8 +36,15 @@ module Generator
     getter binding_strategy : BindingStrategy = BindingStrategy::Auto
     @ignore_methods : Set(String)?
     @ignore_fields : Set(String)?
+    @methods = Hash(String, MethodConfig).new
     getter? handmade = false
     getter? ignore = false
+
+    @@empty_method_config = MethodConfig.new
+
+    def method_config(name : String) : MethodConfig
+      @methods[name]? || @@empty_method_config
+    end
 
     {% for attr in %w(ignore_method ignore_field) %}
     def {{ attr.id }}?(name : String) : Bool

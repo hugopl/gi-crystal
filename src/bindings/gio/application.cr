@@ -4,7 +4,11 @@ module Gio
     #
     # If no commandline handling is required you can invoke `Application#run(nil)`
     def run : Int32
-      LibGio.g_application_run(self, ARGC_UNSAFE, ARGV_UNSAFE)
+      # Like the generated `run(argv)`, this must run in a isolated execution context, see
+      # `blocks` on BINDING_YML.md.
+      GICrystal.run_blocking("g_application_run") do
+        LibGio.g_application_run(self, ARGC_UNSAFE, ARGV_UNSAFE)
+      end
     end
 
     def run(argv : Enumerable(::String)?) : Int32

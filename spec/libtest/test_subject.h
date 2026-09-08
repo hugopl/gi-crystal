@@ -473,6 +473,25 @@ void test_subject_raise_file_error(TestSubject* self, GError** error);
 void test_subject_raise_file_error2(TestSubject* self, int foo, GError** error);
 
 /**
+ * test_subject_current_thread:
+ *
+ * Used to test the `blocks` binding.yml attribute.
+ *
+ * Returns: An identifier of the thread this function ran on.
+ */
+guint64 test_subject_current_thread();
+
+/**
+ * test_subject_block_thread:
+ * @microseconds: How long to block the thread.
+ *
+ * Blocks the thread it runs on, used to test the `blocks` binding.yml attribute.
+ *
+ * Returns: An identifier of the thread this function ran on.
+ */
+guint64 test_subject_block_thread(guint microseconds);
+
+/**
  * test_subject_return_myself_as_interface:
  * Returns: (transfer none):
  */

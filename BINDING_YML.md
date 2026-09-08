@@ -80,6 +80,19 @@ This is valid only for structs.
 
 A list of fields in the structs that you don't want to create access for.
 
+## methods (hash of string => BindingMethod)
+
+Extra configuration for individual methods of this type, keyed by the **function binding name, not the C
+symbol**, following the same rule of _ignore_methods_. e.g.:
+
+```YAML
+types:
+  Application:
+    methods:
+      run:
+        blocks: true
+```
+
 ## binding_strategy (auto | stack_struct | heap_struct | heap_wrapper)
 
 This is valid only for structs.
@@ -93,3 +106,24 @@ values are:
 - `heap_struct`: Bind this as a Crystal class with the C struct as attribute, so the struct is allocated on the heap and the
    memory is always copied to Crystal.
 - `heap_wrapper`: Bind this as a Crystal class with a pointer to the C struct, like it's done got GObject types.
+
+# BindingMethod
+
+## blocks (boolean)
+
+Default: `false`.
+
+If true, the C function is assumed to block the thread it runs on, e.g. a function that runs a main loop,
+so the generated binding calls it inside a dedicated `Fiber::ExecutionContext::Isolated` context
+(through `GICrystal.run_blocking`) instead of calling it directly.
+
+This means fibers in `Fiber::ExecutionContext.default` keep running while the C function executes, with no
+changes needed in user code. The costs of it are:
+
+- The C function runs on a system thread of its own, and so does every callback it invokes, so callbacks
+  do not run on the thread that called the method.
+- Since the function no longer runs on the process main thread, do not use this for libraries that
+  require the main thread, e.g. anything talking to Cocoa on macOS.
+- Fibers created by `spawn` inside a callback belong to `Fiber::ExecutionContext.default`, and so run on a
+  different thread than the C function, if they call into a library that's not thread safe they must
+  marshal the call back, e.g. with `GLib.idle_add`.

@@ -462,6 +462,15 @@ TestFlagFlags test_subject_return_bad_flag() {
   return (TestFlagFlags)17;
 }
 
+guint64 test_subject_current_thread() {
+  return (guint64)(gsize)g_thread_self();
+}
+
+guint64 test_subject_block_thread(guint microseconds) {
+  g_usleep(microseconds);
+  return test_subject_current_thread();
+}
+
 void test_subject_put_42_on_out_argument(TestSubject* self, int* out) {
   *out = 42;
 }
