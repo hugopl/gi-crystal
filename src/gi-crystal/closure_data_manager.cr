@@ -39,22 +39,16 @@ module GICrystal
       instance.deregister_all
     end
 
-    {% if flag?(:preview_mt) %}
-      @mutex = Mutex.new
-    {% end %}
+    @mutex = Sync::Mutex.new
 
     private def initialize
       @closure_data = Hash(Pointer(Void), Int32).new { |h, k| h[k] = 0 }
     end
 
     private def synchronize(&)
-      {% if flag?(:preview_mt) %}
-        @mutex.synchronize do
-          yield
-        end
-      {% else %}
+      @mutex.synchronize do
         yield
-      {% end %}
+      end
     end
 
     def deregister_all
