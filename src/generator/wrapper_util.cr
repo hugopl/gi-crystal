@@ -1,14 +1,15 @@
 module Generator
   module WrapperUtil
     def generate_null_guard(io : IO, identifier : String, type : TypeInfo, nullable : Bool = true, &) : Nil
-      io << identifier << " = "
       if nullable
-        io << "if " << identifier << ".nil?\n"
+        # Use a different variable name to avoid "can't use variable in its own assignment" error
+        io << "_" << identifier << " = if " << identifier << ".nil?\n"
         io << to_lib_type(type, structs_as_void: true) << ".null\n"
         io << "else\n"
         yield(io)
         io << "\nend\n"
       else
+        io << identifier << " = "
         yield(io)
       end
     end

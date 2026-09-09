@@ -25,6 +25,8 @@ module Generator
 
     property? remove_from_declaration : Bool = false
     property? capture_block : Bool = false
+    # When true, the C call should use _varname instead of varname
+    property? uses_transformed_var : Bool = false
     getter method : CallableInfo
     getter arg : ArgInfo
 
@@ -74,6 +76,12 @@ module Generator
 
     def arg_type : TypeInfo
       @arg.type_info
+    end
+
+    # Returns the variable name to use in C calls (may be prefixed with _ if transformed)
+    def c_call_var_name : String
+      name = to_identifier(arg.name)
+      uses_transformed_var? ? "_#{name}" : name
     end
 
     def render_declaration(io : IO)
@@ -207,6 +215,11 @@ module Generator
       arg = strategy.arg
       arg_type = arg.type_info
       arg_name = to_identifier(arg.name)
+
+      # Mark that this arg uses a transformed variable name in the C call
+      if arg.nullable?
+        strategy.uses_transformed_var = true
+      end
 
       generate_null_guard(io, arg_name, arg_type, nullable: arg.nullable?) do
         if arg_type.array? && !arg_type.param_type.tag.u_int8?

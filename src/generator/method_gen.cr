@@ -122,11 +122,12 @@ module Generator
     private def method_c_call_args : String
       args = Array(String).new(@method.args.size + 2) # +2, just in case we need space for `self` and `error`.
       args << "to_unsafe" if @method.method?
-      @method.args.each do |arg|
+      @args_strategies.each do |strategy|
+        arg = strategy.arg
         if arg.direction.out? && arg_used_by_return_type?(arg)
           args << "pointerof(#{to_identifier(arg.name)})"
         else
-          args << to_identifier(arg.name)
+          args << strategy.c_call_var_name
         end
       end
       args << "pointerof(_error)" if throws?
