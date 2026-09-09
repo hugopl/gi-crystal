@@ -68,9 +68,6 @@ describe "Raw C arrays" do
     it "can be received in arguments as Tuple(String)" do
       Test::Subject.new.concat_filenames({"hey", "ho"}).should eq(Path.new("heyho"))
     end
-
-    pending "can be received as argument as Array(Path)"
-    pending "can be received as argument as Tuple(Path)"
   end
 
   describe "of primitive types" do
