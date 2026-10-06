@@ -29,4 +29,6 @@ lib LibGLib
   # To work with old and newer GLibs, these functiosn are lib-ignored and added here manually.
   fun g_once_init_enter(location : Pointer(Void)) : LibC::Int
   fun g_once_init_leave(location : Pointer(Void), result : UInt64) : Void
+
+  fun g_log(log_domain : LibC::Char*, log_level : Int32, format : LibC::Char*, ...)
 end

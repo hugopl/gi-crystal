@@ -10,9 +10,18 @@ private class UserObjectWithCtor < GObject::Object
   def initialize(@string : String)
     super()
   end
+
+  def initialize
+    super
+    @string = ""
+  end
 end
 
 private class UserSubject < Test::Subject
+  def initialize
+    super
+  end
+
   def initialize(string : String)
     super(string: string)
   end

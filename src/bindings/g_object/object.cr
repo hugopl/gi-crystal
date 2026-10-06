@@ -61,6 +61,13 @@ module GObject
 
   class Object
     macro inherited
+      # :nodoc
+      def self._create_obj_through_default_constructor : Pointer(Void)
+        LibGLib.g_log("GICrystal", 4,
+                      {{ "Tried to create an instance of #{@type} from C, but #{@type} doesn't have a default constructor." }})
+        Pointer(Void).null
+      end
+
       {% unless @type.annotation(GICrystal::GeneratedWrapper) %}
         macro method_added(method)
           {% verbatim do %}
@@ -70,6 +77,13 @@ module GObject
                 {% vfunc_name = "unsafe_#{vfunc_name.id}" %}
               {% end %}
               _register_{{ vfunc_name.id }}_vfunc({{ method.name }})
+            {% end %}
+
+            {% if method.name == "initialize" && (method.args.empty? || method.args.all?(&.default_value)) %}
+              # :nodoc
+              def self._create_obj_through_default_constructor : Pointer(Void)
+                {{ @type }}.new.as(Void*)
+              end
             {% end %}
           {% end %}
         end
@@ -86,9 +100,17 @@ module GObject
           if LibGLib.g_once_init_enter(pointerof(@@_g_type)) != 0
             g_type = {{ @type.superclass.id }}._register_derived_type("{{ @type.name.gsub(/::/, "-") }}",
               ->_class_init(Pointer(LibGObject::TypeClass), Pointer(Void)),
-              ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)))
-
+              ->_instance_init(Pointer(LibGObject::TypeInstance), Pointer(LibGObject::TypeClass)),
+              {% if @type.abstract? %}
+              GObject::TypeFlags::Abstract,
+              {% end %}
+              )
             LibGLib.g_once_init_leave(pointerof(@@_g_type), g_type)
+
+            {% unless @type.abstract? %}
+              ctor = ->_create_obj_through_default_constructor
+              LibGObject.g_type_set_qdata(g_type, GICrystal::INSTANCE_USERTYPE_FACTORY, ctor.pointer)
+            {% end %}
             self._install_ifaces
           end
 
@@ -126,6 +148,32 @@ module GObject
               {% end %}
             {% end %}
           {% end %}
+        end
+
+        # :nodoc:
+        #
+        # GObject instance initialization, creates the Crystal instance if there's no one created yet.
+        def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
+          # Return if the Crystal instance is already set up.
+          crystal_instance = LibGObject.g_object_get_qdata(instance, GICrystal::INSTANCE_QDATA_KEY)
+          return if crystal_instance
+
+          # Check if this was called from a Crystal constructor
+          crystal_instance = GICrystal.crystal_object_being_created
+          # If not, this comes from a C call, so a Crystal instance needs to be created, however
+          {% unless @type.abstract? %}
+            crystal_instance ||= GICrystal.create_user_type_from_c_instance(instance, type)
+          {% end %}
+
+          # Now we have a Crystal object instance, let's set it up:
+          # - Set the INSTANCE_QDATA_KEY, so if someone read a property the get_property callback can
+          #   know what's the Crystal instance.
+          # - Set the Crystal instance @pointer variable, so Crystal code can run without a dangling pointer.
+          if crystal_instance
+            crystal_instance.as(GObject::Object)._gobj_pointer = instance.as(Void*)
+            LibGObject.g_object_set_qdata(instance, GICrystal::INSTANCE_QDATA_KEY, crystal_instance)
+            GICrystal.crystal_object_being_created = Pointer(Void).null
+          end
         end
 
         # :nodoc:
@@ -453,10 +501,6 @@ module GObject
         end
 
         # :nodoc:
-        def self._instance_init(instance : Pointer(LibGObject::TypeInstance), type : Pointer(LibGObject::TypeClass)) : Nil
-        end
-
-        # :nodoc:
         def self._install_ifaces
           {% verbatim do %}
             {% for ancestor in @type.ancestors.uniq %}
@@ -482,7 +526,6 @@ module GObject
         # This specific implementation turns a normal reference into a toggle reference.
         private def _after_init : Nil
           # Set toggle ref to protect the crystal object from the garbage collector while in C.
-
           self.class._g_toggle_notify(self.as(Void*), @pointer, 0)
           LibGObject.g_object_add_toggle_ref(@pointer, G_TOGGLE_NOTIFY__, self.as(Void*))
           LibGObject.g_object_unref(@pointer)
@@ -634,9 +677,16 @@ module GObject
     end
 
     def initialize
-      @pointer = LibGObject.g_object_newv(self.class.g_type, 0, Pointer(LibGObject::Parameter).null)
+      GICrystal.crystal_object_being_created = Pointer(Void).new(object_id)
+
+      g_object = GICrystal.g_object_being_created
+      @pointer = g_object || LibGObject.g_object_newv(self.class.g_type, 0, Pointer(LibGObject::Parameter).null)
+      GICrystal.g_object_being_created = Pointer(Void).null
+
+      # If object is created by C, the qdata was already set.
+      LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, self.as(Void*)) unless g_object
       LibGObject.g_object_ref_sink(self) if LibGObject.g_object_is_floating(self) == 1
-      LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).new(object_id))
+
       self._after_init
     end
 
@@ -644,6 +694,16 @@ module GObject
       @pointer = pointer
       LibGObject.g_object_ref_sink(self) if transfer.none? || LibGObject.g_object_is_floating(self) == 1
       self._after_init
+    end
+
+    # :nodoc:
+    # Set the internal GObject pointer.
+    #
+    # When creating crystal objects using property constructors that set Crystal properties we must
+    # set the @pointer in the GObject instance_init method, because at this point the Crystal instance
+    # was already created but is inside a call of `g_object_new_with_properties` and would only set the
+    # @pointer after it returns, however the @pointer is needed to write the properties.
+    def _gobj_pointer=(@pointer)
     end
 
     # Returns GObject reference counter.
