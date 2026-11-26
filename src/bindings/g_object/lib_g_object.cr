@@ -4,6 +4,7 @@ lib LibGObject
   # We use this function to store the Crystal wrapper pointer in GObjects,
   # So we can re-use the Crystal objects saving some memory allocations.
   fun g_object_set_qdata(object : Void*, quark : UInt32, data : Void*)
+  fun g_object_set_qdata_full(object : Void*, quark : UInt32, data : Void*, destroy : Void* ->)
 
   # This is used only tests
   fun g_object_new(type : UInt64, first_property_name : Pointer(LibC::Char), ...) : Void*

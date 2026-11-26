@@ -31,6 +31,9 @@ module GICrystal
   INSTANCE_QDATA_KEY = LibGLib.g_quark_from_static_string("gi-crystal::instance")
   # See `declare_new_method`.
   INSTANCE_FACTORY = LibGLib.g_quark_from_static_string("gi-crystal::factory")
+  # :nodoc:
+  # Used by Crystal GObject subclasses finalizer to know if the GObject was finalized.
+  FINALIZE_SENTINEL_QDATA_KEY = LibGLib.g_quark_from_static_string("gi-crystal::finalize-sentinel")
 
   # Raised when trying to cast an object that was already collected by GC.
   class ObjectCollectedError < RuntimeError

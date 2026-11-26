@@ -19,6 +19,8 @@ Changes that change the generated API have a ⚠️.
 - Elements of transfer full `GLib::List`/`GLib::SList` are now freed with the right function: `g_boxed_free`
   for boxed structs, `g_variant_unref` for `GLib::Variant` and `g_param_spec_unref` for `GObject::ParamSpec`,
   they used to be freed with `g_free`, leaking or corrupting memory.
+- Vfuncs implemented in Crystal and called while the object is destroyed (e.g. `dispose`) raised
+  `GICrystal::ObjectCollectedError` from inside the GC finalizer, leaving the GObject half disposed.
 
 ## [0.26.0] 2026-09-08
 ### Added

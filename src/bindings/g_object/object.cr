@@ -494,8 +494,20 @@ module GObject
             LibC.printf("~%s at %p - ref count: %d\n", self.class.name.to_unsafe, self, ref_count)
           {% end %}
 
-          LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).null)
+          # Removing the toggle ref usually drops the last reference, so GObject disposes and finalizes the object right
+          # here. Vfuncs implemented in Crystal (e.g. `dispose`) may be called during this, so the instance qdata must
+          # still point to `self`, whose memory is valid until this finalizer returns.
+          #
+          # The sentinel qdata is destroyed only when the GObject gets finalized, if it isn't the GObject is still alive
+          # (C code still holds or acquired references) and must not keep a pointer to this collected Crystal object.
+          gobject_finalized = false
+          LibGObject.g_object_set_qdata_full(self, GICrystal::FINALIZE_SENTINEL_QDATA_KEY, pointerof(gobject_finalized).as(Void*),
+            ->(data : Void*) { data.as(Bool*).value = true })
           LibGObject.g_object_remove_toggle_ref(self, G_TOGGLE_NOTIFY__, self.as(Void*))
+          return if gobject_finalized
+
+          LibGObject.g_object_steal_qdata(self, GICrystal::FINALIZE_SENTINEL_QDATA_KEY)
+          LibGObject.g_object_set_qdata(self, GICrystal::INSTANCE_QDATA_KEY, Pointer(Void).null)
         end
 
         # :nodoc:
