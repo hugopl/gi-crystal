@@ -10,6 +10,8 @@ Changes that change the generated API have a ⚠️.
 ### Fixed
 - GIO async methods could crash when the garbage collector ran before the operation finished, the
   callback was only referenced by C code and could be collected.
+- Double free of GErrors raised by bindings with more than one dependency, e.g. Gtk, each dependency
+  error converter created a `GLib::Error` owning the same GError.
 
 ## [0.26.0] 2026-09-08
 ### Added

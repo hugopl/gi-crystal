@@ -97,8 +97,9 @@ module <%= namespace_name %>
     <%= gerror_to_crystal_implementation %>
 
     <% immediate_dependencies.each do |namespace| -%>
-      <%= namespace.namespace_name %>.gerror_to_crystal?(error, transfer)
+      <%= namespace.namespace_name %>.gerror_to_crystal?(error, transfer).try { |gerror| return gerror }
     <% end -%>
+    nil
   end
 
   # :nodoc:
