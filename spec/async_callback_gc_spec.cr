@@ -28,7 +28,7 @@ describe "GIO async pattern" do
     GICrystal::ClosureDataManager.count.should eq(initial_count + 1)
 
     wait_until { results.any? }
-    results.should eq(["async_spec.cr"])
+    results.should eq([File.basename(__FILE__)])
     GICrystal::ClosureDataManager.count.should eq(initial_count)
   end
 
@@ -45,6 +45,6 @@ describe "GIO async pattern" do
     end
 
     wait_until { results.size == n }
-    results.should eq(Array.new(n, "async_spec.cr"))
+    results.should eq(Array.new(n, File.basename(__FILE__)))
   end
 end
