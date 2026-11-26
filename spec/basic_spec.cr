@@ -243,3 +243,21 @@ describe "GObject Binding" do
     end
   end
 end
+
+describe "Constructors" do
+  # Bug: `MethodGen#method_return` (src/generator/method_gen.cr) always converts constructor return values with
+  # transfer full, ignoring the return value annotation. `GObject::Object#initialize(pointer, :full)` only takes a
+  # reference if the object is floating, so for a constructor returning a non-floating object with transfer none
+  # (e.g. `gtk_window_new`, where GTK keeps the reference in its toplevel window list) the Crystal wrapper doesn't
+  # own a reference, but its finalizer still calls `g_object_unref`, releasing a reference owned by C. The object
+  # can then be freed while C still uses it (use-after-free, double unref).
+  #
+  # Fix: use the constructor `caller_owns` annotation instead of always `:full`. Floating references (the usual
+  # case of transfer none constructors, e.g. widgets) must still be sunk, as `initialize` already does.
+  pending "take a reference for non-floating objects returned with transfer none" do
+    subject = Test::Subject.new_held
+    subject.ref_count.should eq(2)
+    Test::Subject.release_held
+    subject.ref_count.should eq(1)
+  end
+end

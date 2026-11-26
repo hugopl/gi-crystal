@@ -53,4 +53,10 @@ const gchar* test_boxed_struct_get_data(TestBoxedStruct* self);
  */
 void test_boxed_struct_set_data(TestBoxedStruct* self, const gchar* data);
 
+/**
+ * test_boxed_struct_get_free_count:
+ * Returns: how many times [func@Test.BoxedStruct.free] freed a struct.
+ */
+guint test_boxed_struct_get_free_count(void);
+
 G_END_DECLS

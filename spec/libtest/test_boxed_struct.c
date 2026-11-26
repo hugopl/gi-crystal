@@ -7,9 +7,17 @@ struct _TestBoxedStruct {
   char* data;
 };
 
+static guint free_count = 0;
+
+guint test_boxed_struct_get_free_count(void) {
+  return free_count;
+}
+
 void test_boxed_struct_free(TestBoxedStruct* obj) {
   if (!obj)
     return;
+
+  free_count++;
 
   g_free(obj->data);
   g_free(obj);

@@ -166,3 +166,64 @@ describe "GObject vfuncs" do
 
   pending "can be from objects, not interfaces"
 end
+
+private class ConstructedVFuncImpl < GObject::Object
+  class_property? constructed_called = false
+
+  @[GObject::Virtual]
+  def constructed
+    @@constructed_called = true
+  end
+end
+
+private class DisposeVFuncImpl < GObject::Object
+  class_property dispose_calls = 0
+
+  @[GObject::Virtual]
+  def dispose
+    @@dispose_calls += 1
+  end
+end
+
+@[NoInline]
+private def create_and_drop_dispose_vfunc_impl : Nil
+  DisposeVFuncImpl.new
+  nil
+end
+
+describe "GObject vfuncs called during object life cycle" do
+  # Bug: `GObject::Object#initialize` (src/bindings/g_object/object.cr) calls `g_object_newv` and only then stores the
+  # Crystal instance in the `INSTANCE_QDATA_KEY` qdata. `g_object_newv` calls the `constructed` vfunc, the vfunc
+  # trampoline (ecr/v_func.ecr) can't find the Crystal instance in the qdata yet and raises
+  # `GICrystal::ObjectCollectedError` from inside a C frame. Any vfunc called during construction (`constructed`,
+  # `set_property` for construct properties, ...) has the same problem.
+  #
+  # Fix: make the Crystal instance available before the vfuncs can be called, e.g. set the qdata in
+  # `_instance_init` (called by GObject before `constructed`), or keep it in a thread local "instance being
+  # constructed" slot that the trampolines fall back to.
+  pending "calls constructed vfunc implemented in Crystal" do
+    ConstructedVFuncImpl.constructed_called = false
+    ConstructedVFuncImpl.new
+    ConstructedVFuncImpl.constructed_called?.should eq(true)
+  end
+
+  # Bug: the `finalize` method generated for Crystal GObject subclasses (src/bindings/g_object/object.cr) clears the
+  # `INSTANCE_QDATA_KEY` qdata and then removes the toggle reference. Removing the toggle ref drops the last
+  # reference, so GObject runs `dispose` and `finalize` right there, but the vfunc trampoline can't find the
+  # Crystal instance anymore and raises `GICrystal::ObjectCollectedError` from inside `g_object_unref`, inside a
+  # GC finalizer. In real programs this exception surfaces at a random allocation that triggered the GC, and the
+  # GObject is left half disposed, never finalized. Widgets have the same problem with vfuncs called on
+  # destruction (`unroot`, `unrealize`, ...).
+  #
+  # Fix: remove the toggle reference before clearing the qdata (the Crystal object memory is still valid while
+  # its finalizer runs), so the trampolines can still find the instance during dispose/finalize.
+  pending "calls dispose vfunc implemented in Crystal when the object is collected" do
+    DisposeVFuncImpl.dispose_calls = 0
+    create_and_drop_dispose_vfunc_impl
+    10.times do
+      GC.collect
+      100.times { Array(Int32).new(16) }
+    end
+    DisposeVFuncImpl.dispose_calls.should eq(1)
+  end
+end
