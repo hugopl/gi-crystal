@@ -12,6 +12,8 @@ Changes that change the generated API have a ⚠️.
   callback was only referenced by C code and could be collected.
 - Double free of GErrors raised by bindings with more than one dependency, e.g. Gtk, each dependency
   error converter created a `GLib::Error` owning the same GError.
+- Non-nilable getters of string properties raised `ArgumentError` when the property was NULL, now they
+  return an empty string. String property getters also no longer leak the string copy returned by `g_object_get`.
 
 ## [0.26.0] 2026-09-08
 ### Added

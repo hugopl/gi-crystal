@@ -110,16 +110,9 @@ describe "GObject properties" do
 end
 
 describe "GObject string properties" do
-  # Bug: the non-nilable getter generated for string properties (ecr/property.ecr) converts the value returned by
-  # `g_object_get` with `::String.new(value)` without checking for NULL. String properties can always be NULL
-  # (`g_param_spec_string` accepts NULL as default value and setting NULL is allowed), so reading an unset string
-  # property raises `ArgumentError: Cannot create a string with a null pointer`. The same unchecked
-  # `::String.new(lib_arg)` is generated in signal/vfunc trampolines for string arguments not annotated as nullable,
-  # where the exception unwinds through C frames.
-  #
-  # Fix: the non-nilable getter must handle NULL, returning an empty string (the `#string?` getter is the one to use
-  # when NULL must be distinguished from an empty string).
-  pending "returns an empty string from the non-nilable getter when the property is NULL" do
+  # String properties can always be NULL, the non-nilable getter returns an empty string in this case while the
+  # `?` getter returns nil.
+  it "returns an empty string from the non-nilable getter when the property is NULL" do
     subject = Test::Subject.new
     subject.string = nil
     subject.string?.should eq(nil)

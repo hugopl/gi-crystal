@@ -19,7 +19,12 @@
 
     value = uninitialized <%= c_prop_type_name %>
     LibGObject.g_object_get(self, "<%= prop.name %>", pointerof(value), Pointer(Void).null)
+  <% if prop_type_name == "::String" -%>
+    # g_object_get always returns a copy of string properties, that can be NULL.
+    value ? GICrystal.transfer_full(value) : ""
+  <% else -%>
     <%= convert_to_crystal("value", prop.type_info, [] of ArgInfo, prop.ownership_transfer) %><% if prop_is_object? -%> unless value.null?<% end %>
+  <% end -%>
   end
 <% end %>
 
@@ -36,7 +41,7 @@
     def <%= prop_getter_method_name %>? : ::String?
       value = uninitialized Pointer(LibC::Char)
       LibGObject.g_object_get(self, "<%= prop.name %>", pointerof(value), Pointer(Void).null)
-      ::String.new(value) if value
+      GICrystal.transfer_full(value) if value
     end
   <% end %>
 <% end %>
