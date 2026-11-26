@@ -159,7 +159,7 @@ module Generator
 
       String.build do |s|
         if @method.constructor?
-          s << convert_to_crystal("_retval", @method.container.not_nil!, @method.args, :full)
+          s << convert_to_crystal("_retval", @method.container.not_nil!, @method.args, @method.caller_owns)
         elsif return_type.is_a?(ArgInfo)
           s << to_identifier(return_type.name)
         elsif return_type.is_a?(TypeInfo)

@@ -14,6 +14,8 @@ Changes that change the generated API have a ⚠️.
   error converter created a `GLib::Error` owning the same GError.
 - Non-nilable getters of string properties raised `ArgumentError` when the property was NULL, now they
   return an empty string. String property getters also no longer leak the string copy returned by `g_object_get`.
+- Constructors returning non-floating objects with transfer none, e.g. `Gtk::Window.new`, didn't take
+  a reference to the returned object, but the wrapper unreferenced it on finalize.
 
 ## [0.26.0] 2026-09-08
 ### Added
