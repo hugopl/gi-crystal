@@ -74,15 +74,8 @@ private def create_and_drop_list_of_boxed : Nil
 end
 
 describe "GList of boxed structs" do
-  # Bug: `GLib::List#finalize` and `GLib::SList#finalize` (src/bindings/g_lib/list.cr, slist.cr) free the elements
-  # of transfer full lists with `g_object_unref` for GObjects and `g_free` for everything else. Boxed structs must
-  # be freed with `g_boxed_free` (their free function also frees their contents, here the `data` string), and
-  # ref-counted types like `GVariant` or `GParamSpec` must be unref'd: `g_free` on them frees memory still owned by
-  # other references, causing use-after-free/double free crashes.
-  #
-  # Fix: free each element according to `T`: `g_boxed_free(T.g_type, ptr)` for boxed types, the type specific unref
-  # for `GLib::Variant`/`GObject::ParamSpec`, `g_object_unref` for objects/interfaces and `g_free` for strings.
-  pending "frees boxed struct elements with their free function" do
+  # Elements of transfer full lists of boxed structs must be freed with `g_boxed_free`, not `g_free`.
+  it "frees boxed struct elements with their free function" do
     before = Test::BoxedStruct.free_count
     create_and_drop_list_of_boxed
     10.times do

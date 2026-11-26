@@ -16,6 +16,9 @@ Changes that change the generated API have a ⚠️.
   return an empty string. String property getters also no longer leak the string copy returned by `g_object_get`.
 - Constructors returning non-floating objects with transfer none, e.g. `Gtk::Window.new`, didn't take
   a reference to the returned object, but the wrapper unreferenced it on finalize.
+- Elements of transfer full `GLib::List`/`GLib::SList` are now freed with the right function: `g_boxed_free`
+  for boxed structs, `g_variant_unref` for `GLib::Variant` and `g_param_spec_unref` for `GObject::ParamSpec`,
+  they used to be freed with `g_free`, leaking or corrupting memory.
 
 ## [0.26.0] 2026-09-08
 ### Added

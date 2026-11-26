@@ -70,6 +70,18 @@ module GLib
       if @transfer.full?
         {% if T <= GObject::Object || T.module? %}
           LibGLib.g_list_free_full(self, ->LibGObject.g_object_unref)
+        {% elsif T <= GLib::Variant %}
+          LibGLib.g_list_free_full(self, ->LibGLib.g_variant_unref)
+        {% elsif T <= GObject::ParamSpec %}
+          LibGLib.g_list_free_full(self, ->LibGObject.g_param_spec_unref)
+        {% elsif T != String && T != Path && T.class.has_method?("g_type") %}
+          # Boxed types: g_boxed_free needs the GType, so it can't be used as a GDestroyNotify.
+          list = @list
+          while list
+            LibGObject.g_boxed_free(T.g_type, list.value.data)
+            list = list.value._next
+          end
+          LibGLib.g_list_free(self)
         {% else %}
           LibGLib.g_list_free_full(self, ->LibGLib.g_free)
         {% end %}
