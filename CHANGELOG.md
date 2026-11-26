@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes that change the generated API have a ⚠️.
 
+## [Unreleased]
+### Fixed
+- GIO async methods could crash when the garbage collector ran before the operation finished, the
+  callback was only referenced by C code and could be collected.
+
 ## [0.26.0] 2026-09-08
 ### Added
 - New `blocks` attribute for methods on `binding.yml`, when true the generated binding calls the C

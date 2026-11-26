@@ -479,7 +479,7 @@ module Generator
 
       callback_var = to_identifier(arg.name)
       user_data_var = to_identifier(strategies[idx + 1].arg.name)
-      io << user_data_var << " = ::Box.box(" << callback_var << ")\n"
+      io << user_data_var << " = GICrystal::ClosureDataManager.register(::Box.box(" << callback_var << "))\n"
       io << callback_var << " = if " << callback_var << ".nil?\n"
       io << "  Pointer(Void).null\n"
       io << "else\n"
